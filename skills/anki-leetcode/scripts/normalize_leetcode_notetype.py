@@ -25,13 +25,13 @@ def parse_args() -> argparse.Namespace:
 
 
 
-def migrate_variant_notes(col: Collection, variant_name: str) -> tuple[int, int]:
+def migrate_variant_notes(col: Collection, variant_name: str) -> tuple[int, int, bool]:
     canonical = col.models.by_name(CANONICAL_NOTE_TYPE)
     variant = col.models.by_name(variant_name)
     if canonical is None:
         raise RuntimeError(f'Canonical note type not found: {CANONICAL_NOTE_TYPE}')
     if variant is None:
-        return 0, 0
+        return 0, 0, False
 
     canonical_field_names = [field['name'] for field in canonical['flds']]
     canonical_template_names = [template['name'] for template in canonical['tmpls']]
@@ -49,23 +49,28 @@ def migrate_variant_notes(col: Collection, variant_name: str) -> tuple[int, int]
         for note_id in col.find_notes(LEETCODE_TAG_QUERY)
         if int(col.get_note(note_id).mid) == int(variant['id'])
     ]
-    if not note_ids:
-        return 0, int(variant['id'])
 
-    for note_id in note_ids:
-        note = col.get_note(note_id)
-        for field_index, field_name in enumerate(variant_field_names[2:], start=2):
-            if note.fields[field_index].strip():
-                raise RuntimeError(
-                    f'Variant note type has non-empty extra field {field_name!r}: {variant_name}'
-                )
+    if note_ids:
+        for note_id in note_ids:
+            note = col.get_note(note_id)
+            for field_index, field_name in enumerate(variant_field_names[2:], start=2):
+                if note.fields[field_index].strip():
+                    raise RuntimeError(
+                        f'Variant note type has non-empty extra field {field_name!r}: {variant_name}'
+                    )
 
-    field_map = {field_index: field_index for field_index in range(len(canonical_field_names))}
-    field_map.update({field_index: None for field_index in range(len(canonical_field_names), len(variant_field_names))})
-    template_map = {0: 0}
-    template_map.update({template_index: None for template_index in range(1, len(variant['tmpls']))})
-    col.models.change(variant, note_ids, canonical, field_map, template_map)
-    return len(note_ids), int(variant['id'])
+        field_map = {field_index: field_index for field_index in range(len(canonical_field_names))}
+        field_map.update({field_index: None for field_index in range(len(canonical_field_names), len(variant_field_names))})
+        template_map = {0: 0}
+        template_map.update({template_index: None for template_index in range(1, len(variant['tmpls']))})
+        col.models.change(variant, note_ids, canonical, field_map, template_map)
+
+    removed = False
+    if col.models.use_count(variant) == 0:
+        col.models.remove(variant['id'])
+        removed = True
+
+    return len(note_ids), int(variant['id']), removed
 
 
 
@@ -82,16 +87,20 @@ def main() -> None:
         ]
         migrated_total = 0
         touched_model_ids: list[int] = []
+        removed_variants = 0
         for variant_name in variant_names:
-            migrated_count, model_id = migrate_variant_notes(col, variant_name)
+            migrated_count, model_id, removed = migrate_variant_notes(col, variant_name)
             migrated_total += migrated_count
             if model_id:
                 touched_model_ids.append(model_id)
+            if removed:
+                removed_variants += 1
 
         print(f'collection={collection_path}')
         print(f'canonical={CANONICAL_NOTE_TYPE}')
         print(f'variants={len(variant_names)}')
         print(f'migrated_notes={migrated_total}')
+        print(f'removed_variants={removed_variants}')
         print(f'variant_model_ids={touched_model_ids}')
     finally:
         col.close()
