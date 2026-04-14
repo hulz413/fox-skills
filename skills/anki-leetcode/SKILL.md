@@ -114,7 +114,7 @@ Do not hand-write syntax-highlighting spans. The hidden builder applies syntax h
 
 - Reuse the existing workflow contract; do not change the skill's external input or output format.
 - Do not search for runtime paths or per-problem YAML files during normal execution; use the fixed runtime paths and the exact derived YAML path.
-- Each problem must reuse the same per-problem YAML path and the same `leetcode-<id>` tag.
+- Each problem must reuse the same per-problem YAML path. Visible tags should be `leetcode` plus official LeetCode topic tags only; note identity is tracked internally via `frontend_id`-based stable GUIDs, and any legacy `leetcode-<id>` tags should be removed after import.
 - If the YAML already exists and the user did not ask to refresh or regenerate it, reuse it instead of regenerating the card.
 - Run the package rebuild/import flow only once per invocation, not once per problem.
 - If all requested problems reused existing YAML files and the user did not explicitly ask to rebuild or import anyway, skip rebuild/import entirely.

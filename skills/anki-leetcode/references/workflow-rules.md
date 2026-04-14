@@ -81,15 +81,8 @@
 
 - Every card must include:
   - `leetcode`
-  - `leetcode-<frontend id>`
-- Add 2–4 English algorithm tags where appropriate, such as:
-  - `array`
-  - `two-pointers`
-  - `hash-table`
-  - `sliding-window`
-  - `sorting`
-  - `string`
-  - `intervals`
+- Add the official LeetCode `topicTags.slug` values for that problem as the remaining visible tags.
+- Do not add AI-generated algorithm tags.
 
 ## File naming rules
 
@@ -162,8 +155,9 @@ This section applies on **macOS only**.
 
 ## Dedupe / stability rules
 
-- Notes are deduped by the `leetcode-<id>` tag and stable GUIDs derived from those tags
+- Notes are deduped by stable GUIDs derived from the LeetCode `frontend_id` using the historical `leetcode-<id>` digest input format for compatibility
 - Re-importing the same problem should replace the old note instead of creating duplicates
+- After import, remove any legacy `leetcode-<id>` tags for the problems touched in the current batch so visible tags stay aligned with the new official-tag format
 - This dedupe behavior must still hold inside a multi-problem batch
 - After import, normalize any `LeetCode Basic+`-style note type variants back to the canonical `LeetCode Basic` model when their schema is compatible
 - If the main collection already contains a canonical `LeetCode` deck, imports should merge into that existing deck instead of creating a parallel one

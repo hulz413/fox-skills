@@ -18,8 +18,9 @@
 
 ```yaml
 - type: LeetCode Basic
+  frontend_id: "15"
   code_language: python
-  tags: [leetcode, leetcode-15, array, two-pointers, sorting]
+  tags: [leetcode, array, two-pointers, sorting]
   fields:
     Front: |
       <div style="text-align: left;">
@@ -54,5 +55,6 @@
 - The hidden builder will add syntax highlighting during package generation.
 - The `code_language` field controls syntax highlighting.
 - If `code_language` is missing, the builder must default to Python 3.
-- The same problem must always use the same per-problem YAML file and reuse the `leetcode-<id>` tag.
+- The same problem must always use the same per-problem YAML file.
+- New YAML should include `frontend_id`; legacy YAML that still carries `leetcode-<id>` remains builder-compatible.
 - If that YAML file already exists and the user did not ask to refresh it, it may be reused as-is.

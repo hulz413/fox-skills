@@ -84,11 +84,11 @@ Behavior summary:
 - cards are built with the dedicated `LeetCode Basic` note type to avoid stock `Basic` / `Basic+` drift
 - the orchestrator script automatically bootstraps the hidden runtime from `FOX_ANKI_REPO_PATH` when provided, otherwise from the latest tagged upstream `fox-anki` release; it reuses existing YAML when possible and only rebuilds once per invocation
 - rebuilds are based on the current batch only, not on a long-lived sandbox collection
-- on macOS, the skill can automatically import the rebuilt package into the main Anki collection, normalize `LeetCode Basic` note type variants back to the canonical model, and update the existing note for the same `leetcode-<id>` instead of conflicting
+- on macOS, the skill can automatically import the rebuilt package into the main Anki collection, normalize `LeetCode Basic` note type variants back to the canonical model, update the existing note for the same LeetCode `frontend_id` instead of conflicting, and remove legacy `leetcode-<id>` tags after import
 - if nothing changed and the user did not explicitly ask to rebuild or import, the skill can skip rebuild/import work entirely
 - on non-macOS platforms, the workflow stops after rebuilding `leetcode.apkg`, and you need to import the package manually
 
 ## Implementation notes
 
 - `fox-anki` handles collection-facing APKG import and export operations.
-- The skill keeps LeetCode-specific behavior in its own scripts, including code block highlighting, stable LeetCode GUID generation, and batch-only package construction.
+- The skill keeps LeetCode-specific behavior in its own scripts, including code block highlighting, stable LeetCode GUID generation from `frontend_id`, visible tags based on official LeetCode topic tags, and batch-only package construction.

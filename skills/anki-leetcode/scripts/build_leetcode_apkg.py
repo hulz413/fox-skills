@@ -147,10 +147,7 @@ def parse_cards(path: Path) -> list[dict[str, Any]]:
         if not isinstance(tags, list):
             raise RuntimeError("Attribute 'tags' must be a list when provided")
 
-        leetcode_card_tags = leetcode_tags({'tags': tags})
-        if len(leetcode_card_tags) != 1:
-            raise RuntimeError('Each anki-leetcode card must include exactly one leetcode-<id> tag.')
-
+        frontend_id = resolve_frontend_id(card)
         code_language = normalize_code_language(card.get('code_language'))
         rendered_fields = {
             field_name: highlight_code_blocks(field_value, code_language)
@@ -160,10 +157,10 @@ def parse_cards(path: Path) -> list[dict[str, Any]]:
         parsed_cards.append(
             {
                 'type': note_type,
+                'frontend_id': frontend_id,
                 'code_language': code_language,
                 'tags': [tag for tag in tags if isinstance(tag, str)],
                 'fields': rendered_fields,
-                'leetcode_tag': leetcode_card_tags[0],
             }
         )
 
@@ -185,14 +182,41 @@ def ensure_deck(col: Collection, deck_name: str) -> int:
 
 
 
-def leetcode_tags(entry: dict[str, Any]) -> list[str]:
+def legacy_leetcode_tags(entry: dict[str, Any]) -> list[str]:
     return sorted(tag for tag in entry.get('tags', []) if isinstance(tag, str) and LEETCODE_TAG_PATTERN.fullmatch(tag))
 
 
 
-def stable_guid(entry: dict[str, Any]) -> str:
-    digest_source = entry['leetcode_tag']
+def normalize_frontend_id(value: Any) -> str:
+    frontend_id = str(value).strip()
+    if not frontend_id:
+        raise RuntimeError('anki-leetcode cards must define a non-empty frontend_id.')
+    return frontend_id
+
+
+
+def resolve_frontend_id(card: dict[str, Any]) -> str:
+    raw_frontend_id = card.get('frontend_id')
+    if raw_frontend_id is not None:
+        return normalize_frontend_id(raw_frontend_id)
+
+    legacy_tags = legacy_leetcode_tags(card)
+    if len(legacy_tags) == 1:
+        return legacy_tags[0].removeprefix('leetcode-')
+    if len(legacy_tags) > 1:
+        raise RuntimeError('anki-leetcode cards must not include multiple legacy leetcode-<id> tags.')
+    raise RuntimeError('anki-leetcode cards must include frontend_id or one legacy leetcode-<id> tag.')
+
+
+
+def stable_guid(frontend_id: str) -> str:
+    digest_source = f'leetcode-{normalize_frontend_id(frontend_id)}'
     return hashlib.sha1(digest_source.encode('utf-8')).hexdigest()[:10]
+
+
+
+def note_ids_for_guid(col: Collection, guid: str) -> list[int]:
+    return [int(note_id) for note_id in col.db.list('select id from notes where guid = ?', guid)]
 
 
 
@@ -246,17 +270,18 @@ def add_or_update_cards(cards: list[dict[str, Any]], deck_name: str) -> None:
         target_model = ensure_target_model(col)
 
         existing_note_ids = {
-            entry['leetcode_tag']: [int(note_id) for note_id in col.find_notes(f'tag:{entry["leetcode_tag"]}')]
+            entry['frontend_id']: note_ids_for_guid(col, stable_guid(entry['frontend_id']))
             for entry in cards
         }
 
         for entry in cards:
-            note_ids = existing_note_ids[entry['leetcode_tag']]
+            frontend_id = entry['frontend_id']
+            note_ids = existing_note_ids[frontend_id]
             if note_ids:
                 note = col.get_note(note_ids[0])
                 if note.mid != target_model['id']:
                     raise RuntimeError(
-                        f"Existing note for {entry['leetcode_tag']} does not use the expected note type: {TARGET_NOTE_TYPE}"
+                        f"Existing note for frontend_id={frontend_id} does not use the expected note type: {TARGET_NOTE_TYPE}"
                     )
             else:
                 note = col.new_note(target_model)
@@ -270,11 +295,10 @@ def add_or_update_cards(cards: list[dict[str, Any]], deck_name: str) -> None:
             if note.fields_check() != 0:
                 raise RuntimeError(f'Note fields failed validation for model: {TARGET_NOTE_TYPE}')
 
-            note.guid = stable_guid(entry)
+            note.guid = stable_guid(frontend_id)
 
             tags = entry.get('tags', [])
-            if tags:
-                note.set_tags_from_str(' '.join(tags))
+            note.set_tags_from_str(' '.join(tags))
 
             if note_ids:
                 col.update_note(note)

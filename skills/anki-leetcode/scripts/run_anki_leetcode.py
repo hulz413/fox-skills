@@ -409,7 +409,6 @@ def generate_solution_bundle(problem: dict[str, Any], card_language: str, code_l
         f'Generate a complete accepted solution in {code_label}.\n'
         'Use 2 to 4 concise approach bullets.\n'
         'Return time_complexity and space_complexity as Big-O formulas only, such as O(n^2) or O(1).\n'
-        'Return algorithm_tags as 2 to 4 lowercase English slugs such as array or two-pointers.\n'
         'Do not include markdown fences in solution_code.\n\n'
         f'Problem title: {title}\n'
         f'Difficulty: {problem.get("difficulty", "")}\n'
@@ -429,14 +428,8 @@ def generate_solution_bundle(problem: dict[str, Any], card_language: str, code_l
             'time_complexity': {'type': 'string'},
             'space_complexity': {'type': 'string'},
             'solution_code': {'type': 'string'},
-            'algorithm_tags': {
-                'type': 'array',
-                'items': {'type': 'string'},
-                'minItems': 2,
-                'maxItems': 4,
-            },
         },
-        'required': ['approach_bullets', 'time_complexity', 'space_complexity', 'solution_code', 'algorithm_tags'],
+        'required': ['approach_bullets', 'time_complexity', 'space_complexity', 'solution_code'],
         'additionalProperties': False,
     }
     return call_claude_structured(prompt, schema)
@@ -517,24 +510,17 @@ def load_yaml_entries(path: Path) -> list[dict[str, Any]]:
 
 def create_card_entry(problem: dict[str, Any], final_language: str, title: str, content_html: str, code_language: str) -> dict[str, Any]:
     solution_bundle = generate_solution_bundle(problem, final_language, code_language, title, content_html)
-    algorithm_tags: list[str] = []
-    for tag in solution_bundle['algorithm_tags']:
-        slug = tag.strip().lower()
-        if slug and slug not in algorithm_tags:
-            algorithm_tags.append(slug)
-    if len(algorithm_tags) < 2:
-        for topic in problem['topic_tags']:
-            slug = topic.get('slug', '').strip().lower()
-            if slug and slug not in algorithm_tags:
-                algorithm_tags.append(slug)
-            if len(algorithm_tags) >= 2:
-                break
-    algorithm_tags = algorithm_tags[:4]
+    official_tags: list[str] = []
+    for topic in problem['topic_tags']:
+        slug = topic.get('slug', '').strip().lower()
+        if slug and slug not in official_tags:
+            official_tags.append(slug)
 
     return {
         'type': NOTE_TYPE,
+        'frontend_id': problem['frontend_id'],
         'code_language': code_language,
-        'tags': ['leetcode', f'leetcode-{problem["frontend_id"]}', *algorithm_tags],
+        'tags': ['leetcode', *official_tags],
         'fields': {
             'Front': compose_front_html(title, problem['url'], content_html),
             'Back': compose_back_html(final_language, code_language, solution_bundle),
@@ -741,7 +727,31 @@ def normalize_leetcode_notetypes(collection_path: Path) -> None:
 
 
 
-def run_import_flow(options: InvocationOptions) -> tuple[bool, bool]:
+def remove_legacy_leetcode_tags(collection_path: Path, frontend_ids: list[str]) -> None:
+    from anki.collection import Collection
+
+    normalized_frontend_ids = sorted({frontend_id.strip() for frontend_id in frontend_ids if frontend_id.strip()})
+    if not normalized_frontend_ids:
+        return
+
+    col = Collection(str(collection_path))
+    try:
+        updated = False
+        for frontend_id in normalized_frontend_ids:
+            legacy_tag = f'leetcode-{frontend_id}'
+            note_ids = [int(note_id) for note_id in col.find_notes(f'tag:{legacy_tag}')]
+            if not note_ids:
+                continue
+            col.tags.bulk_remove(note_ids, legacy_tag)
+            updated = True
+        if updated:
+            col.save()
+    finally:
+        col.close()
+
+
+
+def run_import_flow(options: InvocationOptions, frontend_ids: list[str]) -> tuple[bool, bool]:
     if options.skip_import or not is_macos():
         return False, False
 
@@ -757,6 +767,7 @@ def run_import_flow(options: InvocationOptions) -> tuple[bool, bool]:
     merge_decks_if_needed(options.collection_path)
     import_apkg(options.collection_path)
     normalize_leetcode_notetypes(options.collection_path)
+    remove_legacy_leetcode_tags(options.collection_path, frontend_ids)
 
     if closed_and_reopened:
         reopen_anki()
@@ -851,7 +862,7 @@ def run(options: InvocationOptions) -> RunStatus:
 
     batch_path = build_batch_yaml(problem_cards)
     rebuild_apkg(batch_path, options.deck_name)
-    imported, closed_and_reopened = run_import_flow(options)
+    imported, closed_and_reopened = run_import_flow(options, [card.frontend_id for card in problem_cards])
 
     return RunStatus(
         yaml_paths=planned_yaml_paths,
