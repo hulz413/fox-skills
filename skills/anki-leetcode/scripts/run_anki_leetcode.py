@@ -39,7 +39,10 @@ QUESTION_QUERY = (
     ' }'
     '}'
 )
-URL_PATTERN = re.compile(r'^https?://leetcode\.(?P<host>cn|com)/problems/(?P<slug>[^/]+)/?(?:description/?)?$', re.IGNORECASE)
+URL_PATTERN = re.compile(
+    r'^https?://leetcode\.(?P<host>cn|com)/problems/(?P<slug>[^/?#]+)/?(?:description/?)?(?:\?[^#]*)?(?:#.*)?$',
+    re.IGNORECASE,
+)
 CARD_LANGUAGE_TOKENS = {
     'zh': 'zh-CN',
     'zh-cn': 'zh-CN',
@@ -407,7 +410,10 @@ def generate_solution_bundle(problem: dict[str, Any], card_language: str, code_l
         'Return only the requested JSON fields.\n\n'
         f'Use {prose_language} for all prose fields.\n'
         f'Generate a complete accepted solution in {code_label}.\n'
-        'Use 2 to 4 concise approach bullets.\n'
+        'Return approach_summary as exactly one concise sentence that summarizes the main method clearly.\n'
+        'Prefer slightly explanatory wording over slogan-like shorthand: state the core move and key technique in plain language.\n'
+        'Keep it brief, but readable at a glance—roughly 20 to 35 Chinese characters or 12 to 20 English words when natural.\n'
+        'Use 2 to 4 concise approach bullets for the more detailed breakdown.\n'
         'Return time_complexity and space_complexity as Big-O formulas only, such as O(n^2) or O(1).\n'
         'Do not include markdown fences in solution_code.\n\n'
         f'Problem title: {title}\n'
@@ -419,6 +425,7 @@ def generate_solution_bundle(problem: dict[str, Any], card_language: str, code_l
     schema = {
         'type': 'object',
         'properties': {
+            'approach_summary': {'type': 'string'},
             'approach_bullets': {
                 'type': 'array',
                 'items': {'type': 'string'},
@@ -429,7 +436,7 @@ def generate_solution_bundle(problem: dict[str, Any], card_language: str, code_l
             'space_complexity': {'type': 'string'},
             'solution_code': {'type': 'string'},
         },
-        'required': ['approach_bullets', 'time_complexity', 'space_complexity', 'solution_code'],
+        'required': ['approach_summary', 'approach_bullets', 'time_complexity', 'space_complexity', 'solution_code'],
         'additionalProperties': False,
     }
     return call_claude_structured(prompt, schema)
@@ -454,6 +461,7 @@ def compose_front_html(title: str, url: str, content_html: str) -> str:
 
 def compose_back_html(card_language: str, code_language: str, solution_bundle: dict[str, Any]) -> str:
     code_label = CODE_LANGUAGE_LABELS.get(code_language, code_language)
+    summary = html.escape(solution_bundle['approach_summary'])
     bullets = ''.join(f'  <li>{html.escape(item)}</li>\n' for item in solution_bundle['approach_bullets'])
     escaped_code = html.escape(solution_bundle['solution_code'])
 
@@ -461,6 +469,7 @@ def compose_back_html(card_language: str, code_language: str, solution_bundle: d
         return (
             '<div style="text-align: left;">\n'
             '<strong>思路</strong>\n'
+            f'<p>{summary}</p>\n'
             '<ul>\n'
             f'{bullets}'
             '</ul>\n'
@@ -477,6 +486,7 @@ def compose_back_html(card_language: str, code_language: str, solution_bundle: d
     return (
         '<div style="text-align: left;">\n'
         '<strong>Approach</strong>\n'
+        f'<p>{summary}</p>\n'
         '<ul>\n'
         f'{bullets}'
         '</ul>\n'
