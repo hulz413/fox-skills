@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gen PDF Bookmark"
+  short_description: "Auto-generate hierarchical PDF bookmarks"
+  default_prompt: "Use $gen-pdf-bookmark to add hierarchical bookmarks to this PDF."
