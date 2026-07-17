@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pick GPT Model"
+  short_description: "Choose the best GPT-5.6 model and effort"
+  default_prompt: "Use $pick-gpt-model to recommend the best model and effort for this scenario."
