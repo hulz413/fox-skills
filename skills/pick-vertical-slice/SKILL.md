@@ -46,39 +46,38 @@ Return exactly one non-empty selection:
 
 - Select a single change when it is the next unblocked slice, when it owns a shared prerequisite, or when no other candidate is pairwise safe to run with it.
 - Select multiple changes only when every pair is safe to start and merge independently under the parallelization assessment. They form one parallel set, not successive batches.
-- Do not include a change that depends on another selected change. Put it under deferred items and explain which selected change unlocks it.
+- Do not include a change that depends on another selected change.
 - Do not describe future execution batches. Run this skill again after the selected change or parallel set has merged to choose the next selection.
 
 ## Output
 
 Present the selected change or parallel set first, followed by its details. State whether it is a single change or a parallel set. Every selected change must be understandable and verifiable by one developer.
 
+Write every user-facing heading, table header, label, explanation, and acceptance criterion in the primary language of the user's most recent message. Translate the template headings and labels below; they are semantic placeholders, not fixed English text. Keep only code identifiers, paths, commands, and OpenSpec change names in English.
+
 Use this format:
 
 ```markdown
-## Selected change(s)
+## <localized selected change(s) heading>
 
-| OpenSpec change | Goal | Owns | Prerequisites |
+| <localized OpenSpec change> | <localized goal> | <localized owns> | <localized prerequisites> |
 | --- | --- | --- | --- |
-| `verb-object` | Verifiable capability | Paths or shared boundary | None / specific condition |
+| `verb-object` | <localized verifiable capability> | <localized paths or shared boundary> | <localized none or specific condition> |
 
-Selection: Single change / parallel set. Explain why every selected change is safe to start now.
+<localized selection label>: <localized single change / parallel set>. <localized explanation of why every selected change is safe to start now>.
 
-## Change details
+## <localized change details heading>
 
 ### `verb-object`
 
-- Scope: Included user path, code boundary, and acceptance outcome.
-- Excludes: Explicitly adjacent work that is out of scope.
-- Evidence: Relevant plan sections and current repository evidence.
-- Owns: Paths, contracts, or migrations it will write.
-- Reads: Read-only dependencies.
-- Dependencies: Changes that must complete first or decisions that must be confirmed.
-- Acceptance: Runnable tests, checks, or manual verification.
+- <localized scope>: <localized included user path, code boundary, and acceptance outcome>.
+- <localized excludes>: <localized adjacent work that is out of scope>.
+- <localized evidence>: <localized relevant plan sections and current repository evidence>.
+- <localized owns>: <localized paths, contracts, or migrations it will write>.
+- <localized reads>: <localized read-only dependencies>.
+- <localized dependencies>: <localized changes that must complete first or decisions that must be confirmed>.
+- <localized acceptance>: <localized runnable tests, checks, or manual verification>.
 
-## Deferred items and blockers
-
-- `plan item`: Why it was not selected now, or the specific selected change or decision that unlocks it.
 ```
 
 Use lowercase English kebab-case names, preferably `verb-object`, such as `add-report-export`. Name the capability, not the implementation layer.
