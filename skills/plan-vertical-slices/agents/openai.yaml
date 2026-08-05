@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Vertical Slices"
+  short_description: "Turn technical designs into ordered business slices"
+  default_prompt: "Use $plan-vertical-slices to create a coding plan from this technical design."
