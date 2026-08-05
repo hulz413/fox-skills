@@ -28,19 +28,31 @@ business vertical-slice table.
      `source_title`, then derive `subject_title` from it.
    - Ask the user for a title when the source has no meaningful title; never use a
      document ID or URL ID as the title.
-4. Decompose the design into business vertical slices according to the rules below.
+4. Identify the first end-to-end business loop and any shared contracts it must
+   establish, then decompose the design into business vertical slices according to
+   the rules below.
 5. Resolve the destination and filename, check for collisions, and write exactly the
    output contract below.
-6. Re-read the generated file and validate its title, source link, table columns,
-   naming, priority order, dependencies, statuses, and absence of implementation
-   details before reporting completion.
+6. Re-read the generated file and validate its title, source link, five table columns,
+   names, source-based slice descriptions, priority order, dependencies, statuses,
+   WorkTree-safe dependency boundaries, and absence of implementation details before
+   reporting completion.
 
 ## Vertical-Slice Rules
 
 - Make every slice deliver an end-to-end business capability or observable business
-  outcome across the required technical layers.
+  outcome across its required technical layers. It should be independently
+  implementable and verifiable as one OpenSpec change.
+- Prefer boundaries that minimize shared files and allow separate WorkTrees to
+  implement later slices in parallel after their common contract is merged.
 - Do not create horizontal slices for frontend, backend, API, database, migrations,
   infrastructure, tests, or similar technical layers.
+- Do not create a standalone technical-foundation slice merely for runtime,
+  migration, queue, or test preparation. Fold such work into the first end-to-end
+  business slice that needs it.
+- When the first business loop establishes a shared contract, schema, or runtime
+  boundary, assign ownership of that boundary to the same slice. Make later
+  extensions depend on it and keep them scoped to independently observable outcomes.
 - Name every slice in English `kebab-case` as a verb followed by a noun, such as
   `create-order`, `view-order`, or `cancel-order`.
 - Avoid technical names such as `add-order-table`, `implement-order-api`, or
@@ -58,11 +70,18 @@ business vertical-slice table.
 - Sort rows by priority in the order `P0`, `P1`, `P2`.
 - Allow multiple slices at the same priority. Within one priority, place dependencies
   before their dependents.
+- Treat merged dependencies as WorkTree integration fences: slices that require the
+  same unfrozen shared contract must be ordered, while slices using an established
+  contract may be ordered as parallel siblings. Do not represent mutually required
+  work as independent slices.
 - Never make a higher-priority slice depend on a lower-priority slice. A dependency's
   numeric priority must be less than or equal to the dependent slice's priority.
 - Refer to dependencies by their exact slice names. Separate multiple dependencies
   with commas. Write `无` when there is no dependency.
 - Set every generated implementation status to `pending`.
+- Give every slice one concise, source-based Chinese description of its business
+  outcome and established scope. Do not turn the description into implementation
+  steps, code locations, acceptance criteria, a test plan, or design explanation.
 
 ## Destination and Naming
 
@@ -90,7 +109,8 @@ business vertical-slice table.
 ## Output Contract
 
 Write no sections, prose, implementation steps, code locations, acceptance criteria,
-test plans, risk analysis, or design explanation beyond this exact structure:
+test plans, risk analysis, or design explanation beyond this exact structure. The
+`切片说明` column is limited to one concise, source-based sentence per slice:
 
 ```markdown
 # <subject_title> 编码计划
@@ -99,11 +119,11 @@ test plans, risk analysis, or design explanation beyond this exact structure:
 
 ## 业务垂直切片
 
-| 切片名称 | 优先级 | 实现状态 | 依赖切片 |
-|---|---|---|---|
-| `create-example` | `P0` | `pending` | 无 |
-| `view-example` | `P1` | `pending` | `create-example` |
-| `enhance-example` | `P2` | `pending` | `view-example` |
+| 切片名称 | 优先级 | 实现状态 | 依赖切片 | 切片说明 |
+|---|---|---|---|---|
+| `create-example` | `P0` | `pending` | 无 | 创建首个可用的业务对象，并建立后续能力共用的边界。 |
+| `view-example` | `P1` | `pending` | `create-example` | 查看已创建对象的核心信息。 |
+| `enhance-example` | `P2` | `pending` | `view-example` | 提供方案已确定的补充能力。 |
 ```
 
 Replace the example rows with slices derived from the source. Keep the Chinese
