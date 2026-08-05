@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pick Vertical Slice"
+  short_description: "Select parallel-ready OpenSpec implementation slices"
+  default_prompt: "Use $pick-vertical-slice to select implementation-ready OpenSpec changes from this coding plan."
