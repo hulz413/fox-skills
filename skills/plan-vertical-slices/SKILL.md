@@ -28,28 +28,38 @@ business vertical-slice table.
      `source_title`, then derive `subject_title` from it.
    - Ask the user for a title when the source has no meaningful title; never use a
      document ID or URL ID as the title.
-4. Identify the first end-to-end business loop and any shared contracts it must
-   establish, then decompose the design into business vertical slices according to
-   the rules below.
-5. Resolve the destination and filename, check for collisions, and write exactly the
+4. Before slicing business capabilities, extract every design-mandated preparation
+   that must land before their implementation. Group only preparation work that must
+   land atomically, then identify the first end-to-end business loop and its shared
+   contracts.
+5. Decompose the design into business vertical slices according to the rules below.
+6. Resolve the destination and filename, check for collisions, and write exactly the
    output contract below.
-6. Re-read the generated file and validate its title, source link, five table columns,
+7. Re-read the generated file and validate its title, source link, five table columns,
    names, source-based slice descriptions, priority order, dependencies, statuses,
-   WorkTree-safe dependency boundaries, and absence of implementation details before
-   reporting completion.
+   OpenSpec-change and WorkTree-safe boundaries, and absence of implementation
+   details before reporting completion.
 
 ## Vertical-Slice Rules
 
 - Make every slice deliver an end-to-end business capability or observable business
   outcome across its required technical layers. It should be independently
-  implementable and verifiable as one OpenSpec change.
+  implementable, verifiable, and mergeable as one OpenSpec change.
+- Generate each slice as the boundary for one prospective OpenSpec change: it must
+  have a coherent scope and dependencies without requiring another concurrent change
+  to complete the same capability. The coding plan does not create the changes.
 - Prefer boundaries that minimize shared files and allow separate WorkTrees to
   implement later slices in parallel after their common contract is merged.
 - Do not create horizontal slices for frontend, backend, API, database, migrations,
   infrastructure, tests, or similar technical layers.
-- Do not create a standalone technical-foundation slice merely for runtime,
-  migration, queue, or test preparation. Fold such work into the first end-to-end
-  business slice that needs it.
+- Represent every design-mandated preparation that must land before business-slice
+  implementation as the smallest possible set of standalone `P0` foundation slices.
+  Each must be independently verifiable and mergeable as a prerequisite OpenSpec
+  change, describe its established scope, and precede every slice it blocks.
+- Group runtime, migration, queue, fixture, compatibility, or similar preparation
+  only when the technical design requires them to land atomically. Do not split one
+  atomic prerequisite into horizontal slices. Fold preparation into the first
+  business slice when it is not a prerequisite for other slices.
 - When the first business loop establishes a shared contract, schema, or runtime
   boundary, assign ownership of that boundary to the same slice. Make later
   extensions depend on it and keep them scoped to independently observable outcomes.
@@ -121,7 +131,8 @@ test plans, risk analysis, or design explanation beyond this exact structure. Th
 
 | 切片名称 | 优先级 | 实现状态 | 依赖切片 | 切片说明 |
 |---|---|---|---|---|
-| `create-example` | `P0` | `pending` | 无 | 创建首个可用的业务对象，并建立后续能力共用的边界。 |
+| `prepare-example-runtime` | `P0` | `pending` | 无 | 为后续业务闭环准备方案确定的原子前置能力。 |
+| `create-example` | `P0` | `pending` | `prepare-example-runtime` | 创建首个可用的业务对象，并建立后续能力共用的边界。 |
 | `view-example` | `P1` | `pending` | `create-example` | 查看已创建对象的核心信息。 |
 | `enhance-example` | `P2` | `pending` | `view-example` | 提供方案已确定的补充能力。 |
 ```
