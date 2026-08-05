@@ -1,11 +1,11 @@
 ---
 name: pick-vertical-slice
-description: Select implementation-ready vertical slices from a user-provided coding-plan Markdown document for OpenSpec, including multiple changes that can be safely developed in parallel across separate worktrees. Use when evaluating, splitting, prioritizing, or selecting OpenSpec changes from a coding plan, or deciding which implementation work can run in parallel.
+description: Select either one implementation-ready vertical slice or one set of pairwise parallel OpenSpec changes from a user-provided coding-plan Markdown document. Use when choosing the next OpenSpec change from a coding plan, or selecting multiple changes that can safely be developed concurrently in separate worktrees.
 ---
 
 # Pick Vertical Slice
 
-Produce a small set of actionable OpenSpec change candidates from a coding plan. Do not implement code or invent missing requirements.
+Select the next actionable OpenSpec change, or one set of changes that can all start concurrently, from a coding plan. Do not implement code or invent missing requirements.
 
 ## Inputs and boundaries
 
@@ -40,18 +40,29 @@ For each candidate, list `owns`, `reads`, and `depends_on`. Mark it safe for par
 
 Shared read-only directories are safe. If a conflict could be coordinated, make the work sequential or propose a smaller prerequisite change that establishes the shared boundary. Never recommend parallel changes that modify the same infrastructure or public model.
 
+## Selection rule
+
+Return exactly one non-empty selection:
+
+- Select a single change when it is the next unblocked slice, when it owns a shared prerequisite, or when no other candidate is pairwise safe to run with it.
+- Select multiple changes only when every pair is safe to start and merge independently under the parallelization assessment. They form one parallel set, not successive batches.
+- Do not include a change that depends on another selected change. Put it under deferred items and explain which selected change unlocks it.
+- Do not describe future execution batches. Run this skill again after the selected change or parallel set has merged to choose the next selection.
+
 ## Output
 
-Present recommended execution batches first, followed by candidate details. Recommend only one to three of the most valuable changes by default. Add more only when the plan is large enough and each batch remains understandable and verifiable by one developer.
+Present the selected change or parallel set first, followed by its details. State whether it is a single change or a parallel set. Every selected change must be understandable and verifiable by one developer.
 
 Use this format:
 
 ```markdown
-## Recommended batches
+## Selected change(s)
 
-| Batch | OpenSpec change | Goal | Parallelism | Prerequisites |
-| --- | --- | --- | --- | --- |
-| 1 | `verb-object` | Verifiable capability | Parallel with ... / sequential | None / specific condition |
+| OpenSpec change | Goal | Owns | Prerequisites |
+| --- | --- | --- | --- |
+| `verb-object` | Verifiable capability | Paths or shared boundary | None / specific condition |
+
+Selection: Single change / parallel set. Explain why every selected change is safe to start now.
 
 ## Change details
 
@@ -67,7 +78,7 @@ Use this format:
 
 ## Deferred items and blockers
 
-- `plan item`: Why it was not selected, or the specific decision/prerequisite change that unlocks it.
+- `plan item`: Why it was not selected now, or the specific selected change or decision that unlocks it.
 ```
 
 Use lowercase English kebab-case names, preferably `verb-object`, such as `add-report-export`. Name the capability, not the implementation layer.
