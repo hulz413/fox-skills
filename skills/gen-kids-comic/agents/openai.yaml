@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gen Kids Comic"
+  short_description: "生成适合三岁儿童的多页彩色连环画和逐格对白旁白"
+  default_prompt: "Use $gen-kids-comic to create a colorful 8-page Chinese comic for a three-year-old."
