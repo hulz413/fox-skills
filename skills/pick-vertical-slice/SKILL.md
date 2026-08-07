@@ -1,17 +1,29 @@
 ---
 name: pick-vertical-slice
-description: Select either one implementation-ready vertical slice or one set of pairwise parallel OpenSpec changes from a user-provided coding-plan Markdown document. Use when choosing the next OpenSpec change from a coding plan, or selecting multiple changes that can safely be developed concurrently in separate worktrees.
+description: Reconcile a coding plan's slice statuses with the current repository implementation, then select either one implementation-ready vertical slice or one set of pairwise parallel OpenSpec changes. Use when choosing the next OpenSpec change from a coding-plan Markdown document, or selecting multiple changes that can safely be developed concurrently in separate worktrees.
 ---
 
 # Pick Vertical Slice
 
-Select the next actionable OpenSpec change, or one set of changes that can all start concurrently, from a coding plan. Do not implement code or invent missing requirements.
+Audit and, when necessary, update the coding plan's implementation statuses before selecting the next actionable OpenSpec change or one set of changes that can all start concurrently. Do not implement code or invent missing requirements.
 
 ## Inputs and boundaries
 
-1. Obtain the coding-plan Markdown. If the user does not provide its path or contents, ask for it.
-2. In the plan's repository, read `AGENTS.md`, `CLAUDE.md`, existing `openspec/` artifacts, and relevant code to establish naming, specification, and test conventions. Treat the plan as intent, not proof of the current implementation.
+1. Obtain the coding-plan Markdown. If the user does not provide its path or contents, ask for it. Resolve a writable source document before starting when status reconciliation may need to persist changes.
+2. In the plan's repository, read `AGENTS.md`, `CLAUDE.md`, existing and archived `openspec/` artifacts, relevant code, tests, migrations, and recent history to establish conventions and implementation evidence. Treat the plan and task checkboxes as claims, not proof of the current implementation.
 3. Mark unresolved product decisions, external permissions, data migrations, interface contracts, or designs as prerequisites. Never represent assumptions as decided work.
+
+## Status reconciliation
+
+Complete this audit before assessing candidates:
+
+1. Enumerate every plan slice and its recorded implementation status.
+2. Trace each slice to its active or archived OpenSpec change, implementation, tests, migrations, and other acceptance evidence. Run the smallest relevant checks when practical. Use history only to locate or explain evidence; do not treat a commit message, an archived change, or checked tasks alone as proof of completion.
+3. Mark a slice `completed` only when its end-to-end outcome and required acceptance checks are present and passing in the current repository. Keep reverted or unverifiable work non-completed. Preserve the plan's existing status vocabulary. If it defines an active status, use it for confirmed partial or active work; when it only defines `pending` and `completed`, represent every non-completed state as `pending`.
+4. Compare the evidence-based status with every recorded status. If they differ, update only the affected status cells in the source coding-plan file before selection. Preserve row order, priorities, dependencies, descriptions, and unrelated content. Re-read the file and inspect the diff to verify the update.
+5. If a required update cannot be persisted, stop before selection and report the exact blocker. If evidence is insufficient, leave the status unchanged, state the uncertainty, and prevent that slice or any dependent candidate from being treated as unblocked.
+
+Use the reconciled plan as the sole status baseline for the remaining workflow. Exclude completed slices from candidate selection. Do not create or update OpenSpec artifacts during this audit.
 
 ## Slice criteria
 
@@ -42,16 +54,17 @@ Shared read-only directories are safe. If a conflict could be coordinated, make 
 
 ## Selection rule
 
-Return exactly one non-empty selection:
+After reconciliation, report that the plan is complete and return no selection when every slice is completed. Report the blocking prerequisites and return no selection when incomplete slices exist but none can start. Otherwise, return exactly one non-empty selection:
 
 - Select a single change when it is the next unblocked slice, when it owns a shared prerequisite, or when no other candidate is pairwise safe to run with it.
 - Select multiple changes only when every pair is safe to start and merge independently under the parallelization assessment. They form one parallel set, not successive batches.
 - Do not include a change that depends on another selected change.
+- Do not select a completed slice or a slice whose implementation status could not be verified enough to establish that its prerequisites are complete.
 - Do not describe future execution batches. Run this skill again after the selected change or parallel set has merged to choose the next selection.
 
 ## Output
 
-Present the selected change or parallel set first, followed by its details. State whether it is a single change or a parallel set. Every selected change must be understandable and verifiable by one developer.
+Present the selected change or parallel set first, followed by its details. State whether it is a single change or a parallel set. Every selected change must be understandable and verifiable by one developer. If status cells changed, add one concise note after the selection explanation naming the updated slices and their old and new statuses; do not add an audit report when no statuses changed.
 
 Write every user-facing heading, table header, label, explanation, and acceptance criterion in the primary language of the user's most recent message. Translate the template headings and labels below; they are semantic placeholders, not fixed English text. Keep only code identifiers, paths, commands, and OpenSpec change names in English.
 
