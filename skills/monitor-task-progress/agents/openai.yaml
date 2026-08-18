@@ -1,0 +1,4 @@
+interface:
+  display_name: "Monitor Task Progress"
+  short_description: "Monitor a task continuously until it stops"
+  default_prompt: "Use $monitor-task-progress to monitor the target task continuously until it stops and notify me only about meaningful changes."
