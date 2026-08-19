@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Create a resumable checkpoint for the current task"
+  default_prompt: "Use $handoff to create a resumable checkpoint for my current task."
