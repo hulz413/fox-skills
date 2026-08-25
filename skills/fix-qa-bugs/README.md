@@ -11,7 +11,9 @@ The dedicated task re-verifies the Bug, decides whether a code change is necessa
 - Uses Chrome's `brandpal.ai Work Profile`; all Yunxiao access is read-only except the selected Bug's post-creation status transition to `In Progress`.
 - Reuses the existing checkout, lists clickable links for tasks that may conflict, and requires an explicit user decision before accepting same-checkout write risk.
 - Creates at most one task per invocation and prevents worker recursion with an internal context marker.
-- Creates the dedicated task with a Chinese title, a readable Bug link plus one- or two-sentence TL;DR, and only the minimal internal routing context; the worker communicates and reports in Chinese.
+- Reads each leading candidate's complete Bug details and comment threads before dispatch so stale descriptions or later QA/product decisions can change whether it should be repaired.
+- Creates the dedicated task with `gpt-5.6-sol` and `high` reasoning, a Chinese title, a readable Bug link, routing instructions, and a complete Bug/comment snapshot; the worker normally performs only a lightweight freshness check and generates the first TL;DR in its opening response.
+- When the user explicitly authorizes isolated batch coordination and names a local final branch, rebases each validated Bug branch onto the latest final-branch tip and integrates it with `git merge --ff-only` before cleaning up its temporary worktree.
 - Never pushes, creates a PR, deploys, or updates any Yunxiao field other than the selected Bug's post-creation `In Progress` transition.
 
 ## Installation
