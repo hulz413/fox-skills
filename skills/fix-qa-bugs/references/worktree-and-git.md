@@ -5,7 +5,7 @@
 - The dedicated task reuses the current saved project's local checkout. It does not create or switch worktrees or branches.
 - Do not fetch, pull, rebase, merge, or force-push.
 - Do not stash, clean, reset, or revert pre-existing work.
-- The dispatcher remains read-only. Only the dedicated worker may edit Bug-scoped files.
+- The dispatcher remains read-only in the local repository and product code. Its only external write is the selected Bug's post-creation `In Progress` transition defined in [project and Projex selection rules](projex.md). Only the dedicated worker may edit Bug-scoped files.
 
 ## Before editing
 

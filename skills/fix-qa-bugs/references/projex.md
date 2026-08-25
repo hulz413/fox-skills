@@ -11,9 +11,17 @@
 
 These Yunxiao identifiers were observed on 2026-08-21 and must be verified at runtime.
 
+## Session-scoped identity reuse
+
+Perform the full three-way identity check on the fixed dispatcher's first invocation. On later `继续下一个 Bug` requests in the same dispatcher conversation, reuse the verified local repository, Codex project, Projex project, and organization identity when no evidence indicates that any of them changed.
+
+Do not repeat the full check merely because a new Bug is being dispatched or time has passed. Repeat only the affected part when the cwd or repository changes, the Codex project changes, active Projex navigation points to another or ambiguous project or organization, authentication switches to a different browser context, cached values conflict with current evidence, or the user requests a full refresh.
+
+Bug queue contents, Bug status, task ownership, and checkout conflicts are volatile and must still be refreshed for every dispatch. In the dispatcher report, distinguish identity reused from this conversation from volatile state refreshed now.
+
 ## Mandatory identity check
 
-Perform this check before opening or refreshing the Bug list:
+When no reusable session identity exists, perform this check before opening or refreshing the Bug list:
 
 1. Resolve the current Git repository root and project name. Stop unless the root is the fixed feelinsonice repository above.
 2. Use the Codex project list to resolve the current task's saved project. Stop unless its local path resolves to the same repository root.
@@ -51,6 +59,19 @@ The `priority` field values observed on 2026-08-21 were:
 
 `New` was status ID `28` and `Closed` was `100085` on that date. Status workflows can change. Read current metadata and decide whether development work is still required rather than hard-coding `New` as the only eligible state or treating every non-closed item as eligible.
 
+## Post-dispatch status transition
+
+After `create_thread` returns a real `threadId` and an immediate task snapshot confirms that the dedicated task started, queued, or needs attention, re-read the same Bug and update only its status to `In Progress`.
+
+The dispatch request, together with any required approval for the exact displayed checkout-conflict set, is standing authorization for this one status transition. Do not pause for or request another user confirmation between task creation and the status update. This authorization does not cover comments, assignment changes, or any other Yunxiao write.
+
+1. Never change the Bug before the dedicated task is confirmed. A failed or unresolved task creation leaves Yunxiao unchanged.
+2. Verify the project, work-item identifier, serial number, assignee, and current status immediately before the write.
+3. If the Bug already shows `In Progress`, treat the operation as idempotently complete and do not submit another write.
+4. If the Bug remains in a development-ready non-terminal status such as `New` or `Reopen`, select the current workflow's visible `In Progress` option. Resolve it from live metadata or UI text; do not hard-code a status ID.
+5. If the Bug became fixed, resolved, pending verification, closed, archived, moved to another project, or assigned away, do not change it. Keep the created task, report the new live state, and rely on the worker's mandatory live recheck to stop inappropriate implementation.
+6. Verify the persisted or visibly selected status after submission. If the update fails or cannot be verified, report the created task and the unchanged or unknown Bug status. Do not change another field, create another task, or blindly repeat the write.
+
 ## Required Bug detail
 
 The dispatcher reads and passes:
@@ -65,8 +86,8 @@ The worker must re-read all of these fields live. Missing expected behavior requ
 
 Whenever a Bug is presented in ordinary response text, use `[FISN-000: Full Bug title](<detail URL>)`. Keep Markdown links out of structured confirmation headers and questions; place the clickable Bug link in the response body immediately before the confirmation instead.
 
-## Read-only boundary
+## Yunxiao access boundary
 
 Use an existing least-privilege `x-yunxiao-token` with the official search API only when one is already available. Otherwise use Chrome's signed-in state. Never create a long-lived token or extract browser credentials.
 
-Do not post comments or change any Yunxiao field.
+All queue inspection and dedicated-worker access remain read-only. The dispatcher may perform only the post-creation transition of the selected Bug's status to `In Progress`. Do not post comments or change assignment, verifier, priority, severity, description, attachments, relations, or any other Yunxiao field.

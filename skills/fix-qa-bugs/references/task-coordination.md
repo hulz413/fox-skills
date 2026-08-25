@@ -34,54 +34,40 @@ Do not interpret silence, a prior approval for a different conflict set, or clic
 2. Call `create_thread` with that project and `environment: { type: "local" }`. This is an explicit requirement to reuse the current checkout; do not request a worktree environment.
 3. Omit model and thinking overrides.
 4. Use the Chinese title `修复 <Bug number>：<short Chinese title>`. The exact Bug number is mandatory.
-5. Put a clickable Markdown link with the exact Bug number and full title near the beginning of the initial message, before the machine-readable context block.
-6. Task creation is asynchronous. Use one bounded `wait_threads` call or immediate snapshot to confirm that it started, queued, or needs attention. Then stop dispatcher mode.
+5. Put a clickable Markdown link with the exact Bug number and full title near the beginning of the initial message. Immediately follow it with a synthesized one- or two-sentence `TL;DR`; do not paste or enumerate the Bug description fields.
+6. Task creation is asynchronous. Use one bounded `wait_threads` call or immediate snapshot to confirm that it started, queued, or needs attention.
+7. Only after that confirmation, perform the selected Bug's post-dispatch `In Progress` transition from [project and Projex selection rules](projex.md). Then stop dispatcher mode after reporting both outcomes.
 
 If local task creation fails, report it. Do not repair the Bug in the dispatcher and do not fall back to another worktree.
 
 ## Worker prompt contract
 
-Pass a cohesive initial prompt with this structure:
+Keep the user-visible initial prompt short. It is a routing handoff, not a dump of the dispatcher's evidence. Pass this structure:
 
 ```text
 使用 $fix-qa-bugs 的 dedicated-worker 模式只处理下面这一个 Bug。不要读取 Bug 队列，不要创建或联系其他任务。全程使用中文沟通、分析和汇报。
 
 要修复的 Bug：[FISN-000: <完整 Bug 标题>](<Projex detail URL>)
 
+TL;DR：<用一到两句自然语言综合说明触发条件、错误表现、预期行为和主要影响；不要照搬标题或逐项复述字段>
+
 FIX_QA_BUGS_WORKER_CONTEXT
 serial_number: FISN-000
 workitem_id: <unique Projex identifier>
 title: <Bug title>
 detail_url: <Projex detail URL>
-priority: <priority>
-severity: <severity>
-status: <status at dispatch time>
-assignee: <assignee>
-verifier: <verifier>
 repository: /Users/hulz/Developer/brandpal/projects/feelinsonice
-dispatch_branch: <branch>
-dispatch_head: <commit SHA>
-dispatch_dirty_paths: <exact paths or none>
-preconditions: <facts>
-steps: <reproduction steps>
-expected: <expected result>
-actual: <actual result>
-attachments: <names and relevant visible evidence>
-comments_and_activity: <summary>
-related_items: <summary>
-same_checkout_conflicts: <task titles, thread IDs, and overlap warnings, or none>
+approved_conflict_thread_ids: <thread IDs approved by the user, or none>
 END_FIX_QA_BUGS_WORKER_CONTEXT
 
-任务启动后先读取线上 Bug 内容、附件、评论和活动记录，再用中文向用户简要说明问题、复现条件、预期与实际结果及影响，并区分已确认事实和不确定项。如果不确定项会影响预期行为、复现、范围或验收，先请用户补充并等待回复；信息明确后，再简要说明初步修复思路和验证方向，不要把未经代码验证的根因当成事实。
-
-完成修复必要性评估并定位根因后，在首次代码改动前用中文精简说明最终修复方案，包括所选路线及原因、准备修改的内容和影响范围、聚焦验证方式。Direct fix 说明后可直接实现；Plan 或 OpenSpec/spec-driven development 仍遵守对应的方案审批门槛。随后完成最小范围修复、聚焦回归检查、本地验收和一次范围明确的本地提交。复用当前 checkout，保留所有无关改动。如果目标已不再需要开发处理、预期行为不明确，或无法把改动与同一 checkout 中的其他任务安全分离并精确暂存，立即停止且不要选择其他 Bug。
+进入任务后按 dedicated-worker 流程执行：先在线复核并用 TL;DR 回复；影响验收的不确定项先询问；首次代码改动前精简说明最终修复方案；随后完成最小修复、聚焦验证和一次范围明确的本地提交。复用当前 checkout 并保留所有无关改动，无法安全分离时立即停止。
 ```
 
-Use `none` for genuinely missing fields and never invent values. For large attachments, pass metadata, relevant visible evidence, and the original detail URL rather than binary content.
+The dispatcher still reads the complete Bug and checkout/task state for selection and safety, but does not copy those details into the new task. The worker re-reads the live Bug, records the live checkout state, and resolves the approved conflict task IDs before assessment. Use `none` for a genuinely missing minimal field and never invent values.
 
 Build the visible Bug link from the same exact `serial_number`, full `title`, and `detail_url` values used in the context block. Do not omit it merely because `detail_url` is also present as a field.
 
-Keep the exact marker and field keys unchanged. Write all narrative field values, surrounding instructions, and task responses in Chinese; preserve identifiers, paths, URLs, command names, and source text that must remain exact.
+Keep the exact marker and minimal field keys unchanged. Write the TL;DR, surrounding instructions, and task responses in Chinese; preserve identifiers, paths, URLs, command names, and source text that must remain exact.
 
 The marker selects worker mode; it does not make the dispatch snapshot authoritative. The worker re-verifies live external and local state.
 
@@ -94,5 +80,6 @@ Report:
 - the selected Bug as `[FISN-000: Full Bug title](<detail URL>)`, plus priority, assignee, and status;
 - each same-checkout conflict as `[Task title](codex://threads/<thread_id>)`, the overlap risk, and the user's decision;
 - the exact new Chinese task title, creation status, and clickable `[Task title](codex://threads/<thread_id>)` link.
+- the Bug's live status after the post-dispatch transition, or the exact reason it was skipped or could not be verified.
 
 Emit the app-required `::created-thread` directive after successful creation. Do not claim that code changes have started or that the Bug is fixed.
