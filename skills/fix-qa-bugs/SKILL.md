@@ -1,6 +1,6 @@
 ---
 name: fix-qa-bugs
-description: Select one unowned, development-ready QA Bug from the feelinsonice Yunxiao Projex queue, create a dedicated Codex task in the current checkout, and have that task assess, fix, validate, and commit the Bug. Also handles the internal dedicated-worker mode. Do not use for batch dispatch, PRs, deployment, or Yunxiao updates.
+description: Select one unowned, development-ready QA Bug from the feelinsonice Yunxiao Projex queue, create a Chinese-language dedicated Codex task in the current checkout, and have that task assess, fix, validate, and commit the Bug. Also handles the internal dedicated-worker mode. Do not use for batch dispatch, PRs, deployment, or Yunxiao updates.
 ---
 
 # Fix QA Bugs
@@ -28,9 +28,10 @@ Neither mode may push, create a PR, merge, deploy, or write back to Yunxiao.
 3. Verify the local Git project, current Codex project, and currently selected Projex project before reading the Bug queue. Stop on any mismatch.
 4. Read all development-ready Bug candidates and all relevant unfinished Codex tasks.
 5. Exclude Bugs owned by unfinished dedicated repair tasks, then select the first remaining candidate by priority and current page order.
-6. Recheck task ownership immediately before creation to reduce duplicate dispatch races.
-7. Create one dedicated Codex task in the current project using the existing local checkout, pass the required context, and confirm that the task was accepted or queued.
-8. Report the exclusions, selected Bug, and created task, then stop. Do not wait for completion unless the user separately asks to monitor it.
+6. Detect unfinished tasks that may write to the same checkout. If any exist, show their clickable task links and the selected Bug link in the response body, explain the overlap risk, and ask the user whether to continue. Never navigate to a conflicting task automatically. Continue only after explicit approval for the displayed conflict set.
+7. Recheck Bug ownership and same-checkout conflicts immediately before creation to reduce duplicate dispatch and write races. Ask again if a new conflict appears.
+8. Create one dedicated Codex task in the current project using the existing local checkout, pass the required context, and confirm that the task was accepted or queued. Use a Chinese task title, initial prompt, and response requirement. Near the beginning of the initial message, include the selected Bug as a clickable `[FISN-000: Full Bug title](<detail URL>)` link.
+9. Report the exclusions, selected Bug, conflicts and decision, and created task with clickable links, then stop. Do not wait for completion unless the user separately asks to monitor it.
 
 Dispatcher mode may read Yunxiao, Codex task state, and local Git state. It must not inspect product code for the selected Bug, run repair tests, edit files, or create backup tasks.
 
@@ -45,6 +46,17 @@ Dispatcher mode may read Yunxiao, Codex task state, and local Git state. It must
 
 If the Bug has already been fixed, resolved, sent to QA, closed, or archived, stop without selecting another Bug.
 
+## Worker opening response
+
+At the start of the dedicated task, read the live Bug details and available evidence before inspecting or changing product code. Then give the user a concise Chinese opening response that:
+
+- links the Bug and summarizes the observed problem, reproduction conditions, expected behavior, actual behavior, and user impact in plain language;
+- distinguishes confirmed facts from assumptions or missing information;
+- asks the user to supplement any uncertainty that affects expected behavior, reproduction, scope, or acceptance, and waits for the answer before continuing;
+- when the information is sufficient, outlines the preliminary repair direction and likely validation approach without presenting an unverified root cause as fact.
+
+If clarification is required, provide the preliminary repair direction only after the user answers. This opening direction is provisional: refine it after code inspection and root-cause analysis, then give the separate pre-implementation repair brief before the first code edit.
+
 ## Necessity assessment
 
 Stay read-only until this assessment is complete:
@@ -57,6 +69,16 @@ Stay read-only until this assessment is complete:
 6. If expected behavior, reproduction conditions, product trade-offs, or scope remain ambiguous or contradictory, ask the user before implementation.
 
 When a required decision has two or three mutually exclusive choices, prefer `request_user_input` with the recommended option first. Do not enter implementation before the user answers.
+
+## Pre-implementation repair brief
+
+After concluding `needs fix` and locating the root cause, but before the first code edit, give the user a concise Chinese repair brief. State:
+
+- the selected route and why;
+- the intended change and affected scope;
+- the focused validation approach.
+
+Keep this to one short paragraph or a few bullets. For a direct fix, this is an informational checkpoint and does not add another approval gate. For Plan or OpenSpec/spec-driven development, it may serve as the compact introduction to the route's required plan or proposal, and the existing approval gate still applies.
 
 ## Complexity routing
 
@@ -94,11 +116,11 @@ Use when the fix must define or change product behavior, a cross-service or publ
 
 ## Dedicated repair sequence
 
-1. Re-read the Bug number, title, URL, priority, severity, assignee, verifier, status, full description, attachments, comments, activity, and related items.
+1. Re-read the Bug number, title, URL, priority, severity, assignee, verifier, status, full description, attachments, comments, activity, and related items, then provide the required worker opening response.
 2. Record the current repository root, branch, `HEAD`, staged changes, unstaged changes, and untracked files.
 3. Complete the necessity assessment. Stop on `no fix needed`; ask the user on `user decision required`.
-4. Select and follow the appropriate complexity route.
-5. Reproduce and locate the root cause. Follow the root and relevant nested `CLAUDE.md` files. Do not add demo data, silent fallbacks, unrelated compatibility code, or opportunistic cleanup.
+4. Reproduce and locate the root cause. Follow the root and relevant nested `CLAUDE.md` files. Do not add demo data, silent fallbacks, unrelated compatibility code, or opportunistic cleanup.
+5. Select the appropriate complexity route and give the pre-implementation repair brief before any code edit, then follow that route and its approval rules.
 6. Prefer a regression test that fails before the fix and passes afterward. If automation is not practical, explain why and record exact manual reproduction and acceptance steps.
 7. Re-read live Bug status immediately before the first code edit. Stop if it no longer needs development work.
 8. Run focused regression tests plus affected lint, type checks, and integration checks. Do not substitute unrelated passing tests for Bug evidence.
@@ -111,7 +133,7 @@ Stop and report instead of bypassing any of these conditions:
 
 - The local Git project, current Codex project, and selected Projex project do not match exactly.
 - Dispatcher mode cannot list or inspect relevant Codex tasks, so ownership cannot be established.
-- The current local checkout already has an unfinished dedicated QA repair task that may write to it.
+- Same-checkout write conflicts exist and the user declines or has not explicitly approved continuing after seeing the exact conflict task links and risk.
 - The current project cannot be uniquely resolved for local task creation.
 - The dedicated task cannot be created in the existing local checkout.
 - The Bug involves destructive database migration, permissions, security, secrets, billing, or irreversible data changes.
@@ -122,6 +144,13 @@ Stop and report instead of bypassing any of these conditions:
 
 ## Reporting
 
-The dispatcher reports the project identity check, excluded Bugs and their exact owning task titles, the selected Bug number/title/priority/assignee/status, and the new task title and creation result.
+The dispatcher reports the project identity check, excluded Bugs and their exact owning task titles, the selected Bug number/title/priority/assignee/status, any same-checkout conflict tasks and the user's decision, and the new task title and creation result.
 
-The worker reports the Bug number/title/priority/assignee/status, necessity conclusion and evidence, complexity route, root cause, changed scope, branch, local commit SHA, tests actually run, and any blocker. Claim `fixed locally` only after local acceptance and commit. Never claim deployment or online acceptance.
+Use clickable Markdown links in ordinary response text:
+
+- Bug: `[FISN-343: Full Bug title](https://devops.aliyun.com/projex/bug/<workitem_id>)`
+- Codex task: `[Task title](codex://threads/<thread_id>)`
+
+Keep structured confirmation headers and questions as plain text without Markdown links, for example `是否仍要创建 FISN-343 修复任务？`. Put all clickable links in the response body immediately before the confirmation. Never open or navigate to a task on the user's behalf merely to present a conflict.
+
+The worker communicates and reports in Chinese. It reports the Bug number/title/priority/assignee/status, necessity conclusion and evidence, complexity route, root cause, changed scope, branch, local commit SHA, tests actually run, and any blocker. Claim `fixed locally` only after local acceptance and commit. Never claim deployment or online acceptance.

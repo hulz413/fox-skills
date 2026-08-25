@@ -8,8 +8,9 @@ The dedicated task re-verifies the Bug, decides whether a code change is necessa
 
 - Verifies that the local Git repository, current Codex project, and currently selected Yunxiao project all identify feelinsonice before reading the queue.
 - Uses Chrome's `brandpal.ai Work Profile` for read-only Yunxiao access.
-- Reuses the existing checkout and serializes workers that could write to it.
+- Reuses the existing checkout, lists clickable links for tasks that may conflict, and requires an explicit user decision before accepting same-checkout write risk.
 - Creates at most one task per invocation and prevents worker recursion with an internal context marker.
+- Creates the dedicated task with a Chinese title and initial prompt, and requires the worker to communicate and report in Chinese.
 - Never pushes, creates a PR, deploys, or updates Yunxiao.
 
 ## Installation

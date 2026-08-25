@@ -63,6 +63,8 @@ The dispatcher reads and passes:
 
 The worker must re-read all of these fields live. Missing expected behavior requires product or QA clarification; do not silently turn a Bug into a product requirement.
 
+Whenever a Bug is presented in ordinary response text, use `[FISN-000: Full Bug title](<detail URL>)`. Keep Markdown links out of structured confirmation headers and questions; place the clickable Bug link in the response body immediately before the confirmation instead.
+
 ## Read-only boundary
 
 Use an existing least-privilege `x-yunxiao-token` with the official search API only when one is already available. Otherwise use Chrome's signed-in state. Never create a long-lived token or extract browser credentials.
