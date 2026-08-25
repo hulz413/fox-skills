@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix QA Bugs"
+  short_description: "Dispatch one unowned QA Bug to a dedicated repair task"
+  default_prompt: "Use $fix-qa-bugs to select the next unowned feelinsonice QA Bug and create a dedicated repair task in the current checkout."
