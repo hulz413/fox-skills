@@ -93,7 +93,11 @@ Order the next steps for execution and make the first item concrete enough to st
 
 ## Report completion
 
-After a successful write, report the absolute checkpoint path and checkpoint identifier. End with a standalone code block containing only the following line, replacing the placeholders with the actual absolute path:
+After a successful write, report the absolute checkpoint path and checkpoint identifier. Immediately before the command block, convey the following instruction in the user's current language:
+
+Start a new task in the same project, then copy and send the command below to restore the context.
+
+End with a standalone code block containing only the following line, replacing the placeholders with the actual absolute path:
 
 ```text
 $pickup /tmp/agents/checkpoints/checkpoint-{title}-{date}-{time}.md
