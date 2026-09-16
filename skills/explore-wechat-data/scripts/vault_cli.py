@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Unified read-only query CLI for the decrypted explore-wechat-data.
+Unified read-only query CLI for the decrypted wechat-local-vault.
 
-This script intentionally reads only the local decrypted vault produced by
-decrypt_all_dbs.py. It does not touch the WeChat UI, does not send messages,
-and does not modify WeChat databases.
+Mac commands read the local decrypted vault produced by decrypt_all_dbs.py.
+The explicit snapshot subcommand uses a separately validated plaintext snapshot.
+It does not touch the WeChat UI, send messages, or modify WeChat databases.
 """
 
 from __future__ import annotations
@@ -20,16 +20,19 @@ import sqlite3
 import sys
 from xml.etree import ElementTree as ET
 
+from wechat_schema import message_columns as shared_message_columns
+from wechat_schema import message_table as shared_message_table
+
 try:
     import zstandard as zstd
 except Exception:  # pragma: no cover - optional runtime dependency
     zstd = None
 
 
-CONFIG_FILE = Path("~/.config/explore-wechat-data.json").expanduser()
-DEFAULT_VAULT_DIR = Path("~/Developer/playground/wechat/wechat-local-vault").expanduser()
+CONFIG_FILE = Path("~/.config/wechat-local-vault.json").expanduser()
+DEFAULT_VAULT_DIR = Path("~/Library/Application Support/wechat-local-vault").expanduser()
 DEFAULT_DECRYPTED_DIR = DEFAULT_VAULT_DIR / "decrypted/current"
-DEFAULT_EXPORTS_DIR = Path("~/Developer/playground/wechat/wechat-local-vault/exports").expanduser()
+DEFAULT_EXPORTS_DIR = DEFAULT_VAULT_DIR / "exports"
 STATE_FILE = DEFAULT_VAULT_DIR / "state/vault_cli_last_check.json"
 
 ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
@@ -285,7 +288,7 @@ def message_dbs(decrypted_dir: Path) -> list[Path]:
 
 
 def message_table(username: str) -> str:
-    return "Msg_" + hashlib.md5(username.encode()).hexdigest()
+    return shared_message_table(username)
 
 
 def load_name2id(con: sqlite3.Connection) -> dict[int, str]:
@@ -328,23 +331,7 @@ def username_for_table_from_contacts(table: str, contacts: dict[str, dict]) -> s
 
 
 def message_columns(con: sqlite3.Connection, table: str) -> dict[str, str]:
-    columns = table_columns(con, table)
-    result = {}
-    for key, choices in {
-        "local_id": ("local_id", "id", "rowid"),
-        "server_id": ("server_id",),
-        "local_type": ("local_type", "type"),
-        "create_time": ("create_time", "timestamp"),
-        "real_sender_id": ("real_sender_id", "sender_id"),
-        "message_content": ("message_content", "content"),
-        "compress_content": ("compress_content", "WCDB_CT_message_content"),
-        "compression_flag": ("WCDB_CT_message_content",),
-    }.items():
-        for choice in choices:
-            if choice == "rowid" or choice in columns:
-                result[key] = choice
-                break
-    return result
+    return shared_message_columns(table_columns(con, table), legacy_mac=True)
 
 
 def build_select_sql(table: str, cols: dict[str, str], start_ts: int | None, end_ts: int | None, keyword: str | None, type_name: str | None, limit: int | None, offset: int = 0) -> tuple[str, list]:
@@ -1004,7 +991,7 @@ def command_digest_source(args: argparse.Namespace) -> None:
     if not group or not group.get("is_group"):
         raise SystemExit(f"找不到群聊: {args.group}")
 
-    data_root = Path(args.data_root).expanduser() if args.data_root else Path("~/Developer/playground/wechat/wechat-digests").expanduser()
+    data_root = Path(args.data_root).expanduser() if args.data_root else DEFAULT_VAULT_DIR / "digests"
     folder = digest_folder(data_root, group)
     folder.mkdir(parents=True, exist_ok=True)
     for child in ("profiles", "profiles-roast", "imgs", "sources"):
@@ -1247,9 +1234,10 @@ def render_moments_text(posts: list[dict]) -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Query the decrypted explore-wechat-data.")
+    parser = argparse.ArgumentParser(description="Query the local Mac vault or an explicit Windows plaintext snapshot.")
     parser.add_argument("--decrypted-dir", help="覆盖明文 vault 目录")
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("snapshot", help="Windows 离线明文快照；snapshot --help 查看用法")
 
     p = sub.add_parser("status", help="查看 vault 可用数据库")
     p.add_argument("--format", choices=["json", "text"], default="text")
@@ -1327,7 +1315,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--start", help="开始时间 YYYY-MM-DD [HH:MM[:SS]]")
     p.add_argument("--end", help="结束时间 YYYY-MM-DD [HH:MM[:SS]]")
     p.add_argument("--since-last", action="store_true", help="优先从该群 history.json 的上次摘要时间继续")
-    p.add_argument("--data-root", help="摘要归档根目录，默认当前项目的 wechat/")
+    p.add_argument("--data-root", help="摘要归档根目录，默认本地 wechat-local-vault/digests/")
     p.add_argument("--limit", type=int, default=5000)
     p.add_argument("--media", action="store_true", help="尝试附带本地文件路径提示")
     p.add_argument("--format", choices=["json", "text"], default="json")
@@ -1352,11 +1340,21 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None) -> int | None:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "snapshot":
+        # Route before parsing Mac options or loading any Mac configuration.
+        import snapshot_reader
+        return snapshot_reader.main(arguments[1:])
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
+    if args.command == "snapshot":
+        parser.error("snapshot 必须是第一个参数，不能与 Mac --decrypted-dir 混用")
+    if sys.platform == "win32":
+        parser.error("Windows 数据请使用 snapshot --snapshot <目录>；Mac 工作流不能在 Windows 自动运行")
     args.func(args)
+    return None
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    raise SystemExit(main(sys.argv[1:]))

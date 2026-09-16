@@ -3,7 +3,7 @@
 Export one WeChat conversation from the decrypted local vault.
 
 This script never reads WeChat UI. It only reads decrypted SQLite files under:
-  ~/Developer/playground/wechat/wechat-local-vault/decrypted/current
+  ~/Library/Application Support/wechat-local-vault/decrypted/current
 
 Examples:
   python3 export_chat.py --contact "联系人备注"
@@ -23,10 +23,10 @@ import re
 import sqlite3
 import zstandard as zstd
 
-CONFIG_FILE = Path("~/.config/explore-wechat-data.json").expanduser()
-DEFAULT_VAULT_DIR = Path("~/Developer/playground/wechat/wechat-local-vault").expanduser()
+CONFIG_FILE = Path("~/.config/wechat-local-vault.json").expanduser()
+DEFAULT_VAULT_DIR = Path("~/Library/Application Support/wechat-local-vault").expanduser()
 DEFAULT_DECRYPTED_DIR = DEFAULT_VAULT_DIR / "decrypted/current"
-DEFAULT_EXPORTS_DIR = Path("~/Developer/playground/wechat/wechat-local-vault/exports").expanduser()
+DEFAULT_EXPORTS_DIR = DEFAULT_VAULT_DIR / "exports"
 EXPORT_STATE_FILE = DEFAULT_VAULT_DIR / "state/export_chat_state.json"
 
 MESSAGE_DBS = [

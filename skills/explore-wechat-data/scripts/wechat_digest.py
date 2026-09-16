@@ -12,9 +12,9 @@ import zstandard as zstd
 PAGE_SIZE = 4096
 RESERVE = 80
 IV_SIZE = 16
-KEYS_FILE = os.path.expanduser("~/.config/explore-wechat-data-keys.json")
-CONFIG_FILE = os.path.expanduser("~/.config/explore-wechat-data.json")
-TMP_DIR = os.path.expanduser("~/Developer/playground/wechat/wechat-local-vault/tmp")
+KEYS_FILE = os.path.expanduser("~/.config/wechat-keys.json")
+CONFIG_FILE = os.path.expanduser("~/.config/wechat-local-vault.json")
+TMP_DIR = os.path.expanduser("~/Library/Application Support/wechat-local-vault/tmp")
 
 MSG_TYPE_LABELS = {
     1: None,           # 文本
@@ -44,7 +44,7 @@ def load_config(config_path=None):
         "db_base_path": None,
         "monitor_groups": [],
         "monitor_contacts": [],
-        "report_dir": os.path.expanduser("~/Developer/playground/wechat/wechat-local-vault"),
+        "report_dir": os.path.expanduser("~/Library/Application Support/wechat-local-vault/reports"),
         "time_mode": "8am_to_8am",
     }
 
@@ -58,13 +58,13 @@ def get_db_base(config):
             f"~/Library/Containers/com.tencent.xinWeChat/Data/Documents/"
             f"xwechat_files/{config['wxid']}/db_storage"
         )
-    print("[ERROR] 未配置 wxid 或 db_base_path，请先运行 extract_keys.py 或配置 ~/.config/explore-wechat-data.json")
+    print("[ERROR] 未配置 wxid 或 db_base_path，请先运行 extract_keys.py 或配置 ~/.config/wechat-local-vault.json")
     return None
 
 
 def get_report_dir(config):
     """获取报告输出目录"""
-    return os.path.expanduser(config.get("report_dir", "~/Developer/playground/wechat/wechat-local-vault"))
+    return os.path.expanduser(config.get("report_dir", "~/Library/Application Support/wechat-local-vault/reports"))
 
 
 # === 基础工具 ===

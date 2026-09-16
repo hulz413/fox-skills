@@ -22,9 +22,9 @@ from Crypto.Cipher import AES
 PAGE_SIZE = 4096
 RESERVE = 80
 IV_SIZE = 16
-KEYS_FILE = os.path.expanduser("~/.config/explore-wechat-data-keys.json")
-CONFIG_FILE = os.path.expanduser("~/.config/explore-wechat-data.json")
-TMP_DIR = os.path.expanduser("~/Developer/playground/wechat/wechat-local-vault/tmp")
+KEYS_FILE = os.path.expanduser("~/.config/wechat-keys.json")
+CONFIG_FILE = os.path.expanduser("~/.config/wechat-local-vault.json")
+TMP_DIR = os.path.expanduser("~/Library/Application Support/wechat-local-vault/tmp")
 
 
 def load_json(path):

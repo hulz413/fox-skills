@@ -1,7 +1,7 @@
 ---
 name: explore-wechat-data
 description: |
-  微信 Mac 4.x 本地数据库全量/增量解析与数字资产库。用于本机微信聊天记录、联系人、群聊、朋友圈、收藏夹、语音/附件索引的密钥提取、全量解密、增量刷新、指定联系人/群聊导出、关系复盘、客户跟进和内容沉淀。触发词：微信解析、微信全量、微信增量、聊天记录、导出聊天、朋友圈解析、收藏夹解析、客户跟进、explore-wechat-data。
+  微信本地数字资产库：Mac 4.x 全量/增量解析，以及实验性的 Windows 已解密离线快照查询。Windows 快照必须走 snapshot 子命令，不触发 Mac 增量刷新。Mac 模式用于本机微信聊天记录、联系人、群聊、朋友圈、收藏夹、语音/附件索引的密钥提取、全量解密、增量刷新、指定联系人/群聊导出、关系复盘、客户跟进和内容沉淀。触发词：微信解析、微信全量、微信增量、聊天记录、导出聊天、朋友圈解析、收藏夹解析、客户跟进、explore-wechat-data。
 ---
 
 # 微信本地解析 Vault
@@ -17,10 +17,17 @@ description: |
 
 - 不在回复或日志里输出 key、完整 salt、wxid、原始聊天库内容，除非用户明确要求展示。
 - 密钥、配置、明文库、manifest、增量状态和导出目录都由本机配置文件管理；skill 文档不要写入任何个人机器的真实绝对路径、wxid、联系人或聊天内容。
-- 密钥和解密配置放在 `~/.config/`；明文库、manifest、增量状态和临时解密文件默认放在专用的 `~/Developer/playground/wechat/wechat-local-vault/` 目录；可读报告放在对应的 exports 或摘要目录。
-- 不要把明文数据库复制到其他项目工作区、桌面、网盘目录或聊天回复里；专用微信数据目录只供本 skill 使用。
+- 建议把密钥和明文库放在本机私有应用数据目录，把可读报告放在用户自选的导出目录；路径以占位符或配置字段说明即可。
+- 不要把明文数据库复制到项目工作区、桌面、网盘目录或聊天回复里；工作区只放用户明确要求的导出报告。
 
-## 自动选择模式
+## 先确定数据来源
+
+- **Mac 当前账号 / 本机聊天 / 增量刷新**：沿用下文的 Mac 工作流和现有 `vault_cli.py` 命令。
+- **用户提供的 Windows 离线明文快照**：阅读 [Windows 快照模式](references/windows-snapshot.md)，使用 `vault_cli.py snapshot --snapshot <目录> ...`。先 `validate`，再 `chats` 选出精确 `chat_id`，最后查询或导出。不要求另装独立 Windows Skill。
+- Windows 模式只支持 `validate`、`chats`、`history`、`search` 和 Markdown `export`；不支持密钥提取、解密、增量刷新、朋友圈/收藏正文解析。缺少快照、schema 不兼容或有 WAL/SHM 时停止并说明缺口，不尝试 Mac 流程或自动补齐快照。
+- 快照源系统由用户提供的信息确定，不根据当前运行的是 Mac 还是 Windows 猜测。可以在 Mac 上分析已授权的 Windows 明文快照，但真实 Windows 微信版本兼容性仍为实验性。
+
+## Mac 模式：自动选择模式
 
 根据用户指令选最小必要动作：
 
@@ -34,7 +41,7 @@ description: |
 
 ## 统一查询入口
 
-日常查询优先使用 `scripts/vault_cli.py`。它只读已解密 vault，不抓 key、不碰微信 UI。
+日常查询优先使用 `scripts/vault_cli.py`。Mac 命令只读已解密 vault；Windows 快照使用 `snapshot` 子命令，详见 [Windows 快照模式](references/windows-snapshot.md)。查询入口不抓 key、不碰微信 UI。
 
 ```bash
 python3 {{SKILL_DIR}}/scripts/vault_cli.py status --format text
@@ -59,7 +66,7 @@ python3 {{SKILL_DIR}}/scripts/vault_cli.py moments --name "联系人" --start "2
 
 ```bash
 python3 {{SKILL_DIR}}/scripts/vault_cli.py digest-source "群名" --start "2026-05-01" --end "2026-05-14" --format text
-python3 {{SKILL_DIR}}/scripts/vault_cli.py digest-source "群名" --since-last --data-root ~/Developer/playground/wechat/wechat-digests --format text
+python3 {{SKILL_DIR}}/scripts/vault_cli.py digest-source "群名" --since-last --data-root "~/Library/Application Support/wechat-local-vault/digests" --format text
 ```
 
 输出会落到 `{data_root}/{group_id}-{group_name}/sources/`，并创建：
@@ -124,14 +131,14 @@ python3 {{SKILL_DIR}}/scripts/export_chat.py --chat-id "contact_username" --sinc
 
 旧脚本仍可用于窄任务；如果用户没有特别指定，优先使用 `vault_cli.py`。
 
-## 工作流
+## Mac 模式：工作流
 
 ### 全量路线
 
 用于首次配置、换设备、微信升级后 key 变化、用户明确要求全量重建。
 
 1. 先运行 `extract_keys.py --list-dbs` 看本地库，不展示敏感 salt。
-2. 如果 `~/.config/explore-wechat-data-keys.json` 已有 key，先用 `--match-only --targets all --reuse-log` 尝试复用。
+2. 如果 `~/.config/wechat-keys.json` 已有 key，先用 `--match-only --targets all --reuse-log` 尝试复用。
 3. 只有复用失败或缺关键库时，才运行抓 key。
 4. 运行 `decrypt_all_dbs.py --mode full`，明文库写入私密 vault。
 5. 读取 manifest 确认解密数量和失败项。
@@ -177,6 +184,9 @@ python3 {{SKILL_DIR}}/scripts/export_chat.py --chat-id "contact_username" --sinc
 - 每次涉及解密完成，说明保存位置和是否包含明文隐私。
 
 ## 现有脚本
+
+- `scripts/snapshot_reader.py`：Windows 离线明文快照验证、查询与导出后端。
+- `scripts/wechat_schema.py`：两种后端共用的消息表名与字段别名映射。
 
 - `scripts/vault_cli.py`：统一本地查询入口；吸收 WeChat CLI 的常用命令形态，并增加朋友圈与摘要素材包。
 - `scripts/extract_keys.py`：本机 key 捕获、复用和匹配。

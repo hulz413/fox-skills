@@ -11,9 +11,9 @@ import zstandard as zstd
 PAGE_SIZE = 4096
 RESERVE = 80
 IV_SIZE = 16
-KEYS_FILE = os.path.expanduser("~/.config/explore-wechat-data-keys.json")
-CONFIG_FILE = os.path.expanduser("~/.config/explore-wechat-data.json")
-TMP_DIR = os.path.expanduser("~/Developer/playground/wechat/wechat-local-vault/tmp")
+KEYS_FILE = os.path.expanduser("~/.config/wechat-keys.json")
+CONFIG_FILE = os.path.expanduser("~/.config/wechat-local-vault.json")
+TMP_DIR = os.path.expanduser("~/Library/Application Support/wechat-local-vault/tmp")
 
 ZSTD_MAGIC = b'\x28\xb5\x2f\xfd'
 _zstd_decompressor = zstd.ZstdDecompressor()
@@ -92,7 +92,7 @@ def main(config_path=None):
     db_base = get_db_base(config)
     if not db_base:
         print("[ERROR] 未配置 wxid 或 db_base_path")
-        print("请先运行 extract_keys.py 或配置 ~/.config/explore-wechat-data.json")
+        print("请先运行 extract_keys.py 或配置 ~/.config/wechat-local-vault.json")
         return
 
     keys = load_keys()
