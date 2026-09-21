@@ -1,48 +1,38 @@
 ---
 name: orchestrate
-description: Coordinate agents when a substantial task contains independent work that benefits from parallel execution, or when the user requests multi-agent orchestration. Keep small or tightly coupled work local.
+description: Plan and coordinate independent work with Explorer, Worker, and Reviewer subagents, choosing available models and reasoning effort for each assignment. Use when parallel work is worthwhile or the user requests an agent team; keep small or tightly coupled work local.
 ---
 
 # Orchestrate
 
-Use the current task's subagent tools to divide useful work while keeping one coordinator responsible for the outcome. Respect the available tool contract, user choices, and session restrictions; this skill does not authorize creating separate user-facing tasks or expanding the requested scope.
+Own the plan, delegation, and final outcome of the current task. Use judgment to choose the approach, divide work, and decide what needs independent checking. Supply domain expertise and local workflows through each assignment.
 
-## Decide what to delegate
+Delegate independent work when the benefit justifies briefing and integration. Small or tightly coupled work can stay local. Choose the number and mix of agents to suit the task; there is no mandatory pipeline.
 
-Delegate a bounded assignment only when it can proceed independently alongside useful local work and its benefit exceeds the cost of briefing and integration. Keep small changes and tightly coupled decisions local. Use actual available concurrency, including the coordinator, as a ceiling rather than a target. Avoid filling slots merely because they exist.
+## Roles
 
-The coordinator continues dependency analysis, interface decisions, integration, or other useful work while agents run. Stay available to the user, incorporate steering, and propagate changes that affect active assignments. Do not duplicate a delegated investigation unless a concrete gap or conflicting evidence requires it.
+| Role | Responsibility and boundary |
+| --- | --- |
+| `explorer` | Investigate sources, existing state, dependencies, or unknowns. Return evidence and material uncertainties; keep the subject unchanged. |
+| `worker` | Complete the assigned work and check the result. Return the deliverable, relevant evidence, and blockers; modify only assigned resources. |
+| `reviewer` | Independently assess a proposal or result against its requirements. Return actionable findings and verification gaps; no findings is valid. Keep the subject read-only unless repair is separately assigned. |
 
-## Choose effort and context
+These are reusable role instructions. Include the selected role in the task message unless the runtime already registers it. Multiple agents may share a role; independent review uses an instance other than the producer. The coordinator retains overall planning and decisions.
 
-Default to the current model; do not hardcode model names. Where the tool supports effort overrides, use these starting points:
+## Delegate and coordinate
 
-- Scout: low effort for narrow, read-only discovery, such as locating files, tracing callers, or finding tests.
-- Worker: medium effort for scoped implementation and routine verification.
-- Difficult worker: high effort for ambiguous requirements or complex implementation.
+Give each agent a clear goal, necessary context, ownership, and what would demonstrate completion. Adapt the handoff to the work, and ask for concise results with evidence and unresolved issues. Pass relevant decisions and constraints without copying the entire orchestration workflow into every child. Children normally execute directly; coordinate any further delegation within the shared limits.
 
-Adjust to the assignment rather than treating these as mandatory tiers. Use only combinations supported by the active tools. If inheriting full history prevents an override, preserve the necessary context instead of forcing the override.
+Assign one owner per mutable resource or serialize conflicting changes. Preserve unrelated work and keep assignments within the user's authorization and actual tool permissions. Keep active agents aligned when requirements or ownership change.
 
-Use `fork_turns: "none"` for a self-contained assignment. Include the relevant decisions, paths, constraints, and evidence it needs. Inherit conversation history when prior decisions materially affect correctness; do not assume a fresh-context agent knows task-specific restrictions.
+Follow the runtime's concurrency and lifecycle rules; a returned result may not release a slot. Reuse suitable instances or release capacity through supported tools. Stay productive alongside delegated work and wait when no useful local work remains.
 
-## Give clear assignments
+## Choose models
 
-Include only the details the assignment needs:
+Before dispatch, apply [model routing](references/model-routing.md) to the actual assignment. The coordinator chooses the supported model and reasoning effort; this skill permits task-specific overrides unless the user or higher-priority instructions pin them. Keep the routing reference in the coordinator's context and reuse it while it remains applicable.
 
-- Outcome and boundaries: the concrete question or change, and what is out of scope.
-- Ownership: files or responsibility the agent may change, or an explicit read-only boundary.
-- Context: relevant decisions, dependencies, sources, and applicable project constraints.
-- Completion evidence: expected deliverable, appropriate checks, and unresolved questions to report.
-- Delegation boundary: complete the assignment directly; do not spawn agents. Parent orchestration instructions apply only to the parent.
+## Integrate and finish
 
-Default workers to leaves. Allow further delegation only for a concrete independent subtask within the shared concurrency budget and with explicit ownership.
+Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. Account for required work before claiming completion. Report actual results and meaningful verification gaps.
 
-Agents share a workspace unless tools explicitly provide isolation. Avoid concurrent edits to the same files; serialize shared-file changes or assign a single owner. Preserve unrelated work. Agents may exchange dependency findings directly, but ownership or scope changes go through the coordinator. Surface blockers promptly; do not silently replace agreed requirements with workarounds.
-
-## Integrate and verify
-
-Track active assignments and their dependencies without adding unnecessary bookkeeping files. Use supported messaging and waits; when nothing useful remains locally, wait instead of repeatedly polling unchanged status. Reuse an existing agent for a relevant follow-up rather than repeating discovery in a fresh agent.
-
-Review returned evidence and actual changes before accepting completion. Resolve incompatible assumptions, integrate results, and run checks appropriate to the combined change. A worker's completion report alone is not proof that the whole task is correct. Verify material gaps or conflicting claims rather than rerunning every investigation.
-
-Keep approvals with the user under the existing authorization rules; delegation grants no additional permissions. Report the overall result, meaningful verification, and remaining limitations. If delegation is unavailable, continue the feasible work locally and state any material impact.
+When work stalls, use the evidence to decide whether to supply context, revise the approach, reuse or replace an agent, or stop an unproductive attempt. Preserve useful results and address material blockers. If delegation is unavailable, continue feasible work locally and explain any material limitation.

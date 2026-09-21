@@ -1,4 +1,4 @@
 interface:
   display_name: "Orchestrate"
-  short_description: "Coordinate agents with clear ownership and verification"
-  default_prompt: "Use $orchestrate to delegate independent parts of this task, integrate the results, and verify the overall outcome."
+  short_description: "Plan and coordinate agents with task-specific model routing"
+  default_prompt: "Use $orchestrate to plan this task, choose useful roles and supported model settings, delegate independent work, and verify the combined result."
