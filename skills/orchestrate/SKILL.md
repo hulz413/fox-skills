@@ -1,13 +1,13 @@
 ---
 name: orchestrate
-description: Plan and coordinate independent work with Explorer, Worker, and Reviewer subagents, choosing available models and reasoning effort for each assignment. Use when parallel work is worthwhile or the user requests an agent team; keep small or tightly coupled work local.
+description: Coordinate subagents when the user requests delegation or substantial independent work benefits from parallel execution or independent verification. Keep other work local.
 ---
 
 # Orchestrate
 
 Own the plan, delegation, and final outcome of the current task. Use judgment to choose the approach, divide work, and decide what needs independent checking. Supply domain expertise and local workflows through each assignment.
 
-Delegate independent work when the benefit justifies briefing and integration. Small or tightly coupled work can stay local. Choose the number and mix of agents to suit the task; there is no mandatory pipeline.
+Before dispatching, identify at least two substantial, independent workstreams, what each will deliver, and why concurrent work is likely to save time or provide useful independent verification. Otherwise, work locally, even when this skill was explicitly invoked. Honor explicit requests for agent delegation within runtime limits. Choose the number and mix of agents to suit the task; there is no mandatory pipeline.
 
 ## Roles
 
