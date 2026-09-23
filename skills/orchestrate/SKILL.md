@@ -31,6 +31,8 @@ Follow the runtime's concurrency and lifecycle rules; a returned result may not 
 
 Before dispatch, apply [model routing](references/model-routing.md) to the actual assignment. The coordinator chooses the supported model and reasoning effort; this skill permits task-specific overrides unless the user or higher-priority instructions pin them. Keep the routing reference in the coordinator's context and reuse it while it remains applicable.
 
+Choose model, effort, and context-transfer mode together, and pass the chosen configuration explicitly through supported tool parameters. When creating subagents, show a concise Markdown table with columns for subagent/role, assignment, requested model, reasoning effort, and task-specific selection reason. Use one row per subagent, including for a single agent; one table may cover a batch. Use a table for any later model/effort summary as well. Distinguish requested settings from runtime-confirmed settings. Omitted parameters are not evidence of a routing decision; when inheritance is necessary, state the reason and inherited settings.
+
 ## Integrate and finish
 
 Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. The coordinator owns final acceptance and uses independent review when worthwhile. When fixes are authorized, coordinate worker corrections for confirmed material findings and reviewer follow-up until a complete pass finds no material issues within scope or a blocker needs user input. Reuse still-valid evidence when rechecking repairs and their effects, without routinely repeating the entire review. Account for required work before claiming completion. Report actual results and meaningful verification gaps.

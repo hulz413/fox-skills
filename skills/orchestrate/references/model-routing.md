@@ -18,7 +18,7 @@ Interpret effort levels using that model's supported values and descriptions. Us
 
 ## Apply the choice
 
-Set real model and effort parameters on the supported execution tool. Some runtimes prohibit overrides with full-history forks: use a sufficient fresh or limited-context handoff when appropriate, or preserve necessary context and report inherited settings. Keep relevant constraints and prior decisions in the handoff.
+Use a fresh or limited-context handoff when it sufficiently preserves the assignment, constraints, and prior decisions; do not copy full history merely for convenience. If full-history forks prohibit overrides and the full history is genuinely needed, preserve it and explain the inheritance decision before dispatch. Choosing the same model as the coordinator is valid when justified by the assignment, not simply because it is the default.
 
 Retain enough task state to explain the choice and assess the result. Distinguish requested settings from runtime-confirmed settings. The coordinator's own model and effort are set by its caller or session, outside this skill.
 

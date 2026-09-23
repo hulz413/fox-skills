@@ -20,6 +20,10 @@ Retries and upgrades depend on observed progress and user constraints, with no s
 
 Install this folder as `orchestrate` in your discoverable skills directory.
 
+## Regression tests
+
+See [tests/README.md](tests/README.md) for the trace checker, negative regression cases, and fresh-context behavioral smoke test. These are maintenance checks, not runtime skill dependencies.
+
 ## Design references
 
 Conceptual references, not runtime dependencies:
