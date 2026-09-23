@@ -15,7 +15,7 @@ Delegate when expected gains in quality, time, or cost justify briefing and inte
 | --- | --- |
 | `explorer` | Investigate sources, existing state, dependencies, or unknowns. Return evidence and material uncertainties; keep the subject unchanged. |
 | `worker` | Complete the assigned work and check the result. Return the deliverable, relevant evidence, and blockers; modify only assigned resources. |
-| `reviewer` | Independently assess a proposal or result against its requirements. Return actionable findings and verification gaps; no findings is valid. Keep the subject read-only unless repair is separately assigned. |
+| `reviewer` | Independently assess a proposal or result against its requirements. Return only material, actionable, evidence-backed findings and their impact, plus meaningful verification gaps; no findings is valid and preferences alone are not blockers. Keep the subject read-only unless repair is separately assigned. |
 
 These are reusable role instructions. Include the selected role in the task message unless the runtime already registers it. Multiple agents may share a role; independent review uses an instance other than the producer. The coordinator retains overall planning and decisions.
 
@@ -33,6 +33,6 @@ Before dispatch, apply [model routing](references/model-routing.md) to the actua
 
 ## Integrate and finish
 
-Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. The coordinator owns final acceptance and uses independent review when worthwhile; address reviewer findings and verification gaps without routinely repeating the entire review. Account for required work before claiming completion. Report actual results and meaningful verification gaps.
+Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. The coordinator owns final acceptance and uses independent review when worthwhile. When fixes are authorized, coordinate worker corrections for confirmed material findings and reviewer follow-up until a complete pass finds no material issues within scope or a blocker needs user input. Reuse still-valid evidence when rechecking repairs and their effects, without routinely repeating the entire review. Account for required work before claiming completion. Report actual results and meaningful verification gaps.
 
 When work stalls, use the evidence to decide whether to supply context, revise the approach, reuse or replace an agent, or stop an unproductive attempt. Preserve useful results and address material blockers. If delegation is unavailable, continue feasible work locally and explain any material limitation.
