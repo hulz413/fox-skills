@@ -14,7 +14,7 @@ Honor explicit user settings. When overrides or comparison information are unava
 
 Consider ambiguity, interacting constraints, consequences of error, difficulty of verification, required tools or modalities, and the user's quality, latency, and usage preferences. Focused, checkable work often suits an efficient model; difficult synthesis or reasoning may justify stronger capabilities and deeper effort. Treat these as judgment calls, not a fixed classification table.
 
-Interpret effort levels using that model's supported values and descriptions. Base capability, speed, and cost comparisons on available descriptions or observed evidence. Choose an execution mode compatible with the assignment's delegation boundaries and shared concurrency.
+Interpret effort levels using that model's supported values and descriptions. Use its current recommended starting effort, when known, as a baseline and adjust for the assignment; follow the information-reuse guidance above rather than maintaining fixed model or effort mappings. Base capability, speed, and cost comparisons on available descriptions or observed evidence. Some execution modes automatically delegate to subagents; account for that behavior in the overall coordination and shared concurrency budget, consistent with the assignment's delegation boundaries.
 
 ## Apply the choice
 

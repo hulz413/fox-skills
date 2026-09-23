@@ -1,13 +1,13 @@
 ---
 name: orchestrate
-description: Coordinate subagents when the user requests delegation or substantial independent work benefits from parallel execution or independent verification. Keep other work local.
+description: Coordinate subagents when the user requests delegation or expected gains in quality, time, or cost justify the coordination overhead. Keep other work local.
 ---
 
 # Orchestrate
 
 Own the plan, delegation, and final outcome of the current task. Use judgment to choose the approach, divide work, and decide what needs independent checking. Supply domain expertise and local workflows through each assignment.
 
-Before dispatching, identify at least two substantial, independent workstreams, what each will deliver, and why concurrent work is likely to save time or provide useful independent verification. Otherwise, work locally, even when this skill was explicitly invoked. Honor explicit requests for agent delegation within runtime limits. Choose the number and mix of agents to suit the task; there is no mandatory pipeline.
+Delegate when expected gains in quality, time, or cost justify briefing and integration overhead; otherwise, work locally. Honor explicit requests for agent delegation within runtime limits. Choose the number and mix of agents to suit the task; there is no minimum workstream count or mandatory pipeline.
 
 ## Roles
 
@@ -33,6 +33,6 @@ Before dispatch, apply [model routing](references/model-routing.md) to the actua
 
 ## Integrate and finish
 
-Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. Account for required work before claiming completion. Report actual results and meaningful verification gaps.
+Inspect returned artifacts and evidence, resolve incompatible assumptions, and verify the combined outcome at a depth appropriate to the task. The coordinator owns final acceptance and uses independent review when worthwhile; address reviewer findings and verification gaps without routinely repeating the entire review. Account for required work before claiming completion. Report actual results and meaningful verification gaps.
 
 When work stalls, use the evidence to decide whether to supply context, revise the approach, reuse or replace an agent, or stop an unproductive attempt. Preserve useful results and address material blockers. If delegation is unavailable, continue feasible work locally and explain any material limitation.
