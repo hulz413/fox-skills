@@ -12,15 +12,15 @@ Honor explicit user settings. When overrides or comparison information are unava
 
 ## Match the assignment
 
-Consider ambiguity, interacting constraints, consequences of error, difficulty of verification, required tools or modalities, and the user's quality, latency, and usage preferences. Focused, checkable work often suits an efficient model; difficult synthesis or reasoning may justify stronger capabilities and deeper effort. Treat these as judgment calls, not a fixed classification table.
+Consider ambiguity, interacting constraints, consequences of error, difficulty of verification, required tools or modalities, and the user's quality, latency, and usage preferences. Focused, checkable work often suits an efficient model; difficult synthesis or reasoning may justify stronger capabilities and deeper effort. Treat these as judgment calls, not a fixed classification table. Do not impose a fixed effort default or require the lowest tier. Concurrency, transactions, and uncertain root causes are signals to assess, not automatic reasons to raise effort; established solutions and straightforward verification may need less reasoning.
 
 Interpret effort levels using that model's supported values and descriptions. Use its current recommended starting effort, when known, as a baseline and adjust for the assignment; follow the information-reuse guidance above rather than maintaining fixed model or effort mappings. Base capability, speed, and cost comparisons on available descriptions or observed evidence. Some execution modes automatically delegate to subagents; account for that behavior in the overall coordination and shared concurrency budget, consistent with the assignment's delegation boundaries.
 
 ## Apply the choice
 
-Use a fresh or limited-context handoff when it sufficiently preserves the assignment, constraints, and prior decisions; do not copy full history merely for convenience. If full-history forks prohibit overrides and the full history is genuinely needed, preserve it and explain the inheritance decision before dispatch. Choosing the same model as the coordinator is valid when justified by the assignment, not simply because it is the default.
+Follow the context-transfer guidance in [Delegate and coordinate](../SKILL.md#delegate-and-coordinate). If full-history forks prohibit overrides and the full history is genuinely needed, preserve it and explain the inheritance decision before dispatch. Choosing the same model as the coordinator is valid when justified by the assignment, not simply because it is the default.
 
-Retain enough task state to explain the choice and assess the result. Distinguish requested settings from runtime-confirmed settings. The coordinator's own model and effort are set by its caller or session, outside this skill.
+The coordinator's own model and effort are set by its caller or session, outside this skill.
 
 ## Adapt from results
 
