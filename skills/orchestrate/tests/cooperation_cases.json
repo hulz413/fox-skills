@@ -1,0 +1,138 @@
+{
+  "cases": [
+    {
+      "id": "case_c01",
+      "task": "把提供的三行文案中一个错别字改掉，主会话已有全文和明确替换规则。",
+      "expected": {
+        "action": "local",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c02",
+      "task": "当前主会话正在处理共用状态机的一处边界条件，所有改动依赖同一个未定不变量，尚无可以独立验证的子问题。继续完成修复。",
+      "expected": {
+        "action": "local",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c03",
+      "task": "用户明确要求将独立的 CSV 导出功能交给一名子 Agent；现有导出模式、验收用例和独占文件边界已提供，主会话处理另一项无关功能。",
+      "expected": {
+        "action": "delegate",
+        "role": "worker",
+        "context": "supplied",
+        "route": {
+          "id": "case_c03",
+          "status": "requested",
+          "model": "standard-fixture",
+          "reasoning_effort": "medium",
+          "fork_turns": "none"
+        }
+      }
+    },
+    {
+      "id": "case_c04",
+      "task": "两种队列重试策略都符合现有单项测试，但去重窗口与重试时序相互影响；证据充足且存在可运行的有限反例检查。主会话的方案已被反例推翻，需要一次独立的方向建议，不要求改代码。",
+      "expected": {
+        "action": "consult",
+        "role": "advisor",
+        "context": "supplied",
+        "route": {
+          "id": "case_c04",
+          "status": "requested",
+          "model": "standard-fixture",
+          "reasoning_effort": "high",
+          "fork_turns": "none"
+        }
+      }
+    },
+    {
+      "id": "case_c05",
+      "task": "独立 Reviewer 已确认一个返回值缺陷并给出复现；修复属于已授权范围，原 Worker 和 Reviewer 都可继续使用，相关上下文保留。接下来如何完成闭环？",
+      "expected": {
+        "action": "repair_recheck",
+        "role": "reviewer",
+        "context": "retained",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c06",
+      "task": "已有顾问指出缺少两次实验的原始输出，无法区分解释；协调者持有这些输出，顾问上下文仍保留。下一步怎么办？",
+      "expected": {
+        "action": "supply_context",
+        "role": "advisor",
+        "context": "retained",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c07",
+      "task": "用户要请顾问分析一种跨学科测量方案，仪器误差与统计选择偏差相互作用，尚有实质不确定性。当前长会话里有关键原始实验记录和失败尝试，咨询依赖这些证据。用户禁止创建额外 App 会话。",
+      "expected": {
+        "action": "consult",
+        "role": "advisor",
+        "context": "supplied",
+        "route": {
+          "id": "case_c07",
+          "status": "requested",
+          "model": "strong-fixture",
+          "reasoning_effort": "high",
+          "fork_turns": "none"
+        }
+      }
+    },
+    {
+      "id": "case_c08",
+      "task": "用户请顾问比较两种会议安排，人数、时间和偏好都已提供，只需普通权衡建议，不涉及相互耦合的约束或执行。",
+      "expected": {
+        "action": "consult",
+        "role": "advisor",
+        "context": "supplied",
+        "route": {
+          "id": "case_c08",
+          "status": "requested",
+          "model": "standard-fixture",
+          "reasoning_effort": "medium",
+          "fork_turns": "none"
+        }
+      }
+    },
+    {
+      "id": "case_c09",
+      "task": "Reviewer 需要了解 Worker 已完成结果中的一个边界处理依据；两者身份已知，运行时支持并允许互发消息，不涉及修改范围。下一步如何取得依据？",
+      "expected": {
+        "action": "exchange_evidence",
+        "role": "reviewer",
+        "context": "retained",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c10",
+      "task": "Worker 建议把另一个 Agent 独占的文件也交给自己修改，并调整原方案；当前协调者尚未决定。下一步应如何处理归属与方案？",
+      "expected": {
+        "action": "coordinate_decision",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c11",
+      "task": "现有 Advisor 缺少一次实验的原始输出，Explorer 持有该输出且双方身份已知，运行时支持并允许互发消息。无需新增实验或变更任务；顾问之后要给出建议。下一步如何取得证据、把建议交给谁？",
+      "expected": {
+        "action": "exchange_evidence",
+        "role": "advisor",
+        "context": "retained",
+        "route": null
+      }
+    }
+  ]
+}

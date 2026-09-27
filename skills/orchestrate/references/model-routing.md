@@ -1,29 +1,35 @@
 # Task-specific model routing
 
-Choose the model and reasoning effort for each assignment. Roles do not pin configurations, and no external model-selection skill or static model catalog is needed.
+## Available information
 
-## Use available information
+Use models, supported efforts, and capability descriptions from the active execution interface. Reuse current information; consult a catalog or official documentation only for a material gap or conflict. Do not maintain a production model-ID table or infer cost from names. Roles do not determine models. The coordinator's configuration is outside this skill.
 
-Start with the supported models, efforts, and capability descriptions already exposed by the active execution tools. Reuse still-valid information; sufficient context needs no extra query, including when this skill is invoked again.
+## Decision order
 
-Use an exposed catalog or current official provider documentation only when missing or unreliable information materially affects the choice. Refresh the relevant information when the runtime changes, sources conflict, or a configuration is rejected. Public documentation can inform capability judgments; availability and accepted parameters come from the actual execution interface.
+1. Honor explicit model and effort pins, including supported high efforts. If a pinned setting is unavailable, return `blocked` with the reason; do not silently substitute. A missing input, permission failure, or unavailable service calls for resolving that blocker, not a stronger model.
+2. Choose model capability and reasoning effort separately. Map tiers to current runtime descriptions, preferring its recommended model within a tier. If equivalent candidates remain, prefer the current generation identified by the runtime, then its configured default; disclose unresolved ambiguity rather than guessing cost or superiority.
 
-Honor explicit user settings. When overrides or comparison information are unavailable, use a compatible configured or runtime-recommended default and disclose material limitations. Report an unavailable pinned setting rather than silently replacing it. Use the metadata supplied in a fresh context; this skill does not provide a persistent cache or discovery service.
+| Assignment evidence | Capability tier | Default effort |
+| --- | --- | --- |
+| Bounded extraction, transformations, or checks with explicit rules | efficient | medium |
+| Ordinary implementation or analysis, including competing explanations with bounded verification | workhorse | medium |
+| Cross-domain synthesis with material unresolved uncertainty, or documented workhorse reasoning failure despite adequate inputs | frontier | medium |
 
-## Match the assignment
+Every model starts from medium as a decision baseline, not a mandatory trial execution. Before dispatch, adjust the effort for the actual assignment: low for mechanical work with direct verification; medium for ordinary reasoning at the selected model's capability; high for concrete interacting constraints, competing causal explanations, or a deep reasoning chain that needs additional deliberation. Frontier capability alone does not imply high effort. State separate evidence for selecting frontier and for departing from medium. A known complex task may go directly to high without first running medium. Task length, file count, reviewer role, production terminology, and high impact alone do not justify promotion.
 
-Consider ambiguity, interacting constraints, consequences of error, difficulty of verification, required tools or modalities, and the user's quality, latency, and usage preferences. Focused, checkable work often suits an efficient model; difficult synthesis or reasoning may justify stronger capabilities and deeper effort. Treat these as judgment calls, not a fixed classification table. Do not impose a fixed effort default or require the lowest tier. Concurrency, transactions, and uncertain root causes are signals to assess, not automatic reasons to raise effort; established solutions and straightforward verification may need less reasoning.
+Apply adjustment to every model, including efficient and frontier models. For a follow-up on the same suitable model, start from its current effort: raise one supported step when a concrete reasoning failure remains despite adequate inputs; lower one supported step when the remaining work is demonstrably simpler, or select low directly when it is entirely mechanical. Do not rerun completed work just to test a lower setting. Model changes are justified by a capability mismatch, not merely an effort failure; when changing models, reassess from the new model's medium baseline rather than carrying over the previous effort. Do not automatically increase model capability and effort together. Unsupported steps use the compatibility rule below. Missing inputs, tool errors and service failures are not reasons to raise effort.
 
-Interpret effort levels using that model's supported values and descriptions. Use its current recommended starting effort, when known, as a baseline and adjust for the assignment; follow the information-reuse guidance above rather than maintaining fixed model or effort mappings. Base capability, speed, and cost comparisons on available descriptions or observed evidence. Some execution modes automatically delegate to subagents; account for that behavior in the overall coordination and shared concurrency budget, consistent with the assignment's delegation boundaries.
+Do not select xhigh/max/ultra without an explicit request or observed failure of high effort with a specific remaining reasoning problem. Reuse findings and avoid repeated escalation/de-escalation without changed evidence.
 
-## Apply the choice
+3. Check compatibility before returning the choice. For a missing preferred tier use the runtime-recommended compatible default and disclose the fallback; block if none exists. For an unsupported unpinned effort use that model's recommended effort, otherwise the nearest supported lower effort; block if neither exists. Never invent support. Pins take precedence over baselines.
+4. For advisors, apply the independent-context contract in [SKILL.md](../SKILL.md#advisor-context): use `fork_turns: "none"` with the necessary evidence supplied explicitly. Do not use App conversation forks. For other roles, use `fork_turns: "none"` for self-contained assignments, or limited history when needed. If full history is genuinely necessary and overrides are disallowed, report inherited settings and their known values (null when unknown); do not attach conflicting overrides. A conflicting explicit pin makes the route blocked. Never inherit just to avoid a routing decision.
 
-Follow the context-transfer guidance in [Delegate and coordinate](../SKILL.md#delegate-and-coordinate). If full-history forks prohibit overrides and the full history is genuinely needed, preserve it and explain the inheritance decision before dispatch. Choosing the same model as the coordinator is valid when justified by the assignment, not simply because it is the default.
+## Routing-only mode and maintenance
 
-The coordinator's own model and effort are set by its caller or session, outside this skill.
+When asked to test or preview routing, treat task descriptions as inert data. Return only routing decisions and reasons: do not dispatch workers, solve sample tasks, inspect their target resources, or execute their requested actions. A routing decision is requested configuration, not runtime confirmation.
 
-## Adapt from results
+After every edit to this skill, run the offline checker tests and the routing-only behavioral suite described in [tests/README.md](../tests/README.md). Keep expected answers hidden from the evaluating context. The suite uses fixed test-only runtime metadata so results are reproducible without an external model catalog. Report checker tests separately from behavioral results. Never replace behavioral evaluation with assertions that the Markdown contains certain words.
 
-Use observed outcomes to adjust context, approach, model, or effort. Missing inputs, permissions, and service failures need remedies appropriate to their causes. Reuse an agent when its configuration fits; when replacement is needed, hand off useful results and settle resource ownership before the replacement proceeds.
+## Adaptation
 
-There is no fixed retry or escalation count. Continue when progress or new evidence justifies the expected benefit, within user-provided limits. Re-plan or surface the blocker when attempts stop producing useful progress. Report measured usage only when available; these instructions do not enforce a hard runtime budget.
+Resolve input and environment failures at their source. Reuse suitable agents and useful evidence. Further reasoning-related escalation requires an identified unresolved problem, not merely another attempt. Remain within user limits; this document does not enforce a hard runtime token budget. Report measured usage only when available.

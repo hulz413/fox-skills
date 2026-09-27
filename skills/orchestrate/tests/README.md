@@ -1,62 +1,40 @@
-# Orchestration regression
+# Routing-only regression
 
-Run the checker tests without model calls:
-
-```sh
-python3 -m unittest discover -s skills/orchestrate/tests -p 'test_*.py' -v
-```
-
-Select behavioral scenarios relevant to the changed rules; do not run the whole suite for every wording edit. Use a fresh orchestrator context for each scenario, retaining that context across its follow-up turns. Substitute the current skill path and give only the quoted requests, without the acceptance criteria. Record which scenarios ran and any verification gaps.
-
-## Explicit delegation and routing
-
-Use this scenario when changing dispatch or model-selection behavior:
-
-> Use $orchestrate at <absolute skill path>. Delegate two independent worker tasks: (A) count `pear, apple, pear, plum, apple, pear`; (B) sum `12, 7, 19, 4, 8`. Keep cost and context small. While workers run, independently determine the number of distinct fruit names. Integrate the results and verify consistency. Use only these inputs; do not modify project files. Workers should execute directly.
-
-Use a capable coordinator and record its actual `spawn_agent` calls from its own rollout (exclude ancestor history). Run:
+After every edit to the skill, from the repository root run:
 
 ```sh
-python3 skills/orchestrate/tests/check_dispatch.py /path/to/orchestrator-rollout.jsonl --efficient-model MODEL_FROM_CURRENT_RUNTIME
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/orchestrate/tests -p 'test_*.py' -v
+python3 skills/orchestrate/tests/routing_eval.py
 ```
 
-Repeat the option for multiple acceptable efficient models. Select these from current runtime capability descriptions before evaluating results, not from the model IDs the run happened to choose. Also inspect that the coordinator briefly identifies the assignments, requested models and efforts, and selection reasons. A sentence is sufficient for one agent; a table is useful when comparing multiple assignments. Do not reject an otherwise complete explanation merely for its format. Check that each effort is supported for its model and that no dispatch was rejected. The automatic checker targets this self-contained scenario only: production tasks may legitimately require inherited context or a stronger model.
+The second command emits a blind evaluation prompt; it does not call a model. Give that prompt plus the current `references/model-routing.md` to a fresh evaluation context. Prohibit delegation, execution of sample tasks, and tools other than reading the policy/prompt, writing predictions, and the structure-only validation command below. Request JSON decisions only, using the generated output template and field contract. The reason must be a separate field; fork_turns accepts only a context mode. Structural errors fail validation and must not be silently repaired or counted as successful routes. Do not supply `routing_cases.json`, expected answers, or this checker source to that context. A single evaluation can handle the whole suite; do not launch one agent per case. The evaluator must save its JSON answer to a temporary file and run the structure-only gate before returning:
 
-Acceptance: two real worker dispatches pass the checker; workers actually finish; combined results are pear=3, apple=2, plum=1, distinct=3, sum=50. Check runtime-confirmed settings when exposed; requested parameters alone do not prove the effective model. Report unavailable delegation as blocked, not passed.
-
-Unit tests validate the checker, not the Skill's behavior. A behavioral pass is one observation, not a compliance guarantee or a token/cost benchmark. Test files are maintenance-only and need not enter normal skill context.
-
-## Small task without requested delegation
-
-> Use $orchestrate at <absolute skill path>. Correct the spelling in this sentence and return it: "The monitroing task has started." Do not modify files.
-
-Acceptance: the corrected sentence is "The monitoring task has started." No subagent is created merely because the skill was invoked. This narrow fixture does not imply that every editing task must stay local. Repeat through the installed default prompt when validating interface metadata.
-
-## Incremental follow-up
-
-First request:
-
-> Use $orchestrate at <absolute skill path>. Delegate one worker to count `pear, apple, pear, plum, apple, pear`. Use only these inputs, do not modify files, and return the counts.
-
-After completion, in the same context:
-
-> Have the same worker update the counts with two more apples and one plum. Return the updated counts.
-
-Acceptance: reuse the worker when it is still available with retained context. The follow-up supplies the additional fruit and desired result without resending the entire original assignment or conversation. Final counts are pear=3, apple=4, plum=2. If reuse is unavailable, report that limitation and provide sufficient context to a replacement; do not claim the reuse path passed.
-
-## Review scope and closure
-
-Create a disposable directory containing `normalize.py` with this deliberately incorrect function:
-
-```python
-def normalize_tags(tags):
-    return sorted({tag.strip().lower() for tag in tags if tag})
+```sh
+python3 skills/orchestrate/tests/routing_eval.py --validate-output /path/to/predictions.json
 ```
 
-Give the agent:
+This mode never loads cases or expected answers. If it fails, preserve the first response, allow one format-only repair using the diagnostics, and validate again. Do not change model/effort choices during format repair. If still invalid, report a failed evaluation rather than retrying indefinitely. Report first-pass structure failures separately even if repaired. After the gate passes, the coordinator scores the decisions:
 
-> Use $orchestrate at <absolute skill path>. In <disposable directory>, fix normalize_tags so it strips whitespace, lowercases, deduplicates, sorts, and excludes empty results. Add focused checks and review the result. Modify only this fixture.
+```sh
+python3 skills/orchestrate/tests/routing_eval.py /path/to/predictions.json
+```
 
-Acceptance: whitespace-only tags are excluded; normalization, deduplication, and sorting still work. Checks actually run. Review covers the stated behavior and meaningful failure paths, and corrections receive targeted verification. Once the checks and review pass with no unresolved issue, the task finishes without another equivalent review cycle or unrelated cleanup. Do not prescribe a number of agents, tool calls, or review passes; follow-up work is justified by new changes or evidence. Inspect the execution trace rather than only the final answer, then remove the disposable fixture.
+Inspect reasons as well as the score: high effort and frontier routes need task-specific evidence. Do not adjust expectations merely to make a run pass. Fixtures cover bounded, routine, complex and frontier work, non-code work, misleading size/risk/role cues, explicit pins, unavailable settings, effort fallback, inheritance and evidence-based escalation. They also check medium defaults for all three model tiers, upward and downward adjustments on each tier, direct high selection before any execution, and environment failures that must not trigger escalation. Fixed synthetic runtime IDs are fixtures, not a production model catalog.
 
-These additional scenarios use manual trace review; `check_dispatch.py` applies only to the explicit two-worker routing scenario. Preserve failed traces and relevant diagnostics when investigating regressions. No scenario alone establishes a token or cost saving.
+Unit tests validate the checker. The separately scored fresh-context answers test routing behavior. Neither dispatches the selected models nor proves effective runtime settings, task quality, repeatability across runs, or token savings. If a fresh evaluation is unavailable, report behavioral validation as not run; checker success alone is insufficient. Remove temporary prompts and predictions after inspection, retaining failure evidence only when needed.
+
+`check_dispatch.py` and `test_dispatch.py` retain the older actual-trace checker for compatibility. Its unit tests are offline. Do not perform actual dispatches or execute scenario tasks as part of this routing-only suite.
+
+## Separate scores
+
+The 24 original, deliberately cued scenarios are rule checks (`rules`), not evidence of autonomous model selection. Four natural requests (`autonomous`) omit model/effort instructions and difficulty labels. They cover list processing, a UI feature, a payment-notification investigation and venue comparison; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
+
+The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These four examples are a limited sample, not proof of general real-world routing reliability.
+
+## Cooperation previews
+
+Also run `python3 skills/orchestrate/tests/cooperation_eval.py` to emit the cooperation prompt. Give both generated prompts, SKILL.md and model-routing.md to the same fresh evaluator; keep both fixture files and checker sources hidden. Save routing and cooperation predictions separately. Use `cooperation_eval.py --validate-output /path/to/cooperation.json` for the cooperation structure gate, following the same first-response preservation and one format-only repair procedure above. Score it with `cooperation_eval.py /path/to/cooperation.json`. This structure-only mode does not load fixture expectations.
+
+Report cooperation separately from autonomous routing and rule compliance. Cases cover local small and tightly coupled work, explicit independent delegation, direction advice, repair and independent recheck, missing advisor evidence, and fresh advisor context for a history-dependent question. Inspect reasons to confirm raw evidence is supplied, missing evidence causes no escalation, and repair is followed by independent recheck; exact field scores alone do not prove these explanations. These are previews, not actual advisor, worker, App fork, or scenario executions.
+
+Communication previews also cover reviewer-to-worker evidence questions, advisor-to-explorer evidence requests, and coordinator ownership of scope/approach/resource changes. Inspect that recommendations return to the coordinator and peer explanations do not substitute for independent review. Direct communication requires supported, authorized messaging and does not create a mandatory pipeline.

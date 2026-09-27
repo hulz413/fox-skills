@@ -2,7 +2,7 @@
 
 A general-purpose skill for planning and coordinating useful subagent work. Invoke `$orchestrate` with a goal and relevant constraints. The coordinator chooses the approach, delegation, model settings, and verification depth, then integrates the results.
 
-Three reusable role definitions cover investigation (**Explorer**), execution (**Worker**), and independent assessment (**Reviewer**). They can be instantiated in any useful mix; small tasks can stay with the coordinator. Subject expertise and project workflows are supplied with each assignment, while overall planning remains with the coordinator.
+Four reusable role definitions cover investigation (**Explorer**), execution (**Worker**), independent assessment (**Reviewer**), and direction or decision advice (**Advisor**). They can be instantiated in any useful mix; work stays with the coordinator by default unless delegation is worthwhile. Advisors receive selected necessary context in a fresh subagent, without forking an App conversation. Subject expertise and project workflows are supplied with each assignment, while overall planning remains with the coordinator.
 
 ## Files
 
@@ -22,7 +22,7 @@ Install this folder as `orchestrate` in your discoverable skills directory.
 
 ## Regression tests
 
-See [tests/README.md](tests/README.md) for the trace checker, negative regression cases, and fresh-context behavioral smoke test. These are maintenance checks, not runtime skill dependencies.
+See [tests/README.md](tests/README.md) for the routing-only behavioral suite and offline checker tests. Run them after every skill edit; sample tasks are never executed. These are maintenance checks, not runtime skill dependencies.
 
 ## Design references
 

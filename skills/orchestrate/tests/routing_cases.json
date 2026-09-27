@@ -1,0 +1,352 @@
+{
+  "runtime": {
+    "light-fixture": {
+      "tier": "efficient",
+      "efforts": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "recommended_effort": "medium"
+    },
+    "standard-fixture": {
+      "tier": "workhorse",
+      "efforts": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "recommended_effort": "medium"
+    },
+    "strong-fixture": {
+      "tier": "frontier",
+      "efforts": [
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "recommended_effort": "medium"
+    }
+  },
+  "cases": [
+    {
+      "id": "extract",
+      "task": "Extract dates from the supplied ten lines using an explicit date format; direct comparison checks the result.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "mechanical",
+      "task": "Apply one exact documented spelling substitution in 80 files, with a diff check.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "routine",
+      "task": "Implement pagination in one endpoint using an existing local pattern and clear acceptance tests.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "noncode",
+      "task": "Compare three supplied venue proposals against budget, capacity and accessibility requirements; evidence is complete.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "diagnosis",
+      "task": "Resolve competing explanations for duplicate events involving transaction ordering and retries; supplied traces allow reproduction.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "synthesis",
+      "task": "Design a strategy across interacting technical, organizational and economic constraints; material uncertainty remains and its central long-term conclusion cannot be directly validated. Only an initial framing of the options is needed; there is no long derivation or detailed causal reconciliation in this assignment.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "review",
+      "task": "Reviewer: check whether five provided values obey a fully specified allowlist.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "highimpact",
+      "task": "Production payment setting: compare the supplied value against the explicit approved value; report equality only.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "pin",
+      "task": "Count a short list. User explicitly requires strong-fixture with max effort.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "max",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "badpin",
+      "task": "Count a short list. User explicitly requires missing-fixture with low effort.",
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "effortfallback",
+      "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports only low and medium, recommended medium.",
+      "runtime_patch": {
+        "standard-fixture": {
+          "tier": "workhorse",
+          "efforts": [
+            "low",
+            "medium"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "history",
+      "task": "Routine scoped task requires full conversation history. Full-history forks forbid overrides. Parent model is strong-fixture and effort high. No pins.",
+      "expected": {
+        "status": "inherited",
+        "model": "strong-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "all"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "failedreasoning",
+      "task": "Adequate evidence is supplied. A prior standard-fixture/high attempt demonstrably missed interacting constraints; an independent counterexample identifies the reasoning failure. Produce a corrected synthesis. The next assignment is a fresh high-level framing, not a detailed derivation.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "efficient_baseline",
+      "task": "User pins model light-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "efficient_up",
+      "task": "The current light-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "efficient_down",
+      "task": "The current light-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "workhorse_baseline",
+      "task": "User pins model standard-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "workhorse_up",
+      "task": "The current standard-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "workhorse_down",
+      "task": "The current standard-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "frontier_baseline",
+      "task": "User pins model strong-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "frontier_up",
+      "task": "The current strong-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "frontier_down",
+      "task": "The current strong-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "environment_not_reasoning",
+      "task": "The current standard-fixture/medium task is ordinary scoped implementation. Its tool failed because the service is unavailable. Inputs and model capability remain adequate. Route the same assignment for when service access is restored.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "frontier_direct_high",
+      "task": "The assignment needs cross-domain synthesis under material uncertainty and a detailed causal reconciliation of several conflicting technical and economic constraints. A long chain of interacting implications must be checked before dispatch; no prior attempt exists.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules"
+    },
+    {
+      "id": "case_025",
+      "group": "autonomous",
+      "task": "请把这段名单按邮箱去重，保留第一次出现的姓名，并按邮箱排序输出 CSV。输入的每行都是姓名和邮箱两个字段，邮箱比较时不区分大小写。输出后核对去重前后的条数。",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_026",
+      "group": "autonomous",
+      "task": "给现有的读书清单页面加一个“只看未读”的开关。项目里已有按作者筛选的实现，请沿用它的组件和状态管理方式；两个筛选条件应同时生效。补上切换筛选后列表内容正确的检查。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_027",
+      "group": "autonomous",
+      "task": "某订单收到两次扣款通知。应用日志只有一次发起支付的记录，消息队列有重投记录，支付平台显示两个不同流水号。请列出需要核对的记录，并设计核验步骤，区分重复通知、重复提交和真正发生两笔扣款的情况，说明不同证据将如何改变结论。暂不修改系统或退款。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_028",
+      "group": "autonomous",
+      "task": "团队有三份活动场地报价，均列明日期、人数上限、交通方式和总价。请根据已给出的参加人数、日期和预算筛选可用方案，比较往返交通的便利程度，写一段推荐理由，并列出报价中还没说明、需要向场地方确认的事项。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    }
+  ]
+}
