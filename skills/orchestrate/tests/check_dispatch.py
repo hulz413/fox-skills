@@ -6,6 +6,7 @@ Model IDs are supplied by the evaluator from the runtime catalog, never pinned h
 import argparse
 import json
 from pathlib import Path
+from routing_eval import valid_context_mode
 
 
 def dispatches(path):
@@ -23,13 +24,16 @@ def check(calls, efficient_models):
     if len(calls) != 2:
         errors.append(f'Expected two bounded worker dispatches, got {len(calls)}')
     for i, call in enumerate(calls, 1):
+        if not isinstance(call, dict):
+            errors.append(f'Dispatch {i}: must be an object')
+            continue
         for key in ('model', 'reasoning_effort'):
             if not isinstance(call.get(key), str) or not call[key].strip():
                 errors.append(f'Dispatch {i}: missing explicit {key}')
         fork = call.get('fork_turns', 'all')
-        if not (fork == 'none' or (isinstance(fork, str) and fork.isdigit() and int(fork) > 0)):
+        if fork == 'all' or not valid_context_mode(fork):
             errors.append(f'Dispatch {i}: full-history fork prevents overrides')
-        if call.get('model') not in efficient_models:
+        if isinstance(call.get('model'), str) and call['model'] not in efficient_models:
             errors.append(f'Dispatch {i}: expected an efficient model for this simple assignment')
     return errors
 

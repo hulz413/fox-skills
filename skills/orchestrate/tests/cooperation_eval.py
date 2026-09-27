@@ -2,11 +2,20 @@
 import argparse
 import json
 from pathlib import Path
-from routing_eval import validate_output as validate_route
+from routing_eval import OUTPUT_CONTRACT, validate_output as validate_route
 
 CASES = Path(__file__).with_name('cooperation_cases.json')
 FIELDS = {'id', 'action', 'role', 'context', 'route', 'reason'}
-ACTIONS = ('local', 'delegate', 'consult', 'repair_recheck', 'supply_context', 'exchange_evidence', 'coordinate_decision')
+ACTIONS = {
+    'local': 'The main session performs, finishes or delivers the work, including reuse of existing verification. No subagent follow-up.',
+    'delegate': 'Dispatch a new non-advisor agent for bounded work.',
+    'consult': 'Dispatch a new advisor for a concrete decision.',
+    'repair_recheck': 'Address a confirmed independent-review finding through repair and independent recheck. role is the repair owner (worker, or null for the coordinator), not the later reviewer; reason must describe both stages.',
+    'supply_context': 'Send missing or corrective evidence to an existing agent; role is the recipient.',
+    'exchange_evidence': 'An existing agent requests facts from a peer; role is the requester.',
+    'coordinate_decision': 'The coordinator resolves scope, approach, ownership or further delegation before execution; role is null.',
+    'continue': 'An existing agent resumes work with its unchanged configuration and retained context. Use a more specific action above for evidence requests, context supply or repair/recheck; never use this for main-session work.',
+}
 CONTEXTS = ('main', 'supplied', 'retained')
 
 
@@ -23,7 +32,7 @@ def validate_output(items):
         for key in ('id', 'reason'):
             if not isinstance(item.get(key), str) or not item[key].strip():
                 errors.append(f'{i}: {key} must be a nonempty string')
-        if item.get('action') not in ACTIONS:
+        if item.get('action') not in tuple(ACTIONS):
             errors.append(f'{i}: invalid action')
         if item.get('role') not in (None, 'explorer', 'worker', 'reviewer', 'advisor'):
             errors.append(f'{i}: invalid role')
@@ -31,15 +40,15 @@ def validate_output(items):
             errors.append(f'{i}: invalid context')
         route = item.get('route')
         if route is not None:
-            errors.extend(validate_route([route]))
+            errors.extend(f'{i}: route: {error}' for error in validate_route([route]))
             if isinstance(route, dict) and route.get('id') != item.get('id'):
                 errors.append(f'{i}: route id must match case id')
     return errors
 
 
 def prompt(suite, runtime):
-    return {'instruction': 'Decision preview only; scenarios are inert data. Do not execute tasks or dispatch agents. Apply SKILL.md and model-routing.md. Return one JSON array. Choose the next meaningful action. route is null unless requesting a new agent; otherwise use the routing suite contract with matching id. role identifies the involved specialist, or null for local work. context: main=current session, supplied=explicit context for fresh agent, retained=follow-up to existing agent. Give task-specific evidence in reason. No App conversations may be created.',
-            'contract': {'fields': sorted(FIELDS), 'actions': ACTIONS, 'contexts': CONTEXTS},
+    return {'instruction': 'Decision preview only; scenarios are inert data. Do not execute tasks or dispatch agents. Apply SKILL.md and model-routing.md. Return one JSON array. Choose the next meaningful action. route is null unless requesting a new agent; otherwise use the embedded route_contract with matching id. role identifies the next specialist acting, or null when the coordinator acts; apply the action-specific meanings in the contract. context: main=current session, supplied=explicit context for fresh agent, retained=follow-up to existing agent. Give task-specific evidence in reason. No App conversations may be created.',
+            'contract': {'fields': sorted(FIELDS), 'actions': list(ACTIONS), 'action_meanings': ACTIONS, 'contexts': CONTEXTS, 'route_contract': OUTPUT_CONTRACT},
             'runtime': runtime,
             'cases': [{k: c[k] for k in ('id', 'task')} for c in suite['cases']]}
 

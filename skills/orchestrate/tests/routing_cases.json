@@ -173,41 +173,8 @@
       "group": "rules"
     },
     {
-      "id": "failedreasoning",
-      "task": "Adequate evidence is supplied. A prior standard-fixture/high attempt demonstrably missed interacting constraints; an independent counterexample identifies the reasoning failure. Produce a corrected synthesis. The next assignment is a fresh high-level framing, not a detailed derivation.",
-      "expected": {
-        "status": "requested",
-        "model": "strong-fixture",
-        "reasoning_effort": "medium",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
       "id": "efficient_baseline",
       "task": "User pins model light-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
-      "expected": {
-        "status": "requested",
-        "model": "light-fixture",
-        "reasoning_effort": "medium",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "efficient_up",
-      "task": "The current light-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
-      "expected": {
-        "status": "requested",
-        "model": "light-fixture",
-        "reasoning_effort": "high",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "efficient_down",
-      "task": "The current light-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
       "expected": {
         "status": "requested",
         "model": "light-fixture",
@@ -228,66 +195,11 @@
       "group": "rules"
     },
     {
-      "id": "workhorse_up",
-      "task": "The current standard-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
-      "expected": {
-        "status": "requested",
-        "model": "standard-fixture",
-        "reasoning_effort": "high",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "workhorse_down",
-      "task": "The current standard-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
-      "expected": {
-        "status": "requested",
-        "model": "standard-fixture",
-        "reasoning_effort": "medium",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
       "id": "frontier_baseline",
       "task": "User pins model strong-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
       "expected": {
         "status": "requested",
         "model": "strong-fixture",
-        "reasoning_effort": "medium",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "frontier_up",
-      "task": "The current strong-fixture/medium attempt missed an explicitly demonstrated interaction between two constraints despite complete inputs. The model capability is still suitable. Choose the next effort to repair the reasoning.",
-      "expected": {
-        "status": "requested",
-        "model": "strong-fixture",
-        "reasoning_effort": "high",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "frontier_down",
-      "task": "The current strong-fixture/high completed the difficult reasoning. The remaining follow-up uses the same suitable model and only requires an ordinary short explanation of the settled findings, without intricate dependencies. Do not redo completed work.",
-      "expected": {
-        "status": "requested",
-        "model": "strong-fixture",
-        "reasoning_effort": "medium",
-        "fork_turns": "none"
-      },
-      "group": "rules"
-    },
-    {
-      "id": "environment_not_reasoning",
-      "task": "The current standard-fixture/medium task is ordinary scoped implementation. Its tool failed because the service is unavailable. Inputs and model capability remain adequate. Route the same assignment for when service access is restored.",
-      "expected": {
-        "status": "requested",
-        "model": "standard-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       },
@@ -341,6 +253,27 @@
       "id": "case_028",
       "group": "autonomous",
       "task": "团队有三份活动场地报价，均列明日期、人数上限、交通方式和总价。请根据已给出的参加人数、日期和预算筛选可用方案，比较往返交通的便利程度，写一段推荐理由，并列出报价中还没说明、需要向场地方确认的事项。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "effortfallback_reserved",
+      "group": "rules",
+      "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports medium and max only, recommends max, and the user has not requested a specific effort.",
+      "runtime_patch": {
+        "standard-fixture": {
+          "tier": "workhorse",
+          "efforts": [
+            "medium",
+            "max"
+          ],
+          "recommended_effort": "max"
+        }
+      },
       "expected": {
         "status": "requested",
         "model": "standard-fixture",

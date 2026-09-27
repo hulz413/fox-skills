@@ -54,6 +54,12 @@ class RoutingCheckerTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual(not validate_output(items), valid)
 
+    def test_long_numeric_context_strings_do_not_crash(self):
+        for value, valid in (("1" * 5000, True), ("0" * 5000, False)):
+            item = copy.deepcopy(self.good[0])
+            item['fork_turns'] = value
+            self.assertEqual(not validate_output([item]), valid)
+
     def test_structure_cli_does_not_need_expected_answers(self):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / "routing_eval.py"

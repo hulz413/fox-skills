@@ -7,16 +7,16 @@ Four reusable role definitions cover investigation (**Explorer**), execution (**
 ## Files
 
 - [SKILL.md](SKILL.md): role definitions and essential coordination guidance.
-- [Model routing](references/model-routing.md): task-based selection using current runtime information, plus adaptation from results.
+- [Model routing](references/model-routing.md): task-based selection using current runtime information, selected once before each assignment.
 - [agents/openai.yaml](agents/openai.yaml): the skill's interface metadata.
 
 ## Runtime behavior
 
-Role definitions are instructions passed to subagents; they do not register native agent types or install persistent agents. Actual permissions, concurrency, and supported configuration changes come from the host runtime.
+Role definitions are instructions passed to subagents; they do not register native agent types or install persistent agents. Actual permissions, concurrency, and supported initial settings come from the host runtime.
 
 Model routing reuses information already in context. Additional lookup is reserved for material gaps or unreliable information. There is no maintained model list, third-party routing skill, background updater, or persistent cache. The coordinator's own configuration is set by the caller or session.
 
-Retries and upgrades depend on observed progress and user constraints, with no skill-imposed numeric limit. Instructions guide decisions; hard budgets require runtime support. Interface changes may still require maintaining the skill.
+The coordinator selects each assignment's model and effort at the start and keeps them fixed for follow-ups. Corrections change evidence or approach, not configuration. Instructions guide decisions; hard budgets require runtime support. Interface changes may still require maintaining the skill.
 
 Install this folder as `orchestrate` in your discoverable skills directory.
 

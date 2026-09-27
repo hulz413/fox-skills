@@ -30,6 +30,19 @@ class DispatchTests(unittest.TestCase):
         call = self.good(); call['model'] = 'frontier-test-model'
         self.assertTrue(check([call, call], {'efficient-test-model'}))
 
+    def test_malformed_calls_return_errors(self):
+        self.assertTrue(check([None, self.good()], {'efficient-test-model'}))
+        for field, value in [('model', []), ('model', {}), ('fork_turns', '²'),
+                             ('fork_turns', {}), ('reasoning_effort', [])]:
+            call = self.good(); call[field] = value
+            with self.subTest(field=field, value=value):
+                self.assertTrue(check([call, self.good()], {'efficient-test-model'}))
+
+    def test_limited_history_uses_shared_syntax(self):
+        for value in ('2', '1' * 5000):
+            call = self.good(); call['fork_turns'] = value
+            self.assertEqual(check([call, self.good()], {'efficient-test-model'}), [])
+
     def test_reads_actual_call_not_text_claims(self):
         records = [
             {'type': 'response_item', 'payload': {'type': 'message', 'text': 'I used efficient models'}},
