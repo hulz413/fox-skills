@@ -2,7 +2,7 @@
 
 A general-purpose skill for planning and coordinating useful subagent work. Invoke `$orchestrate` with a goal and relevant constraints. The coordinator chooses the approach, delegation, model settings, and verification depth, then integrates the results.
 
-Four reusable role definitions cover investigation (**Explorer**), execution (**Worker**), independent assessment (**Reviewer**), and direction or decision advice (**Advisor**). They can be instantiated in any useful mix; work stays with the coordinator by default unless delegation is worthwhile. Advisors receive selected necessary context in a fresh subagent, without forking an App conversation. Subject expertise and project workflows are supplied with each assignment, while overall planning remains with the coordinator.
+Four reusable role definitions cover investigation (**Explorer**), execution (**Worker**), independent assessment (**Reviewer**), and direction or decision advice (**Advisor**). Use any useful mix; choose local work or delegation based on required quality and overall cost, including coordination and verification. Advisors receive selected necessary context in a fresh subagent, without forking an App conversation. Subject expertise and project workflows are supplied with each assignment, while overall planning remains with the coordinator.
 
 ## Files
 

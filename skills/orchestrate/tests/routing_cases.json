@@ -24,6 +24,7 @@
         "low",
         "medium",
         "high",
+        "xhigh",
         "max"
       ],
       "recommended_effort": "medium"
@@ -263,6 +264,49 @@
     {
       "id": "effortfallback_reserved",
       "group": "rules",
+      "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports medium and ultra only, recommends ultra, and the user has not requested a specific effort.",
+      "runtime_patch": {
+        "standard-fixture": {
+          "tier": "workhorse",
+          "efforts": [
+            "medium",
+            "ultra"
+          ],
+          "recommended_effort": "ultra"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "frontier_direct_xhigh",
+      "group": "rules",
+      "task": "Reconcile conflicting experimental evidence, economic assumptions and technical safety constraints across several interdependent reasoning chains. Each candidate conclusion changes assumptions needed by the others, requiring sustained reconciliation and edge-case analysis beyond a single deep causal check. No effort is pinned and no prior attempt exists.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "xhigh",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "frontier_direct_max",
+      "group": "rules",
+      "task": "Develop and stress-test a novel cross-domain decision model under unresolved material uncertainty. Its coupled technical and economic claims require extensive derivation, adversarial counterexamples and repeated consistency checks across mutually dependent assumptions. The task is exceptionally difficult even after decomposition; correctness benefits justify substantial extra deliberation and latency. No effort is pinned and no prior attempt exists.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "max",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "effortfallback_max_allowed",
+      "group": "rules",
       "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports medium and max only, recommends max, and the user has not requested a specific effort.",
       "runtime_patch": {
         "standard-fixture": {
@@ -277,7 +321,7 @@
       "expected": {
         "status": "requested",
         "model": "standard-fixture",
-        "reasoning_effort": "medium",
+        "reasoning_effort": "max",
         "fork_turns": "none"
       }
     }
