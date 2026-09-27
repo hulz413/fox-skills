@@ -1,6 +1,6 @@
 ---
 name: git-commit
-description: Create exactly one focused Conventional Commit using the lowest available model tier and reasoning effort. Use whenever the user asks to commit the current repository changes.
+description: Create exactly one focused Conventional Commit directly in the current session using its current model. Use whenever the user asks to commit the current repository changes.
 ---
 
 # Git Commit
@@ -11,13 +11,9 @@ If the user provides extra context or a preferred message, factor it into the co
 
 ## Execution model
 
-Use the lowest-tier model currently available to the execution interface, with that model's minimum supported reasoning effort. Reuse current runtime metadata to identify model tiers and effort ordering; do not hardcode model IDs or effort labels, or infer tiers from name spelling. Among equivalent lowest-tier options, prefer the runtime's current recommended model. Look up missing information only when needed to make this choice. Explicit user overrides and higher-priority constraints take precedence.
+Perform the workflow directly in the current session using its current model. Use that model's lowest supported reasoning effort when the runtime provides a control for this operation, respecting explicit user overrides. Use available runtime metadata to identify supported efforts; do not change the model or global defaults.
 
-Select the executor before reviewing diffs or mutating Git state. If the current agent already uses the selected settings, perform the workflow directly. Otherwise, use a supported execution interface or delegate to one commit executor with explicit model and effort parameters and a sufficient fresh or limited-context handoff. This skill authorizes that delegation and those configuration overrides. Loading the skill alone does not change the current agent's model.
-
-Pass the repository path, requested commit scope, relevant constraints, and existing validation results. A delegated commit executor performs the workflow directly without further delegation. Give it sole ownership of staging and committing; the coordinator verifies and reports its resulting commit without creating another one. Distinguish requested configuration from runtime-confirmed configuration when reporting.
-
-If the required configuration cannot be identified or run, report the limitation before staging or committing; do not silently substitute a higher model tier or reasoning effort. Do not change global model settings to execute this skill.
+Skill instructions alone cannot change the active turn's reasoning setting. If no supported control is available, continue at the actual setting and briefly disclose the limitation rather than claiming a lower effort or blocking the commit. Reuse existing task context and valid verification results; keep commit checks proportionate to the changes.
 
 ## Workflow
 
