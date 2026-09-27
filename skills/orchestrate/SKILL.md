@@ -48,7 +48,7 @@ For routing-only tests or previews, return decisions without dispatching or exec
 
 Before the first dispatch of each assignment, apply [model routing](references/model-routing.md). Select model, effort and context mode for the task, pass supported settings explicitly, and keep that configuration for the assignment. This skill permits initial task-specific overrides unless the user or higher-priority instructions pin them.
 
-Whenever you dispatch work to a subagent, you MUST show the user a Markdown table in the dispatch update, with one row for every dispatched agent even when configurations match. Include the agent or role, assignment, requested model, requested effort, selection reason, and whether settings are runtime-confirmed, requested, or inherited. Repeat the table when a later dispatch adds agents. If a setting cannot be verified, label it unknown or inherited; never imply runtime confirmation.
+Whenever you dispatch work to a subagent, show the user a Markdown table with one row per agent: agent or role, assignment, model, effort, and selection reason. Repeat it when a later dispatch adds agents. For normal explicit settings, omit a status column and routine unconfirmed-configuration disclaimers in both the table and surrounding prose. Successful explicit dispatch needs no commentary about a missing configuration echo. Explain inheritance, fallback, unsupported settings or dispatch errors when they occur, and report known effective values if the runtime supplies different ones. Distinguish planned dispatch from successful creation; previews do not establish execution.
 
 ## Evidence and handoffs
 
