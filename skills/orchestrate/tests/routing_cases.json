@@ -14,7 +14,9 @@
       "efforts": [
         "low",
         "medium",
-        "high"
+        "high",
+        "xhigh",
+        "max"
       ],
       "recommended_effort": "medium"
     },
@@ -32,7 +34,7 @@
   },
   "cases": [
     {
-      "id": "extract",
+      "id": "case_001",
       "task": "Extract dates from the supplied ten lines using an explicit date format; direct comparison checks the result.",
       "expected": {
         "status": "requested",
@@ -43,7 +45,7 @@
       "group": "rules"
     },
     {
-      "id": "mechanical",
+      "id": "case_002",
       "task": "Apply one exact documented spelling substitution in 80 files, with a diff check.",
       "expected": {
         "status": "requested",
@@ -54,7 +56,7 @@
       "group": "rules"
     },
     {
-      "id": "routine",
+      "id": "case_003",
       "task": "Implement pagination in one endpoint using an existing local pattern and clear acceptance tests.",
       "expected": {
         "status": "requested",
@@ -65,7 +67,7 @@
       "group": "rules"
     },
     {
-      "id": "noncode",
+      "id": "case_004",
       "task": "Compare three supplied venue proposals against budget, capacity and accessibility requirements; evidence is complete.",
       "expected": {
         "status": "requested",
@@ -76,7 +78,7 @@
       "group": "rules"
     },
     {
-      "id": "diagnosis",
+      "id": "case_005",
       "task": "Resolve competing explanations for duplicate events involving transaction ordering and retries; supplied traces allow reproduction.",
       "expected": {
         "status": "requested",
@@ -87,7 +89,7 @@
       "group": "rules"
     },
     {
-      "id": "synthesis",
+      "id": "case_006",
       "task": "Design a strategy across interacting technical, organizational and economic constraints; material uncertainty remains and its central long-term conclusion cannot be directly validated. Only an initial framing of the options is needed; there is no long derivation or detailed causal reconciliation in this assignment.",
       "expected": {
         "status": "requested",
@@ -98,7 +100,7 @@
       "group": "rules"
     },
     {
-      "id": "review",
+      "id": "case_007",
       "task": "Reviewer: check whether five provided values obey a fully specified allowlist.",
       "expected": {
         "status": "requested",
@@ -109,7 +111,7 @@
       "group": "rules"
     },
     {
-      "id": "highimpact",
+      "id": "case_008",
       "task": "Production payment setting: compare the supplied value against the explicit approved value; report equality only.",
       "expected": {
         "status": "requested",
@@ -120,7 +122,7 @@
       "group": "rules"
     },
     {
-      "id": "pin",
+      "id": "case_009",
       "task": "Count a short list. User explicitly requires strong-fixture with max effort.",
       "expected": {
         "status": "requested",
@@ -131,7 +133,7 @@
       "group": "rules"
     },
     {
-      "id": "badpin",
+      "id": "case_010",
       "task": "Count a short list. User explicitly requires missing-fixture with low effort.",
       "expected": {
         "status": "blocked",
@@ -142,7 +144,7 @@
       "group": "rules"
     },
     {
-      "id": "effortfallback",
+      "id": "case_011",
       "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports only low and medium, recommended medium.",
       "runtime_patch": {
         "standard-fixture": {
@@ -163,7 +165,7 @@
       "group": "rules"
     },
     {
-      "id": "history",
+      "id": "case_012",
       "task": "Routine scoped task requires full conversation history. Full-history forks forbid overrides. Parent model is strong-fixture and effort high. No pins.",
       "expected": {
         "status": "inherited",
@@ -174,7 +176,7 @@
       "group": "rules"
     },
     {
-      "id": "efficient_baseline",
+      "id": "case_013",
       "task": "User pins model light-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
       "expected": {
         "status": "requested",
@@ -185,7 +187,7 @@
       "group": "rules"
     },
     {
-      "id": "workhorse_baseline",
+      "id": "case_014",
       "task": "User pins model standard-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
       "expected": {
         "status": "requested",
@@ -196,7 +198,7 @@
       "group": "rules"
     },
     {
-      "id": "frontier_baseline",
+      "id": "case_015",
       "task": "User pins model strong-fixture only. Prepare a short explanation of a supplied complete proposal, requiring ordinary interpretation, with no mechanical shortcut or intricate dependencies. No effort is pinned.",
       "expected": {
         "status": "requested",
@@ -207,7 +209,7 @@
       "group": "rules"
     },
     {
-      "id": "frontier_direct_high",
+      "id": "case_016",
       "task": "The assignment needs cross-domain synthesis under material uncertainty and a detailed causal reconciliation of several conflicting technical and economic constraints. A long chain of interacting implications must be checked before dispatch; no prior attempt exists.",
       "expected": {
         "status": "requested",
@@ -262,7 +264,7 @@
       }
     },
     {
-      "id": "effortfallback_reserved",
+      "id": "case_017",
       "group": "rules",
       "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports medium and ultra only, recommends ultra, and the user has not requested a specific effort.",
       "runtime_patch": {
@@ -283,7 +285,7 @@
       }
     },
     {
-      "id": "frontier_direct_xhigh",
+      "id": "case_018",
       "group": "rules",
       "task": "Reconcile conflicting experimental evidence, economic assumptions and technical safety constraints across several interdependent reasoning chains. Each candidate conclusion changes assumptions needed by the others, requiring sustained reconciliation and edge-case analysis beyond a single deep causal check. No effort is pinned and no prior attempt exists.",
       "expected": {
@@ -294,7 +296,7 @@
       }
     },
     {
-      "id": "frontier_direct_max",
+      "id": "case_019",
       "group": "rules",
       "task": "Develop and stress-test a novel cross-domain decision model under unresolved material uncertainty. Its coupled technical and economic claims require extensive derivation, adversarial counterexamples and repeated consistency checks across mutually dependent assumptions. The task is exceptionally difficult even after decomposition; correctness benefits justify substantial extra deliberation and latency. No effort is pinned and no prior attempt exists.",
       "expected": {
@@ -305,7 +307,7 @@
       }
     },
     {
-      "id": "effortfallback_max_allowed",
+      "id": "case_020",
       "group": "rules",
       "task": "Investigate competing causal hypotheses with bounded reproducible checks. The workhorse model supports medium and max only, recommends max, and the user has not requested a specific effort.",
       "runtime_patch": {
@@ -321,6 +323,50 @@
       "expected": {
         "status": "requested",
         "model": "standard-fixture",
+        "reasoning_effort": "max",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_029",
+      "group": "autonomous",
+      "task": "订单取消接口已经有一套确认过的状态转换表和事务实现。请照现有接口的模式，为批量导入入口接入同一个取消服务，并补齐表中待支付、已支付、已发货三种状态的返回值检查。状态转换和退款规则保持不变。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_030",
+      "group": "autonomous",
+      "task": "订单取消服务和支付回调各自的单元测试都通过，但偶尔出现订单已取消、款项仍被确认的记录。现有日志包含事务提交时间、回调事件 ID 和取消请求 ID，请复现两者交错执行的过程，确定是哪个检查与写入之间出了问题，修复后验证不会重复退款或覆盖已确认的付款。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_031",
+      "group": "autonomous",
+      "task": "服务正把订单数据从单库迁到分片库，现有程序会双写、回填、切换读取，失败时可切回旧库。测试分别能通过，但回填进度落后时切读会漏数据；延迟切读又会让旧库日志清理挡住回填；延长日志保留后，回滚会遇到双写期间不同的版本号。请根据提供的代码、日志和测试库，调整这套迁移流程，并证明同一执行顺序下回填能完成、读切换不遗漏、回滚不覆盖新值。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "xhigh",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_032",
+      "group": "autonomous",
+      "task": "我们有一份新设计的复制日志协议及可运行的状态机模型。协议允许成员变更与日志压缩同时进行，节点可在任一步崩溃恢复，消息可乱序或重复。三节点和五节点的有界检查通过了，但现有归纳证明在恢复节点同时持有旧成员表和新快照时无法继续；已有共识协议的证明依赖固定配置，不能直接套用。请在给定的持久化与消息模型下，补出适用于任意节点数和任意执行长度的安全性证明；若命题不成立，给出可执行反例和协议修正，再验证修正后的不变量。",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
         "reasoning_effort": "max",
         "fork_turns": "none"
       }

@@ -18,6 +18,24 @@ class RoutingCheckerTests(unittest.TestCase):
     def test_prompt_hides_expectations(self):
         self.assertTrue(all("expected" not in c for c in prompt(self.suite)["cases"]))
 
+    def test_blind_case_ids_are_neutral_and_unique(self):
+        cases = prompt(self.suite)["cases"]
+        ids = [case["id"] for case in cases]
+        self.assertEqual(len(ids), len(set(ids)))
+        for case_id in ids:
+            with self.subTest(case_id=case_id):
+                self.assertRegex(case_id, r"^case_[0-9]{3}$")
+
+    def test_requested_fixture_routes_are_supported(self):
+        for case in self.suite["cases"]:
+            expected = case["expected"]
+            if expected["status"] != "requested":
+                continue
+            runtime = self.suite["runtime"] | case.get("runtime_patch", {})
+            with self.subTest(case_id=case["id"]):
+                self.assertIn(expected["model"], runtime)
+                self.assertIn(expected["reasoning_effort"], runtime[expected["model"]]["efforts"])
+
     def test_rejects_missing_duplicate_unknown(self):
         for bad in ([], self.good[:-1], self.good + [self.good[0]], self.good + [dict(id="unknown")]):
             with self.subTest(bad=bad):
@@ -93,7 +111,7 @@ class RoutingCheckerTests(unittest.TestCase):
 
     def test_rejects_silent_pin_substitution(self):
         bad = copy.deepcopy(self.good)
-        item = next(p for p in bad if p["id"] == "badpin")
+        item = next(p for p in bad if p["id"] == "case_010")
         item.update(model="light-fixture", reasoning_effort="low", status="requested")
         self.assertTrue(check(self.suite, bad))
 

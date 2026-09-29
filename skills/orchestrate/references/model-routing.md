@@ -15,7 +15,7 @@ Choose model and effort once, before each bounded assignment's first dispatch.
 | --- | --- |
 | Bounded extraction, transformations, or checks with explicit rules | efficient |
 | Ordinary implementation or analysis, including competing explanations with bounded verification | workhorse |
-| Cross-domain synthesis with material unresolved uncertainty | frontier |
+| Tasks requiring new methods, proofs or explanations where established approaches are insufficient for a reliable conclusion, even within one domain; or cross-domain synthesis with material unresolved uncertainty | frontier |
 
 Select effort for the chosen model by the reasoning needed to complete the assignment:
 

@@ -27,9 +27,28 @@ Unit tests validate the checker. The separately scored fresh-context answers tes
 
 ## Separate scores
 
-The 20 deliberately cued initial-selection scenarios are rule checks (`rules`), not evidence of autonomous model selection. Four natural requests (`autonomous`) omit model/effort instructions and difficulty labels. They cover list processing, a UI feature, a payment-notification investigation and venue comparison; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
+The 20 deliberately cued initial-selection scenarios are rule checks (`rules`), not evidence of autonomous model selection. Eight natural requests (`autonomous`) omit model/effort instructions and difficulty labels. They cover list processing, a UI feature, a payment-notification investigation, venue comparison, an order-cancellation pair, a data migration and a replicated-log proof; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
 
-The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These four examples are a limited sample, not proof of general real-world routing reliability.
+The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These eight examples are a limited sample, not proof of general real-world routing reliability.
+
+
+### Adjacent-effort coverage
+
+All routing case IDs are neutral numeric labels in both fixtures and emitted prompts. Existing rule cases were renamed without changing their expected decisions; historical reports retain their original IDs and results. Rule task wording remains deliberately cued and is scored separately from natural requests.
+
+The workhorse fixture now supports `xhigh` and `max` as well as lower efforts, so these efforts no longer force the frontier model by availability. Per-case fallback patches remain unchanged. This is test runtime metadata, not a claim about production models.
+
+New expectations are fixed before fresh-context evaluation:
+
+| Cases | Expected route | Evidence to inspect in the evaluator's reason |
+| --- | --- | --- |
+| `case_029` / `case_030` | workhorse medium / high | The first follows a settled cancellation contract; the second must reconstruct cancellation/payment interleavings that individual tests miss. The shared domain must not determine effort. |
+| `case_031` | workhorse xhigh | Backfill, read switching, retention and rollback invalidate each other's assumptions; the choice should depend on those feedbacks, not merely on migration terminology. |
+| `case_032` | frontier max | Frontier reflects the need to establish a new proof where existing arguments do not apply, despite a single technical domain. Max reflects the unbounded derivation and counterexample search beyond finite checks. |
+
+Review corrected the initial `case_032` expectation from workhorse to frontier before any behavioral evaluation: a specified technical model does not make a new unbounded proof routine. Its task and max effort remain unchanged.
+
+These are routing hypotheses, not measured optimal settings. Do not relax them after seeing answers to obtain a pass. The new unit checks validate neutral IDs and supported fixture settings only; adding cases and passing checker tests does not establish behavioral success. Fresh-context behavioral evaluation of this revision has not yet been run.
 
 ## Cooperation previews
 
