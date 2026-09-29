@@ -17,15 +17,18 @@ Choose model and effort once, before each bounded assignment's first dispatch.
 | Ordinary implementation or analysis, including competing explanations with bounded verification | workhorse |
 | Cross-domain synthesis with material unresolved uncertainty | frontier |
 
-Medium is a decision baseline for every model, not a mandatory trial or an override of task evidence. Select effort before dispatch:
+Select effort for the chosen model by the reasoning needed to complete the assignment:
 
-- **low:** Explicit rules determine operations and results are directly checkable. Multiple deterministic steps remain mechanical; medium requires reasoning beyond rule application.
-- **medium:** Ordinary interpretation or judgment at the selected model's capability.
-- **high:** Interacting constraints, competing causal explanations or a deep reasoning chain require additional deliberation.
-- **xhigh:** Several interdependent reasoning chains require sustained reconciliation of conflicting evidence, assumptions or edge cases beyond a single deep analysis.
-- **max:** Exceptionally difficult, tightly coupled reasoning requires extensive derivation and counterexample checking; expected correctness gains justify the highest automatic effort and its added latency and cost.
+| Effort | Assignment evidence |
+| --- | --- |
+| **low** | Known rules largely determine the operations: extract, transform, replace or directly verify information, without substantive judgment between alternatives. |
+| **medium** | The goal and contract are clear. Understand context, choose a local approach and handle ordinary edge cases; issues can generally be resolved individually and checked separately. |
+| **high** | Correctness depends on interactions between conditions or event ordering. Compare competing explanations, trace state changes or construct counterexamples; checking each condition separately is insufficient. |
+| **xhigh** | Conclusions from several reasoning chains depend on one another. Resolving one subproblem changes another, requiring repeated reconciliation of assumptions, approaches and counterexamples. |
+| **max** | The core problem requires extended derivation or broad counterexample search. Established patterns and local checks are insufficient to establish a conclusion, and additional reasoning is expected to materially improve correctness. |
+| **ultra** | Only when explicitly requested by the user and supported by the runtime. |
 
-Justify effort with task evidence separately from capability; frontier does not imply high. Concrete reasoning demands can justify high, xhigh or max immediately; no lower-effort trial is required. Length, file count, deterministic step count, reviewer role, production terminology or high impact alone do not justify promotion. Automatic selection spans low through max where supported. Reserve ultra for explicit user requests.
+Use medium as the decision baseline, then select directly from task evidence; no lower-effort trial is required. Justify effort separately from model capability: frontier does not imply high. Length, file count, deterministic step count, reviewer role, technical terminology or importance alone do not determine effort. Automatic selection spans low through max where supported.
 
 3. Check compatibility. If the preferred tier is missing, use the runtime-recommended compatible default and disclose the fallback; block if none exists. For unsupported unpinned effort, use that model's recommended effort if policy permits, otherwise the nearest supported lower permitted effort; block if neither exists. Never invent support; pins override baselines.
 4. Advisors follow [the advisor context contract](../SKILL.md#advisor-context): fresh context with explicit evidence and no App fork. For other roles, use `fork_turns: "none"` for self-contained assignments or limited history when needed. If full history is necessary and overrides are disallowed, report inherited settings (null when unknown), without conflicting overrides; a conflicting explicit pin blocks the route. Never inherit to avoid selection.
