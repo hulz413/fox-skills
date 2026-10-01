@@ -824,6 +824,90 @@
         "reasoning_effort": "medium",
         "fork_turns": "none"
       }
+    },
+    {
+      "id": "case_057",
+      "group": "rules",
+      "task": "Solve a focused problem with complete supplied constraints and directly checkable acceptance. Ordinary planning suffices, with no repeated reconciliation cycles. Applicable official guidance for this efficient model and this task recommends xhigh; latency and cost are acceptable. No settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "xhigh",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "recommended_effort": "medium",
+          "task_guidance": "Official guidance for this model recommends xhigh for this constrained problem-solving task."
+        }
+      }
+    },
+    {
+      "id": "case_058",
+      "group": "rules",
+      "task": "Produce a complex connected report and recommendation using established methods and supplied evidence. Workhorse capability suffices. Acceptance has exacting completeness and consistency requirements before external delivery. Extended independent checks and synthesis beyond a normal deep pass are expected to materially reduce omissions, even though no repeated mutual invalidation or reconciliation cycle is needed. Extra latency and usage are acceptable. No settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "xhigh",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_059",
+      "group": "rules",
+      "task": "Prepare a technical deliverable from complete supplied materials with ordinary interpretation and planning. Broader context requires workhorse capability. Applicable official guidance recommends xhigh for this workload, but a reliable controlled evaluation of comparable tasks found medium met the same quality bar with lower cost and latency and xhigh added no material quality gain. No settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "standard-fixture": {
+          "tier": "workhorse",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "recommended_effort": "xhigh",
+          "task_guidance": "Applicable official task guidance recommends xhigh as a starting point.",
+          "evaluation_evidence": "Reliable controlled comparable-task evaluation used the same inputs, tools and acceptance criteria: medium met required quality at lower latency and cost; xhigh provided no material quality gain."
+        }
+      }
+    },
+    {
+      "id": "case_060",
+      "group": "rules",
+      "task": "Add a small local implementation using a supplied established pattern, complete contract and direct checks. Only brief limited judgment is needed. Applicable official guidance recommends low for this efficient model on this precise task; no comparable-task evaluation or settings pin is present.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium",
+          "task_guidance": "Official guidance for this model recommends low for this exact small well-scoped implementation task."
+        }
+      }
     }
   ]
 }
