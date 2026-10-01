@@ -44,7 +44,7 @@ Observe runtime concurrency and lifecycle rules: returned results may not free s
 
 ## Choose models
 
-Before each assignment's first dispatch, apply [model routing](references/model-routing.md). Choose capability and effort separately rather than copying coordinator settings; use runtime descriptions and known pricing without inventing savings. Pass supported model, effort and context settings explicitly and keep them fixed for that assignment. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
+Before each assignment's first dispatch, apply [model routing](references/model-routing.md). Choose capability and effort from the assignment rather than the role or coordinator settings, with separate reasons and a combined acceptance check. Use runtime descriptions and known pricing without inventing savings. Apply supported model, effort and context settings through the runtime's configuration entrypoints; disclose unavailable controls or inheritance and keep the assignment's configuration fixed. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 
 At dispatch, show a Markdown table with agent/role, assignment, model, effort and selection reason; add rows in a new table for later dispatches. For normal explicit settings, omit status columns and routine configuration-confirmation disclaimers. Explain inheritance, fallback, unsupported settings and dispatch errors; report different effective values if supplied by the runtime. Distinguish plans and previews from successful creation.
 

@@ -60,7 +60,7 @@
       "task": "Implement pagination in one endpoint using an existing local pattern and clear acceptance tests.",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "light-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       },
@@ -71,7 +71,7 @@
       "task": "Compare three supplied venue proposals against budget, capacity and accessibility requirements; evidence is complete.",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "light-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       },
@@ -236,7 +236,7 @@
       "task": "给现有的读书清单页面加一个“只看未读”的开关。项目里已有按作者筛选的实现，请沿用它的组件和状态管理方式；两个筛选条件应同时生效。补上切换筛选后列表内容正确的检查。",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "light-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       }
@@ -258,7 +258,7 @@
       "task": "团队有三份活动场地报价，均列明日期、人数上限、交通方式和总价。请根据已给出的参加人数、日期和预算筛选可用方案，比较往返交通的便利程度，写一段推荐理由，并列出报价中还没说明、需要向场地方确认的事项。",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "light-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       }
@@ -333,7 +333,7 @@
       "task": "订单取消接口已经有一套确认过的状态转换表和事务实现。请照现有接口的模式，为批量导入入口接入同一个取消服务，并补齐表中待支付、已支付、已发货三种状态的返回值检查。状态转换和退款规则保持不变。",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "light-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       }
@@ -368,6 +368,460 @@
         "status": "requested",
         "model": "strong-fixture",
         "reasoning_effort": "max",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_033",
+      "group": "rules",
+      "task": "Worker: add one local field formatter using the supplied established pattern; the contract, file boundary and direct acceptance checks are complete.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_034",
+      "group": "rules",
+      "task": "Worker: integrate a feature across existing services, comparing two mature designs and their interface tradeoffs. Broader caller context must be understood, but each contract can be checked separately; ordinary planning suffices.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_035",
+      "group": "rules",
+      "task": "Advisor: assess a difficult architecture choice within one familiar domain using established methods. The question needs the strongest available sustained judgment and synthesis across contradictory constraints; no new proof is needed. The assignment is an initial decision framing, not extended derivation.",
+      "expected": {
+        "status": "requested",
+        "model": "apex-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "apex-fixture": {
+          "tier": "frontier",
+          "capability": "Most capable available model for sustained judgment; stronger than strong-fixture.",
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "recommended_effort": "medium"
+        }
+      }
+    },
+    {
+      "id": "case_036",
+      "group": "rules",
+      "task": "Advisor: compare two mature implementation options using the supplied caller contracts, maintenance costs and measured tradeoffs. It requires broader technical judgment, but ordinary planning and separately checkable conclusions suffice.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_037",
+      "group": "rules",
+      "task": "Use established methods to deliver a complete analysis within one domain. Contradictory sources and requirements require the strongest sustained judgment beyond the other tiers, with deep evidence reconciliation but no repeated mutual invalidation of reasoning chains or new proof.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_038",
+      "group": "rules",
+      "task": "Produce an internal working draft connecting supplied research results, technical options and a delivery plan. Broader context and ordinary planning are needed; the reader will review and revise it. No deep conflict reconciliation is required.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_039",
+      "group": "rules",
+      "task": "Produce a polished, connected report, presentation and recommendation from conflicting research and technical evidence. Established methods suffice for the workhorse tier. Acceptance requires sustained deep reconciliation and consistency checking across the deliverables before sharing; latency is flexible. Comparable-task evaluations found xhigh materially reduced inconsistencies.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "xhigh",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_040",
+      "group": "rules",
+      "task": "Diagnose an existing implementation with conflicting logs and several mature causal hypotheses. Deep debugging and complex verification are needed; there is no concurrent event ordering or new method.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_041",
+      "group": "rules",
+      "task": "Plan a short familiar sequence of tool operations and perform a routine local edit. The pattern and checklist are supplied; only limited judgment and modest planning are needed.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_042",
+      "group": "rules",
+      "task": "A focused, repeatable reconciliation assignment needs ordinary interpretation of clear constraints. The runtime specifically recommends high effort for this efficient model on this exact task, based on comparable-task evaluations. No effort is pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "high",
+          "task_guidance": "Use high for this reconciliation assignment; validated on comparable tasks."
+        }
+      }
+    },
+    {
+      "id": "case_043",
+      "group": "rules",
+      "task": "Extract fields using a complete schema and direct checks. light-fixture can be selected explicitly, but the interface exposes no effort configuration or known effective effort. No settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [],
+          "recommended_effort": null,
+          "effort_control": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "case_044",
+      "group": "rules",
+      "task": "Extract fields using a complete schema. User explicitly pins light-fixture and high effort. The interface can select this model but exposes no effort configuration and no known effective effort.",
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [],
+          "recommended_effort": null,
+          "effort_control": "unavailable"
+        }
+      }
+    },
+    {
+      "id": "case_045",
+      "group": "rules",
+      "task": "A local implementation follows an established pattern with clear direct acceptance checks. The model can be selected explicitly, but effort cannot be overridden and the known inherited effort is high. No settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium",
+          "effort_control": "inherited",
+          "inherited_effort": "high"
+        }
+      }
+    },
+    {
+      "id": "case_046",
+      "group": "rules",
+      "task": "Advisor: an initial framing of a difficult decision requires frontier judgment. The preferred frontier model is unavailable: the runtime exposes only strong-fixture, and identifies it as the most capable authorized suitable model. Ordinary planning suffices; no settings are pinned.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_047",
+      "group": "rules",
+      "task": "User explicitly pins unavailable apex-fixture for an architecture consultation requiring the strongest judgment. Only strong-fixture is available, and the runtime has no apex-fixture entry.",
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_048",
+      "group": "rules",
+      "task": "User pins strong-fixture. Adapt a short supplied text while preserving factual nuance; the job is a quick pass with limited judgment. The model-specific guidance recommends low for this precise task.",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "runtime_patch": {
+        "strong-fixture": {
+          "tier": "frontier",
+          "efforts": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "recommended_effort": "low",
+          "task_guidance": "Use low for concise adaptation of supplied content."
+        }
+      }
+    },
+    {
+      "id": "case_049",
+      "group": "autonomous",
+      "task": "请把已有报表里的日期格式统一成项目当前的格式，沿用旁边字段的 formatter。输入边界和预期输出都已列出，检查这一个字段及原有显示即可。",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_050",
+      "group": "autonomous",
+      "task": "请把这几份研究结果、接口契约和实施选项整理成内部讨论稿，说明接口取舍和分工。材料已齐全且没有冲突，我会看过后再迭代，现在先把方案和依据讲清楚。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_051",
+      "group": "autonomous",
+      "task": "现有流程偶尔返回错误结果。三段日志对输入来源的描述互相矛盾，分别都有对应的代码路径；没有并发操作。请追查来源，逐个验证解释并构造能区分它们的复现，给出有证据的根因。",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_052",
+      "group": "autonomous",
+      "task": "项目实施中遇到一个无法用局部测试决定的架构取舍。请找顾问帮忙：已有方案都使用成熟技术，但持续可用性、运维恢复和长期迁移的证据互相矛盾，需要最强的综合判断。先给决策框架和应补的关键证据，不做长篇推导，也不执行修改。",
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_053",
+      "group": "rules",
+      "task": "Implement a local feature using the supplied established pattern and direct acceptance checks. Select within the focused family only; no exact version or effort is pinned. Both versions are available and compatible, but the runtime recommendation still names the older version.",
+      "runtime_patch": {
+        "previous-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 1,
+          "available": true,
+          "compatible": true,
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        },
+        "current-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 2,
+          "available": true,
+          "compatible": true,
+          "recommended": false,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "current-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_054",
+      "group": "rules",
+      "task": "Implement the same scoped feature. User explicitly pins previous-fixture at medium effort. A newer compatible version in that family is available.",
+      "runtime_patch": {
+        "previous-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 1,
+          "available": true,
+          "compatible": true,
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        },
+        "current-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 2,
+          "available": true,
+          "compatible": true,
+          "recommended": false,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "previous-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_055",
+      "group": "rules",
+      "task": "Implement a local feature using a supplied pattern and direct acceptance checks. Select within the focused family only; no exact version is pinned. The runtime identifies a newer version, but it is unavailable to this account. The older version is available and compatible.",
+      "runtime_patch": {
+        "previous-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 1,
+          "available": true,
+          "compatible": true,
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        },
+        "current-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 2,
+          "available": false,
+          "compatible": true,
+          "recommended": false,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "previous-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_056",
+      "group": "rules",
+      "task": "Implement a local feature using a supplied pattern and direct acceptance checks. Select within the focused family only; no exact version is pinned. The newer version lacks a required dispatch-interface capability and is marked incompatible; the older version supports it.",
+      "runtime_patch": {
+        "previous-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 1,
+          "available": true,
+          "compatible": true,
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        },
+        "current-fixture": {
+          "tier": "efficient",
+          "family": "focused",
+          "version_order": 2,
+          "available": true,
+          "compatible": false,
+          "recommended": false,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "previous-fixture",
+        "reasoning_effort": "medium",
         "fork_turns": "none"
       }
     }

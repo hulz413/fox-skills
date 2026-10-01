@@ -30,7 +30,7 @@
         "route": {
           "id": "case_c03",
           "status": "requested",
-          "model": "standard-fixture",
+          "model": "light-fixture",
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }
@@ -98,7 +98,7 @@
         "route": {
           "id": "case_c08",
           "status": "requested",
-          "model": "standard-fixture",
+          "model": "light-fixture",
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }
@@ -216,6 +216,22 @@
           "status": "requested",
           "model": "light-fixture",
           "reasoning_effort": "low",
+          "fork_turns": "none"
+        }
+      }
+    },
+    {
+      "id": "case_c21",
+      "task": "实施过程中需要一次独立架构咨询，不要求改代码。熟悉领域中现有成熟方法都可用，但可用性、恢复和迁移约束的证据相互矛盾，需要当前最强的持续综合判断。原始记录、约束、失败尝试和决策目标都已定位并由协调者持有。只需初步决策框架，不做长推导；没有其他顾问在运行。",
+      "expected": {
+        "action": "consult",
+        "role": "advisor",
+        "context": "supplied",
+        "route": {
+          "id": "case_c21",
+          "status": "requested",
+          "model": "strong-fixture",
+          "reasoning_effort": "medium",
           "fork_turns": "none"
         }
       }

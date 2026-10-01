@@ -19,7 +19,7 @@ This mode never loads cases or expected answers. If it fails, preserve the first
 python3 skills/orchestrate/tests/routing_eval.py /path/to/predictions.json
 ```
 
-Inspect reasons as well as the score: high effort and frontier routes need task-specific evidence. Do not adjust expectations merely to make a run pass. Fixtures cover bounded, routine, complex and frontier work, non-code work, misleading size/risk/role cues, explicit pins, unavailable settings, effort fallback (including recommendations outside policy limits), inheritance and initial medium defaults for all three model tiers, plus direct high selection before any execution. Fixed synthetic runtime IDs are fixtures, not a production model catalog.
+Inspect reasons as well as the score: high effort and frontier routes need task-specific evidence. Do not adjust expectations merely to make a run pass. Fixtures cover bounded, routine, complex and frontier work, non-code work, misleading size/risk/role cues, explicit pins, unavailable settings, effort fallback (including recommendations outside policy limits), inheritance and medium decision baselines for all three model tiers, plus direct high selection before any execution. Fixed synthetic runtime IDs are fixtures, not a production model catalog.
 
 Unit tests validate the checker. The separately scored fresh-context answers test routing behavior. Neither dispatches the selected models nor proves effective runtime settings, task quality, repeatability across runs, or token savings. If a fresh evaluation is unavailable, report behavioral validation as not run; checker success alone is insufficient. Remove temporary prompts and predictions after inspection, retaining failure evidence only when needed.
 
@@ -27,9 +27,9 @@ Unit tests validate the checker. The separately scored fresh-context answers tes
 
 ## Separate scores
 
-The 20 deliberately cued initial-selection scenarios are rule checks (`rules`), not evidence of autonomous model selection. Eight natural requests (`autonomous`) omit model/effort instructions and difficulty labels. They cover list processing, a UI feature, a payment-notification investigation, venue comparison, an order-cancellation pair, a data migration and a replicated-log proof; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
+The deliberately cued initial-selection scenarios are rule checks (`rules`), not evidence of autonomous model selection. Natural requests (`autonomous`) omit fixture model/effort instructions and capability-tier labels. They cover list processing, a UI feature, a payment-notification investigation, venue comparison, an order-cancellation pair, a data migration and a replicated-log proof; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
 
-The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These eight examples are a limited sample, not proof of general real-world routing reliability.
+The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These examples are a limited sample, not proof of general real-world routing reliability.
 
 
 ### Adjacent-effort coverage
@@ -38,11 +38,11 @@ All routing case IDs are neutral numeric labels in both fixtures and emitted pro
 
 The workhorse fixture now supports `xhigh` and `max` as well as lower efforts, so these efforts no longer force the frontier model by availability. Per-case fallback patches remain unchanged. This is test runtime metadata, not a claim about production models.
 
-New expectations are fixed before fresh-context evaluation:
+Current expectations are fixed before fresh-context evaluation; the assignment-based revision below changes the first route in the cancellation pair:
 
 | Cases | Expected route | Evidence to inspect in the evaluator's reason |
 | --- | --- | --- |
-| `case_029` / `case_030` | workhorse medium / high | The first follows a settled cancellation contract; the second must reconstruct cancellation/payment interleavings that individual tests miss. The shared domain must not determine effort. |
+| `case_029` / `case_030` | efficient medium / workhorse high | The first follows a settled cancellation contract; the second must reconstruct cancellation/payment interleavings that individual tests miss. The shared domain must not determine effort. |
 | `case_031` | workhorse xhigh | Backfill, read switching, retention and rollback invalidate each other's assumptions; the choice should depend on those feedbacks, not merely on migration terminology. |
 | `case_032` | frontier max | Frontier reflects the need to establish a new proof where existing arguments do not apply, despite a single technical domain. Max reflects the unbounded derivation and counterexample search beyond finite checks. |
 
@@ -71,3 +71,21 @@ case_c14 explicitly states that the Worker has already received the counterexamp
 Both generated prompts embed the same routing output contract from routing_eval.py; a cooperation-only evaluation must not rely on a separately supplied routing prompt for field names or status values.
 
 Automatic-effort policy update: xhigh and max may now be selected from task evidence before first dispatch; ultra remains explicit-request only. Added rule cases cover direct xhigh, direct max and a supported recommended-max fallback. The reserved-effort fixture now uses ultra to preserve its original policy-limit check. Other expected routes and historical reports remain unchanged; these fixtures do not establish behavioral success until evaluated in a fresh context.
+
+
+## Assignment-based routing revision
+
+Expected decisions for this revision are fixed before fresh-context evaluation. Update existing local-pattern/direct-acceptance implementation and supplied bounded-comparison cases (`case_003`, `case_004`, `case_026`, `case_028`, `case_029`) to efficient/medium. The analogous new-agent cooperation cases (`case_c03`, `case_c08`) also use efficient/medium. Keep `case_c19` on its existing workhorse agent: its configuration is sufficient and retained context helps, so a cheaper hypothetical new route does not require replacement. Other existing expectations and historical reports remain unchanged.
+
+New rules (`case_033`–`case_048`) cover different assignments under the same role, the most capable available suitable Advisor, ordinary consultation, demanding synthesis with established methods, draft versus connected polished delivery, deep debugging without event ordering, low-effort planning/tool use, model-specific guidance, unavailable or inherited effort controls, and explicit pins. New natural requests (`case_049`–`case_052`) cover a local edit, an internal technical draft, conflicting-log debugging and architecture advice. Cooperation `case_c21` covers fresh frontier consultation during implementation. All runtime models and control metadata remain synthetic fixtures; production routing names no vendor or model.
+
+Runtime patches with `effort_control: unavailable` have no configurable effort; an explicitly selected model uses `requested` with null effort and an explanation. With `effort_control: inherited`, report the known `inherited_effort` and disclose inheritance without claiming it was overridden. A conflicting or unverifiable explicit effort pin blocks. Null never asserts that reasoning is disabled. Output fields are unchanged.
+
+Review reasons for capability/effort separation, combined acceptance, task-specific additional reasoning benefits, and disclosed unavailable/inherited controls. For xhigh/max, reasons must distinguish comparable-task evidence from unvalidated expected gains; do not require an extra evaluation per dispatch. Medium is a decision baseline, not a mandatory trial or execution value. The Ultra boundary is a runtime execution-mode restriction, not a universal next effort level.
+
+Run the offline suite and one fresh-context routing/cooperation evaluation using the procedure above. Report rules, autonomous requests, cooperation and per-case reason review separately, including any first-pass formatting failures. Fixed answers test compliance with these routing hypotheses, not optimal configurations, effective dispatch settings, actual task quality or cost savings. Actual configuration comparisons would need the same representative inputs and acceptance criteria and are outside this routing-only suite.
+
+
+### Latest version within a family
+
+User-requested follow-up: normally filter superseded versions out within each runtime-identified family before applying runtime recommendations. `case_053` prefers a newer available compatible version despite a stale recommendation. `case_054` honors an explicit older-version pin. `case_055` and `case_056` use an older version only because the newer one is unavailable or incompatible; reasons must disclose the exception. Family and version-order metadata are synthetic test inputs, not a production model catalog or model-name parser. Expectations are fixed before evaluation of these added cases; unaffected predictions can be reused.

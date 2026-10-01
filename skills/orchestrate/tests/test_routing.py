@@ -34,7 +34,11 @@ class RoutingCheckerTests(unittest.TestCase):
             runtime = self.suite["runtime"] | case.get("runtime_patch", {})
             with self.subTest(case_id=case["id"]):
                 self.assertIn(expected["model"], runtime)
-                self.assertIn(expected["reasoning_effort"], runtime[expected["model"]]["efforts"])
+                model = runtime[expected["model"]]
+                if expected["reasoning_effort"] is None:
+                    self.assertEqual(model.get("effort_control"), "unavailable")
+                else:
+                    self.assertIn(expected["reasoning_effort"], model["efforts"])
 
     def test_rejects_missing_duplicate_unknown(self):
         for bad in ([], self.good[:-1], self.good + [self.good[0]], self.good + [dict(id="unknown")]):
@@ -108,6 +112,20 @@ class RoutingCheckerTests(unittest.TestCase):
         result = report(self.suite, [{"id": []}])
         self.assertFalse(result["structure"]["passed"])
         self.assertTrue(all(g["passed"] is None for g in result["groups"].values()))
+
+    def test_requested_null_effort_preserves_model_and_scores(self):
+        case = next(c for c in self.suite["cases"] if c["id"] == "case_043")
+        item = dict(id=case["id"], reason="No configurable effort; effective effort unknown.", **case["expected"])
+        self.assertEqual(check({"cases": [case]}, [item]), [])
+        item["reasoning_effort"] = "low"
+        self.assertTrue(check({"cases": [case]}, [item]))
+
+    def test_unverifiable_effort_pin_is_not_a_null_effort_route(self):
+        case = next(c for c in self.suite["cases"] if c["id"] == "case_044")
+        item = dict(id=case["id"], reason="Pinned effort cannot be applied or verified.", **case["expected"])
+        self.assertEqual(check({"cases": [case]}, [item]), [])
+        item.update(status="requested", model="light-fixture")
+        self.assertTrue(check({"cases": [case]}, [item]))
 
     def test_rejects_silent_pin_substitution(self):
         bad = copy.deepcopy(self.good)
