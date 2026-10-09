@@ -908,6 +908,47 @@
           "task_guidance": "Official guidance for this model recommends low for this exact small well-scoped implementation task."
         }
       }
+    },
+    {
+      "id": "case_061",
+      "group": "rules",
+      "task": "A task requires a proof meeting fixed acceptance criteria. The frontier and workhorse models are unavailable. The runtime recommends the available efficient model as its compatible default, but reliable evaluations on this same task establish that this model cannot meet the required proof correctness at any supported effort. No configuration is pinned. The acceptance criteria must not be weakened. Select a route before dispatch.",
+      "runtime_patch": {
+        "strong-fixture": {
+          "tier": "frontier",
+          "available": false,
+          "efforts": [
+            "medium",
+            "high"
+          ]
+        },
+        "standard-fixture": {
+          "tier": "workhorse",
+          "available": false,
+          "efforts": [
+            "medium",
+            "high"
+          ]
+        },
+        "light-fixture": {
+          "tier": "efficient",
+          "available": true,
+          "compatible": true,
+          "recommended": true,
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
     }
   ]
 }

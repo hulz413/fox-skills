@@ -1,97 +1,71 @@
-# Routing-only regression
+# Orchestrate validation
 
-After every edit to the skill, from the repository root run:
+## Choose the checks
+
+Run the offline suite after every skill edit, from the repository root:
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/orchestrate/tests -p 'test_*.py' -v
+```
+
+For model-routing changes, run one fresh-context routing and cooperation preview. For cooperation-only changes, run a fresh cooperation preview and reuse unaffected routing results when available; identify any result not rerun. Documentation-only rearrangements need link and content review, not another behavioral run. Repeat checks only for changed requirements, failures or unresolved verification gaps.
+
+Use [live-cooperation.md](live-cooperation.md) when changes to handoffs or coordination warrant actual execution evidence. These optional isolated scenarios are separate from previews and are not required on every skill invocation. [validation-history.md](validation-history.md) preserves earlier fixture revisions; it is not the current procedure.
+
+## Generate blind previews
+
+```sh
 python3 skills/orchestrate/tests/routing_eval.py
+python3 skills/orchestrate/tests/cooperation_eval.py
 ```
 
-The second command emits a blind evaluation prompt; it does not call a model. Give that prompt plus the current `references/model-routing.md` to a fresh evaluation context. Prohibit delegation, execution of sample tasks, and tools other than reading the policy/prompt, writing predictions, and the structure-only validation command below. Request JSON decisions only, using the generated output template and field contract. The reason must be a separate field; fork_turns accepts only a context mode. Structural errors fail validation and must not be silently repaired or counted as successful routes. Do not supply `routing_cases.json`, expected answers, or this checker source to that context. A single evaluation can handle the whole suite; do not launch one agent per case. The evaluator must save its JSON answer to a temporary file and run the structure-only gate before returning:
+These commands emit prompts, not model calls. Give the relevant generated prompt(s), current SKILL.md and references/model-routing.md to one fresh evaluator. Keep routing_cases.json, cooperation_cases.json, expected answers and checker sources hidden. A cooperation-only prompt includes its own routing output contract.
+
+Prohibit delegation, App forks, execution of scenario tasks, and tools other than reading the supplied policy/prompts, writing predictions, and running the structure-only gates below. Request JSON decisions using the embedded contracts; save routing and cooperation answers separately. Reasons belong in their own field, never in fork_turns. Use one evaluator for the suite, not one agent per case.
+
+## Validate, then score
+
+The evaluator runs the applicable structure-only gate before returning:
 
 ```sh
-python3 skills/orchestrate/tests/routing_eval.py --validate-output /path/to/predictions.json
+python3 skills/orchestrate/tests/routing_eval.py --validate-output /path/to/routing.json
+python3 skills/orchestrate/tests/cooperation_eval.py --validate-output /path/to/cooperation.json
 ```
 
-This mode never loads cases or expected answers. If it fails, preserve the first response, allow one format-only repair using the diagnostics, and validate again. Do not change model/effort choices during format repair. If still invalid, report a failed evaluation rather than retrying indefinitely. Report first-pass structure failures separately even if repaired. After the gate passes, the coordinator scores the decisions:
+These modes do not load expected answers. Cooperation validation also enforces route presence: new-agent actions require a route object; local and existing-agent actions require null. An extra configuration report on a follow-up is a contract error, not a new dispatch. A format-only repair may remove that extra report while preserving the selected action, but must not invent a missing routing decision. Preserve the first response if invalid; allow one format-only repair using diagnostics, without changing decisions. If still invalid, report failure instead of retrying indefinitely. Disclose first-pass failures and repair counts even if the final structure passes.
+
+After structure passes, the coordinator scores the saved answers:
 
 ```sh
-python3 skills/orchestrate/tests/routing_eval.py /path/to/predictions.json
+python3 skills/orchestrate/tests/routing_eval.py /path/to/routing.json
+python3 skills/orchestrate/tests/cooperation_eval.py /path/to/cooperation.json
 ```
 
-Inspect reasons as well as the score: high effort and frontier routes need task-specific evidence. Do not adjust expectations merely to make a run pass. Fixtures cover bounded, routine, complex and frontier work, non-code work, misleading size/risk/role cues, explicit pins, unavailable settings, effort fallback (including recommendations outside policy limits), inheritance and medium decision baselines for all three model tiers, plus direct high selection before any execution. Fixed synthetic runtime IDs are fixtures, not a production model catalog.
+Inspect reasons as well as fields. Record pass/fail/not reviewed for each case. Contradictory reasons fail behavioral acceptance; unreviewed reasons do not establish a pass. Do not use keyword matching or another evaluator to rubber-stamp scores. Expectations are fixed before evaluation; do not relax them to make predictions pass.
 
-Unit tests validate the checker. The separately scored fresh-context answers test routing behavior. Neither dispatches the selected models nor proves effective runtime settings, task quality, repeatability across runs, or token savings. If a fresh evaluation is unavailable, report behavioral validation as not run; checker success alone is insufficient. Remove temporary prompts and predictions after inspection, retaining failure evidence only when needed.
+Review capability and effort separately, then their combined suitability. Check task-specific reasons for higher effort, evidence versus unvalidated expected gains, explicit pins, unavailable/inherited controls, latest compatible family versions, and fixed configuration for an existing assignment. For cooperation, check resource ownership, coordinator decisions, fresh advisor evidence, independent repair/recheck, preservation of counterevidence, useful agent reuse, and stopping after sufficient acceptance evidence. Apply the action meanings in the generated prompt rather than guessing from labels.
 
-`check_dispatch.py` and `test_dispatch.py` retain the older actual-trace checker for compatibility. Its unit tests are offline. Do not perform actual dispatches or execute scenario tasks as part of this routing-only suite.
+## Report evidence and limits
 
-## Separate scores
+Report offline checker results, final structure validity, first-pass format failures, routing rules, autonomous routing, cooperation, and per-case reason review separately. Keep proportionate-work (case_c15–case_c17) and boundary (case_c18–case_c20) results distinct from the other cooperation cases. Do not publish a combined routing accuracy. Invalid structure or case coverage leaves routing scores unscored. If fresh evaluation is unavailable, say behavioral validation was not run.
 
-The deliberately cued initial-selection scenarios are rule checks (`rules`), not evidence of autonomous model selection. Natural requests (`autonomous`) omit fixture model/effort instructions and capability-tier labels. They cover list processing, a UI feature, a payment-notification investigation, venue comparison, an order-cancellation pair, a data migration and a replicated-log proof; none is a GEO scenario. Groups and expected answers stay hidden from the evaluator. Report the two scores separately and inspect reasons; do not publish a combined routing accuracy. Expectations are fixed before evaluation and must not be relaxed after seeing answers.
+Unit tests validate the checkers. Fresh-context previews test decisions against fixed routing/cooperation hypotheses; synthetic runtime IDs are fixtures, not a production model catalog. Neither proves effective dispatch settings, actual task quality, repeatability, latency or cost savings. Comparisons of configurations require the same representative inputs and acceptance criteria plus measured results. Live-scenario evidence must be reported separately from preview results.
 
-The scorer reports final structure validity separately. If structure or case coverage is invalid, both routing scores are unscored (`null`). Also disclose first-pass format failures and repair count from the evaluation trace; a final structural pass does not mean first-pass success. Run this small suite once per relevant change; no extra agents or repeated runs are required without a failure or changed requirement. These examples are a limited sample, not proof of general real-world routing reliability.
-
-
-### Adjacent-effort coverage
-
-All routing case IDs are neutral numeric labels in both fixtures and emitted prompts. Existing rule cases were renamed without changing their expected decisions; historical reports retain their original IDs and results. Rule task wording remains deliberately cued and is scored separately from natural requests.
-
-The workhorse fixture now supports `xhigh` and `max` as well as lower efforts, so these efforts no longer force the frontier model by availability. Per-case fallback patches remain unchanged. This is test runtime metadata, not a claim about production models.
-
-Current expectations are fixed before fresh-context evaluation; the assignment-based revision below changes the first route in the cancellation pair:
-
-| Cases | Expected route | Evidence to inspect in the evaluator's reason |
-| --- | --- | --- |
-| `case_029` / `case_030` | efficient medium / workhorse high | The first follows a settled cancellation contract; the second must reconstruct cancellation/payment interleavings that individual tests miss. The shared domain must not determine effort. |
-| `case_031` | workhorse xhigh | Backfill, read switching, retention and rollback invalidate each other's assumptions; the choice should depend on those feedbacks, not merely on migration terminology. |
-| `case_032` | frontier max | Frontier reflects the need to establish a new proof where existing arguments do not apply, despite a single technical domain. Max reflects the unbounded derivation and counterexample search beyond finite checks. |
-
-Review corrected the initial `case_032` expectation from workhorse to frontier before any behavioral evaluation: a specified technical model does not make a new unbounded proof routine. Its task and max effort remain unchanged.
-
-These are routing hypotheses, not measured optimal settings. Do not relax them after seeing answers to obtain a pass. The new unit checks validate neutral IDs and supported fixture settings only; adding cases and passing checker tests does not establish behavioral success. Fresh-context behavioral evaluation of this revision has not yet been run.
-
-## Cooperation previews
-
-Also run `python3 skills/orchestrate/tests/cooperation_eval.py` to emit the cooperation prompt. Give both generated prompts, SKILL.md and model-routing.md to the same fresh evaluator; keep both fixture files and checker sources hidden. Save routing and cooperation predictions separately. Use `cooperation_eval.py --validate-output /path/to/cooperation.json` for the cooperation structure gate, following the same first-response preservation and one format-only repair procedure above. Score it with `cooperation_eval.py /path/to/cooperation.json`. This structure-only mode does not load fixture expectations.
-
-Report cooperation separately from autonomous routing and rule compliance. Cases cover local small and tightly coupled work, explicit independent delegation, direction advice, repair and independent recheck, missing advisor evidence, and fresh advisor context for a history-dependent question. Inspect reasons to confirm raw evidence is supplied, missing evidence causes no escalation, and repair is followed by independent recheck; exact field scores alone do not prove these explanations. These are previews, not actual advisor, worker, App fork, or scenario executions.
-
-Communication previews also cover reviewer-to-worker evidence questions, advisor-to-explorer evidence requests, and coordinator ownership of scope/approach/resource changes. Inspect that recommendations return to the coordinator and peer explanations do not substitute for independent review. Direct communication requires supported, authorized messaging and does not create a mandatory pipeline.
-
-Fixed-configuration previews cover continuing an existing worker after a reasoning omission and retaining its original effort for a simple remainder. Inspect reasons for evidence/method corrections without automatic model or effort changes. The former escalation/de-escalation and replacement fixtures were retired because the user changed the requirement to initial selection only; historical evaluation reports remain unchanged. Contract revision 2 clarifies action meanings in the generated prompt before evaluation: local includes main-session continuation and delivery; continue means retained-agent work; repair_recheck names the repair owner as role, with independent recheck described in reason. case_c05 now explicitly assigns repairs to the original Worker, so its expected role changes from reviewer to worker. Other pre-existing expected answers are unchanged. Historical reports, including c05/c15/c16 label failures, remain unchanged and must not be rescored as if they used this contract.
-
-Proportionate-work previews (case_c15–case_c17) cover finishing after acceptance, reusing sufficient unchanged validation evidence, and supplying raw counterevidence omitted from an advisor summary. Report this group separately from pre-existing cooperation cases. In addition to field scores, inspect reasons: the first two should avoid unnecessary investigation/retesting; the third must preserve the material counterevidence rather than trusting the summary to save context.
-
-Boundary previews (case_c18–case_c20) cover coordinator control of further delegation and existing-agent reuse with compatible versus incompatible configurations for genuinely separate assignments. Report these separately; neither a new task nor a free slot automatically requires dispatch.
-
-Record a separate reason review (pass/fail/not reviewed) for each case alongside field scores. A contradictory reason fails behavioral acceptance even when fields match; unreviewed reasons do not establish a behavioral pass. Check ownership and independent recheck, stopping/reusing sufficient verification, material counterevidence, and any configuration/dispatch decisions relevant to the scenario. Do not use keyword matching or a second evaluator merely to rubber-stamp the score. This is coordinator inspection of the same preview, not execution of the scenario.
-
-case_c14 explicitly states that the Worker has already received the counterexample and has the required evidence. This distinguishes continuation from supplying missing context without changing its expected answer. The earlier ambiguous wording and first-run label failure remain in the validation report. repair_recheck denotes an independent-review loop; an agent correcting its own reasoning is not automatically that loop. For cooperation-only changes, rerun cooperation previews in a fresh context; reuse unaffected routing results when routing policy and fixtures have not changed.
-
-Both generated prompts embed the same routing output contract from routing_eval.py; a cooperation-only evaluation must not rely on a separately supplied routing prompt for field names or status values.
-
-Automatic-effort policy update: xhigh and max may now be selected from task evidence before first dispatch; ultra remains explicit-request only. Added rule cases cover direct xhigh, direct max and a supported recommended-max fallback. The reserved-effort fixture now uses ultra to preserve its original policy-limit check. Other expected routes and historical reports remain unchanged; these fixtures do not establish behavioral success until evaluated in a fresh context.
+check_dispatch.py and test_dispatch.py retain an older actual-trace checker for compatibility; its unit tests are offline. Do not dispatch selected models or execute sample tasks as part of the preview suite. Remove temporary prompts and predictions after inspection, preserving failure evidence when useful. Historical reports remain historical and must not be silently rescored against revised contracts.
 
 
-## Assignment-based routing revision
+## Runtime legality versus selection calibration
 
-Expected decisions for this revision are fixed before fresh-context evaluation. Update existing local-pattern/direct-acceptance implementation and supplied bounded-comparison cases (`case_003`, `case_004`, `case_026`, `case_028`, `case_029`) to efficient/medium. The analogous new-agent cooperation cases (`case_c03`, `case_c08`) also use efficient/medium. Keep `case_c19` on its existing workhorse agent: its configuration is sufficient and retained context helps, so a cheaper hypothetical new route does not require replacement. Other existing expectations and historical reports remain unchanged.
+Scoring also returns `runtime_validity`, shared by routing and new-agent cooperation routes. It applies the public runtime plus each case's runtime patch and checks model membership, availability, compatibility, supported effort, and unavailable/inherited effort controls. It never chooses a replacement or rewrites predictions. Blocked or unspecified inherited configurations are reported as not checked when there is no selected configuration to validate. Pins, full-history permissions, policy restrictions such as explicit-only ultra, and the truth of blocking/inheritance explanations still require reason review when available only in task prose; this checker does not infer them from language.
 
-New rules (`case_033`–`case_048`) cover different assignments under the same role, the most capable available suitable Advisor, ordinary consultation, demanding synthesis with established methods, draft versus connected polished delivery, deep debugging without event ordering, low-effort planning/tool use, model-specific guidance, unavailable or inherited effort controls, and explicit pins. New natural requests (`case_049`–`case_052`) cover a local edit, an internal technical draft, conflicting-log debugging and architecture advice. Cooperation `case_c21` covers fresh frontier consultation during implementation. All runtime models and control metadata remain synthetic fixtures; production routing names no vendor or model.
+To check routing predictions without hidden expected answers, save the emitted routing prompt and run:
 
-Runtime patches with `effort_control: unavailable` have no configurable effort; an explicitly selected model uses `requested` with null effort and an explanation. With `effort_control: inherited`, report the known `inherited_effort` and disclose inheritance without claiming it was overridden. A conflicting or unverifiable explicit effort pin blocks. Null never asserts that reasoning is disabled. Output fields are unchanged.
+```sh
+python3 skills/orchestrate/tests/routing_eval.py /path/to/predictions.json --validate-runtime /path/to/routing-prompt.json
+```
 
-Review reasons for capability/effort separation, combined acceptance, task-specific additional reasoning benefits, and disclosed unavailable/inherited controls. For xhigh/max, reasons must distinguish comparable-task evidence from unvalidated expected gains; do not require an extra evaluation per dispatch. Medium is a decision baseline, not a mandatory trial or execution value. The Ultra boundary is a runtime execution-mode restriction, not a universal next effort level.
+This command returns nonzero for violations, invalid structure, or incomplete runtime verification. It is not an automatic repair gate: changing model/effort is a decision change, not a format-only repair. Keep the original prediction and record any later decision separately. This offline checker is not a hook into the host's live dispatch API.
 
-Run the offline suite and one fresh-context routing/cooperation evaluation using the procedure above. Report rules, autonomous requests, cooperation and per-case reason review separately, including any first-pass formatting failures. Fixed answers test compliance with these routing hypotheses, not optimal configurations, effective dispatch settings, actual task quality or cost savings. Actual configuration comparisons would need the same representative inputs and acceptance criteria and are outside this routing-only suite.
+The existing `groups.rules` and `groups.autonomous` scores remain exact expectation matches, not task-success or quality scores. `expectation_differences_without_runtime_violation` lists remaining mismatches separately; absence of a detected runtime violation does not prove a choice obeys every instruction or is optimal. Runtime-invalid choices must not be reported as merely calibration differences. Do not merge these categories into one accuracy number.
 
-
-### Latest version within a family
-
-User-requested follow-up: normally filter superseded versions out within each runtime-identified family before applying runtime recommendations. `case_053` prefers a newer available compatible version despite a stale recommendation. `case_054` honors an explicit older-version pin. `case_055` and `case_056` use an older version only because the newer one is unavailable or incompatible; reasons must disclose the exception. Family and version-order metadata are synthetic test inputs, not a production model catalog or model-name parser. Expectations are fixed before evaluation of these added cases; unaffected predictions can be reused.
-
-## Effort guidance calibration
-
-Expectations are fixed before fresh-context evaluation. Keep every pre-existing task and expectation unchanged. New rule cases cover applicable official xhigh guidance for an efficient model without repeated cycles (`case_057`), exacting delivery benefiting from extended checks without those cycles (`case_058`), reliable comparable-task evaluations taking precedence over official starting guidance (`case_059`), and applicable low guidance for a small new implementation (`case_060`). Existing `case_040` and natural `case_051` retain high for ordinary deep conflicting-log investigation; broadening xhigh does not automatically raise them.
-
-Inspect reasons separately: capability and effort must remain distinct; guidance must apply to the chosen model and task; evaluation evidence must be reliable and comparable; explain conflicts and extra-effort benefits. Generic defaults are not model-specific official recommendations. Retain explicit pins, unsupported/inherited controls, latest-family versions and fixed-assignment cooperation regressions. Run the full offline suite and one fresh-context routing/cooperation evaluation under the procedure above, report each score separately, and do not execute sample tasks. No output field or checker interface changes are required.
+For checker/report-only changes that leave prompts, selection policy and fixtures unchanged, replay retained predictions and test the checker; a fresh model sample is unnecessary. Label replays with the new checker revision and retain original reports. See [selection-calibration.md](selection-calibration.md) for the reviewed ambiguous cases and evidence needed before changing expectations.

@@ -34,9 +34,9 @@ Use `fork_turns: "none"`; supply the question, goal, constraints, prior decision
 
 ## Delegate and coordinate
 
-Before dispatch, define the goal, constraints, resource owner and acceptance criteria. Supply necessary context and prior decisions; prefer fresh or limited context over copying full history or orchestration instructions for convenience. Adapt to new evidence and blockers.
+Before dispatch, define the goal, constraints, resource owner, necessary inputs, expected deliverable and its destination, and acceptance criteria. When work has dependencies, identify what can proceed independently and what must wait for upstream evidence. Keep this contract proportional to the assignment; no fixed template is required. Supply necessary context and prior decisions; prefer fresh or limited context over copying full history or orchestration instructions for convenience. Adapt to new evidence and blockers.
 
-The main coordinator owns dispatch decisions unless it explicitly delegates bounded coordination. Pass this boundary to subagents; delegated coordinators observe shared limits and report new assignments and resource owners. Give each mutable resource one owner, separate coordinator and agent work, and serialize conflicts. Preserve unrelated work, authorization and permissions; update active agents when scope or ownership changes.
+The main coordinator owns dispatch decisions unless it explicitly delegates bounded coordination. Pass this boundary to subagents; delegated coordinators observe shared limits and report new assignments and resource owners. Give each mutable resource one owner, separate coordinator and agent work, and serialize conflicts. For ongoing work, consider where the necessary context resides before moving even a small remainder to another agent or the coordinator. Preserve unrelated work, authorization and permissions; update active agents when scope or ownership changes.
 
 Agents may exchange evidence, interface clarifications and questions directly when supported and authorized. Share identities only when useful; do not create extra agents for messaging or fixed communication networks. Otherwise, use a concise coordinator relay. Scope, approach approval, ownership and completion decisions remain with the coordinator; report material evidence, contradictions and blockers there. Reviewers may question workers but must verify findings independently. Advisors may consult peers but return recommendations to the coordinator rather than directing execution.
 
@@ -52,7 +52,7 @@ For routing previews, return decisions without dispatching or executing sample t
 
 ## Evidence and handoffs
 
-Return conclusions, relevant paths, checks and results, and unresolved issues or verification gaps. Summarize passing checks, give failure diagnostics and link long logs. Omit unnecessary assignment repetition, full diffs and chronology, never evidence needed to judge correctness or failures hidden by truncation.
+Return conclusions, relevant paths, checks and results, and unresolved issues or verification gaps. Distinguish completed work from verified results and remaining work so downstream agents can assess what is ready to use. Summarize passing checks, give failure diagnostics and link long logs. Omit unnecessary assignment repetition, full diffs and chronology, never evidence needed to judge correctness or failures hidden by truncation.
 
 ## Integrate and finish
 
@@ -60,4 +60,4 @@ Intervene during implementation for blockers, decisions, scope changes or materi
 
 Own final acceptance and use independent review when worthwhile. When authorized, have the coordinator or assigned worker fix confirmed in-scope findings, then have the independent reviewer recheck the affected scope, behavior and downstream effects to closure. Report actual results and material gaps; unfinished required work is not complete.
 
-If progress stalls, supply evidence, fix environment issues, correct the approach or seek useful advice without changing the assignment's model or effort. Report concrete blockers or capability limits when unable to proceed. If delegation is unavailable, continue feasible local work and explain material limits.
+If progress stalls, supply evidence, fix environment issues, correct the approach or seek useful advice without changing the assignment's model or effort. When blocked, report the missing condition or capability, attempted approaches and observed results, reusable partial deliverables, and any decision needed from the coordinator. Do not repeat the same failed approach under unchanged conditions; continue independent work that remains feasible. If delegation is unavailable, continue feasible local work and explain material limits.

@@ -26,10 +26,37 @@ class CooperationTests(unittest.TestCase):
         answer['route']['fork_turns'] = 'all'
         self.assertEqual(report(self.suite, self.answers)['cooperation']['passed'], len(self.answers) - 1)
 
-    def test_no_route_for_local_or_followup(self):
+    def test_route_presence_matches_action(self):
+        route = copy.deepcopy(self.answers[2]['route'])
+        for action in ACTIONS:
+            for present in (False, True):
+                answer = dict(id=route['id'], action=action, role=None,
+                              context='supplied' if action in ('delegate', 'consult') else 'main',
+                              route=route if present else None,
+                              reason='contract check')
+                with self.subTest(action=action, present=present):
+                    self.assertEqual(bool(validate_output([answer])),
+                                     present != (action in ('delegate', 'consult')))
+
+    def test_new_agent_cannot_retain_existing_agent_context(self):
+        for action in ('delegate', 'consult'):
+            answer = copy.deepcopy(self.answers[2])
+            answer.update(action=action, context='retained')
+            self.assertTrue(validate_output([answer]))
+
+    def test_followup_route_is_unscored(self):
         self.answers[0]['route'] = copy.deepcopy(self.answers[2]['route'])
         self.answers[0]['route']['id'] = self.answers[0]['id']
-        self.assertEqual(report(self.suite, self.answers)['cooperation']['passed'], len(self.answers) - 1)
+        result = report(self.suite, self.answers)
+        self.assertFalse(result['structure']['passed'])
+        self.assertIsNone(result['cooperation']['passed'])
+
+    def test_blocked_new_route_is_structurally_valid(self):
+        answer = dict(id='blocked', action='delegate', role='worker', context='supplied',
+                      reason='Required settings unavailable',
+                      route=dict(id='blocked', status='blocked', model=None,
+                                 reasoning_effort=None, fork_turns='none', reason='Unavailable'))
+        self.assertEqual(validate_output([answer]), [])
 
     def test_invalid_structure_or_coverage_unscored(self):
         for items in (self.answers[:-1], self.answers + [self.answers[0]], ['bad']):
@@ -74,7 +101,7 @@ class CooperationTests(unittest.TestCase):
         self.assertTrue(any(error.startswith('2: route:') for error in validate_output(self.answers)))
 
     def test_wrong_action_fails(self):
-        self.answers[0]['action'] = 'consult'
+        self.answers[0]['action'] = 'coordinate_decision'
         self.assertEqual(report(self.suite, self.answers)['cooperation']['passed'], len(self.answers) - 1)
 
 

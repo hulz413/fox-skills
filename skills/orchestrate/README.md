@@ -22,7 +22,7 @@ Install this folder as `orchestrate` in your discoverable skills directory.
 
 ## Regression tests
 
-See [tests/README.md](tests/README.md) for the routing-only behavioral suite and offline checker tests. Run them after every skill edit; sample tasks are never executed. These are maintenance checks, not runtime skill dependencies.
+See [tests/README.md](tests/README.md) for the routing-only behavioral suite and offline checker tests. Run the applicable checks after skill edits; preview sample tasks are never executed. Optional isolated [live cooperation checks](tests/live-cooperation.md) provide separate execution evidence when handoff or coordination changes warrant it. These are maintenance checks, not runtime skill dependencies.
 
 ## Design references
 
