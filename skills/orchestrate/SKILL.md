@@ -5,59 +5,57 @@ description: Coordinate subagents when the user requests delegation or expected 
 
 # Orchestrate
 
-Own the plan, delegation, and final outcome. Supply agents with the domain context and workflows needed for their assignments.
-
-Choose local execution or delegation to meet required quality at lower overall cost, considering the current model and effort when known. Keep small, tightly coupled or context-heavy work local; consider delegating substantial, bounded work that a lighter model or lower effort can reliably handle. Include context transfer, coordination, verification and likely rework. Fewer agents need not mean fewer tokens or lower cost; token count is not monetary cost. Honor explicit requests within runtime limits. Skill invocation requires neither delegation nor a separate investigation or explanation of this choice; no pipeline or agent count is mandatory.
+Own the plan, delegation and final outcome. Supply each agent with the domain context and workflows its assignment needs.
 
 ## Work proportionately
 
-- **Justify extra work.** Delegation, consultation, investigation and repeated checks must advance the deliverable or resolve a material uncertainty. Quality, time or cost gains must justify the overhead.
-- **Reuse context and evidence.** Reuse tools, valid checks and retained context. Follow-ups supply changes or missing information; restore unavailable context and preserve constraints, raw evidence and counterevidence. Summaries do not replace required verification.
-- **Stop at acceptance.** Reopen work only for changed inputs, new evidence, a different approach to an unresolved problem or a verification gap. These judgments add no reporting or approval step.
+Choose local work or delegation to meet required quality at lower overall cost, considering the current model and effort when known. Keep small, tightly coupled or context-heavy work local; consider delegating substantial, bounded work a lighter model or lower effort can reliably handle. Count context transfer, coordination, verification and likely rework; fewer agents need not use fewer tokens or cost less; tokens are not money. Honor explicit requests within runtime limits. Invoking this skill mandates neither delegation, a pipeline or agent count, nor a separate investigation or explanation of that choice.
+
+Delegation, consultation, investigation and repeated checks must advance the deliverable or resolve material uncertainty, with gains justifying overhead. Reuse tools, valid checks and retained context. Follow-ups supply changes or missing information; restore unavailable context and preserve constraints, raw evidence and counterevidence. Summaries do not replace required verification.
 
 ## Roles
 
 | Role | Responsibility and boundary |
 | --- | --- |
-| `explorer` | Investigate sources, state, dependencies or unknowns. Return evidence and material uncertainties; keep the subject read-only. |
-| `worker` | Complete and check assigned work. Return deliverables, evidence and blockers; modify only assigned resources. |
-| `reviewer` | Independently assess against requirements. Report material, actionable, evidence-backed findings, impact and verification gaps. No findings is valid; preferences alone are not blockers. Keep the subject read-only; the coordinator or assigned worker owns repairs. |
-| `advisor` | Analyze direction, explanations or decisions. Return recommendations, evidence, unresolved questions and proposed checks. Do not modify resources or direct execution. |
+| `explorer` | Investigate sources, state, dependencies and unknowns; return evidence and material uncertainties. Read-only. |
+| `worker` | Complete and check assigned work; return deliverables, evidence and blockers. Modify only assigned resources. |
+| `reviewer` | Independently assess work against requirements; report material, actionable, evidence-backed findings, impact and verification gaps. Read-only; no findings is valid, and preferences are not blockers. |
+| `advisor` | Analyze direction or decisions; return recommendations, evidence, unresolved questions and proposed checks. Do not modify resources or direct execution. |
 
-Include the role, responsibilities and boundaries in each assignment unless supplied by the runtime; fresh agents do not automatically receive this skill. Multiple agents may share a role. Independent review uses someone other than the producer.
+Include the role, responsibilities and boundaries in each assignment unless the runtime supplies them; fresh agents do not automatically receive this skill. Multiple agents may share a role. A reviewer must be someone other than the producer; the coordinator or assigned worker owns repairs.
 
 ## Advisor context
 
-Use advisors for concrete decision problems worth the overhead, not automatically at startup, on errors or before completion. Advisor and reviewer are distinct roles; neither requires the strongest model.
+Consult an advisor for a concrete decision worth the overhead, not automatically at startup, on errors or before completion. Advice and independent review are distinct assignments; neither mandates the strongest model.
 
-Use `fork_turns: "none"`; supply the question, goal, constraints, prior decisions, raw evidence, attempted approaches and observed failures. Never fork an App conversation or inherit full history for consultation. The advisor identifies missing evidence for the coordinator to supply, or requests it from a relevant agent under the communication rules below. This contract overrides general history options in model routing.
+Use `fork_turns: "none"`, supplying the question, goal, constraints, prior decisions, raw evidence, attempted approaches and observed failures. Never fork an App conversation or inherit full history for consultation. The advisor identifies missing evidence for the coordinator to supply, or requests it from a relevant agent under the communication rules below. This overrides general history options in model routing.
 
 ## Delegate and coordinate
 
-Before dispatch, define the goal, constraints, resource owner, necessary inputs, expected deliverable and its destination, and acceptance criteria. When work has dependencies, identify what can proceed independently and what must wait for upstream evidence. Keep this contract proportional to the assignment; no fixed template is required. Supply necessary context and prior decisions; prefer fresh or limited context over copying full history or orchestration instructions for convenience. Adapt to new evidence and blockers.
+Before dispatch, define the goal, constraints, resource owner, necessary inputs, deliverable and destination, and acceptance criteria. Identify dependencies: what can proceed independently and what must await upstream evidence. Supply necessary context and prior decisions, preferring fresh or limited context over full history or copied orchestration instructions for convenience. Keep assignments proportional; no fixed template is required.
 
-The main coordinator owns dispatch decisions unless it explicitly delegates bounded coordination. Pass this boundary to subagents; delegated coordinators observe shared limits and report new assignments and resource owners. Give each mutable resource one owner, separate coordinator and agent work, and serialize conflicts. For ongoing work, consider where the necessary context resides before moving even a small remainder to another agent or the coordinator. Preserve unrelated work, authorization and permissions; update active agents when scope or ownership changes.
+The main coordinator owns dispatch unless it explicitly delegates bounded coordination. Pass this boundary to agents; delegated coordinators observe shared limits and report assignments and resource owners. Give each mutable resource one owner, separate coordinator and agent work, and serialize conflicts. Consider where necessary context resides before moving even a small remainder. Preserve unrelated work, authorization and permissions; update active agents when scope or ownership changes and adapt to new evidence or blockers.
 
-Agents may exchange evidence, interface clarifications and questions directly when supported and authorized. Share identities only when useful; do not create extra agents for messaging or fixed communication networks. Otherwise, use a concise coordinator relay. Scope, approach approval, ownership and completion decisions remain with the coordinator; report material evidence, contradictions and blockers there. Reviewers may question workers but must verify findings independently. Advisors may consult peers but return recommendations to the coordinator rather than directing execution.
+When supported and authorized, agents may exchange evidence, interface clarifications and questions directly; otherwise use a concise coordinator relay. Share identities only when useful, without extra agents for messaging or fixed networks. Scope, approach approval, ownership and completion decisions stay with the coordinator, who receives material evidence, contradictions and blockers. Reviewers may question workers but verify findings independently; advisors may consult peers but return recommendations to the coordinator.
 
-Observe runtime concurrency and lifecycle rules: returned results may not free slots. Reuse compatible agents under model-routing rules or release them through supported tools. Continue useful local work while agents run; prefer completion notifications or bounded waits over repeated unchanged reads, and maintain required progress updates.
+Observe runtime concurrency and lifecycle limits; returned results may not free slots. Reuse compatible agents under model-routing rules or release them through supported tools. Continue useful local work while agents run; prefer completion notifications or bounded waits over unchanged polling and maintain required progress updates.
 
 ## Choose models
 
-Before each assignment's first dispatch, apply [model routing](references/model-routing.md). Choose capability and effort from the assignment rather than the role or coordinator settings, with separate reasons and a combined acceptance check. Use runtime descriptions and known pricing without inventing savings. Apply supported model, effort and context settings through the runtime's configuration entrypoints; disclose unavailable controls or inheritance and keep the assignment's configuration fixed. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
+Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to select capability, effort and context, check their combined suitability and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 
-At dispatch, show a Markdown table with agent/role, assignment, model, effort and selection reason; add rows in a new table for later dispatches. For normal explicit settings, omit status columns and routine configuration-confirmation disclaimers. Explain inheritance, fallback, unsupported settings and dispatch errors; report different effective values if supplied by the runtime. Distinguish plans and previews from successful creation.
+At dispatch, show a Markdown table with agent/role, assignment, model, effort and selection reason; use a new table for later dispatches. For normal explicit settings, omit status columns and routine configuration disclaimers. Explain inheritance, fallback, unsupported controls and dispatch errors; report different effective values when supplied by the runtime. Distinguish plans and previews from successful creation.
 
-For routing previews, return decisions without dispatching or executing sample tasks. After edits, follow [tests/README.md](tests/README.md); report offline checker and behavioral results separately.
+## Return and finish
 
-## Evidence and handoffs
+Return conclusions, deliverables and relevant paths, checks and results, unresolved issues and verification gaps. Distinguish completed, verified and remaining work. Summarize passing checks, give failure diagnostics and link long logs; omit unnecessary assignment repetition, full diffs and chronology without hiding decision-relevant evidence or failures through truncation.
 
-Return conclusions, relevant paths, checks and results, and unresolved issues or verification gaps. Distinguish completed work from verified results and remaining work so downstream agents can assess what is ready to use. Summarize passing checks, give failure diagnostics and link long logs. Omit unnecessary assignment repetition, full diffs and chronology, never evidence needed to judge correctness or failures hidden by truncation.
+Intervene for blockers, decisions, scope changes or material problems rather than repeatedly reviewing unfinished work. Once stable, review requirements, affected callers and critical failure paths; resolve conflicts and verify the combined result. Check delegated conclusions against key evidence proportionately to risk, investigating contradictions or gaps without repeating whole investigations.
 
-## Integrate and finish
+Own final acceptance and use independent review when worthwhile. When authorized, the coordinator or assigned worker fixes confirmed in-scope findings; the independent reviewer then rechecks affected scope, behavior and downstream effects to closure. Report actual results and material gaps; unfinished required work is not complete.
 
-Intervene during implementation for blockers, decisions, scope changes or material problems; avoid repeatedly reviewing unfinished work. Once stable, review requirements, affected callers and critical failure paths; resolve conflicts and verify the combined result. Check delegated conclusions against key evidence in proportion to risk; investigate contradictions or gaps rather than repeating entire investigations.
+When stalled, supply evidence, fix environment issues, correct the approach or seek useful advice while preserving the assignment's model and effort. Report missing conditions or capabilities, attempted approaches and results, reusable partial deliverables and decisions needed from the coordinator. Do not repeat a failed approach under unchanged conditions. Continue feasible independent work, including when delegation is unavailable, and explain material limits.
 
-Own final acceptance and use independent review when worthwhile. When authorized, have the coordinator or assigned worker fix confirmed in-scope findings, then have the independent reviewer recheck the affected scope, behavior and downstream effects to closure. Report actual results and material gaps; unfinished required work is not complete.
+Stop at acceptance. Reopen work only for changed inputs, new evidence, a different approach to an unresolved problem or a verification gap; these judgments add no reporting or approval step.
 
-If progress stalls, supply evidence, fix environment issues, correct the approach or seek useful advice without changing the assignment's model or effort. When blocked, report the missing condition or capability, attempted approaches and observed results, reusable partial deliverables, and any decision needed from the coordinator. Do not repeat the same failed approach under unchanged conditions; continue independent work that remains feasible. If delegation is unavailable, continue feasible local work and explain material limits.
+For routing previews and skill maintenance, follow [model routing](references/model-routing.md#routing-only-mode-and-maintenance) and [tests/README.md](tests/README.md). Report offline checks and behavioral results separately.
