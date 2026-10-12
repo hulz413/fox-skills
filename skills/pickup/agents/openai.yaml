@@ -1,4 +1,0 @@
-interface:
-  display_name: "Pickup"
-  short_description: "Restore task context from a checkpoint file"
-  default_prompt: "Use $pickup with a checkpoint file path to restore the task context."

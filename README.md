@@ -46,7 +46,7 @@ Each skill folder can contain a few focused files:
 
 For installation and usage details, see the `README.md` inside each skill folder.
 
-- [`anki-leetcode`](skills/anki-leetcode/README.md) — Generate or update LeetCode Anki cards, rebuild `leetcode.apkg`, and optionally import into the main Anki collection.
+- [`fox-anki-leetcode`](skills/fox-anki-leetcode/README.md) — Generate or update LeetCode Anki cards, rebuild `leetcode.apkg`, and optionally import into the main Anki collection.
 
 ## Compatibility
 

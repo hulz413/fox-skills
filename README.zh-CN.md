@@ -46,7 +46,7 @@ fox-skills/
 
 每个 skill 的安装和使用方式，请查看各自目录下的 `README.md`。
 
-- [`anki-leetcode`](skills/anki-leetcode/README.md) — 生成或更新 LeetCode Anki 卡片，重建 `leetcode.apkg`，并可在 macOS 上导入主 Anki 集合。
+- [`fox-anki-leetcode`](skills/fox-anki-leetcode/README.md) — 生成或更新 LeetCode Anki 卡片，重建 `leetcode.apkg`，并可在 macOS 上导入主 Anki 集合。
 
 ## 兼容性说明
 

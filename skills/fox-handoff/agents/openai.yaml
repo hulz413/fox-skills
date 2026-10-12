@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fox Handoff"
+  short_description: "Create a resumable checkpoint for the current task"
+  default_prompt: "Use $fox-handoff to create a resumable checkpoint for my current task."

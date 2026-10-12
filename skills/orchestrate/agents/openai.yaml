@@ -1,4 +1,0 @@
-interface:
-  display_name: "Orchestrate"
-  short_description: "Plan and coordinate agents with task-specific model routing"
-  default_prompt: "Use $orchestrate to assess whether delegation is worthwhile for this task. Work locally when it is not; otherwise choose useful roles and supported model settings, delegate bounded work, and verify the result."

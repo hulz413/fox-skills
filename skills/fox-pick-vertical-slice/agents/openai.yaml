@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fox Pick Vertical Slice"
+  short_description: "Reconcile status, then select OpenSpec slices"
+  default_prompt: "Use $fox-pick-vertical-slice to audit this coding plan against the current implementation, update stale slice statuses, and select the next implementation-ready OpenSpec change or parallel set."
