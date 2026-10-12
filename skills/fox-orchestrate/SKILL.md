@@ -54,6 +54,8 @@ Intervene for blockers, decisions, scope changes or material problems rather tha
 
 Own final acceptance and use independent review when worthwhile. When authorized, the coordinator or assigned worker fixes confirmed in-scope findings; the independent reviewer then rechecks affected scope, behavior and downstream effects to closure. Report actual results and material gaps; unfinished required work is not complete.
 
+Tie material reviews and checks to an identifiable artifact version or state, using a commit, diff, revision or other suitable reference. When the artifact or relevant inputs change, assess which conclusions remain valid; reuse unaffected evidence and recheck affected scope before acceptance. An earlier pass does not establish that a changed artifact passes.
+
 When stalled, supply evidence, fix environment issues, correct the approach or seek useful advice while preserving the assignment's model and effort. Report missing conditions or capabilities, attempted approaches and results, reusable partial deliverables and decisions needed from the coordinator. Do not repeat a failed approach under unchanged conditions. Continue feasible independent work, including when delegation is unavailable, and explain material limits.
 
 Stop at acceptance. Reopen work only for changed inputs, new evidence, a different approach to an unresolved problem or a verification gap; these judgments add no reporting or approval step.

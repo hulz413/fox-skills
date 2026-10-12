@@ -4,6 +4,24 @@ A general-purpose skill for planning and coordinating useful subagent work. Invo
 
 Four reusable role definitions cover investigation (**Explorer**), execution (**Worker**), independent assessment (**Reviewer**), and direction or decision advice (**Advisor**). Use any useful mix; choose local work or delegation based on required quality and overall cost, including coordination and verification. Advisors receive selected necessary context in a fresh subagent, without forking an App conversation. Subject expertise and project workflows are supplied with each assignment, while overall planning remains with the coordinator.
 
+## Role collaboration
+
+Use roles as needed; the diagram shows responsibilities and handoffs, not a required sequence or agent count. The coordinator may complete work locally and owns integration and final acceptance.
+
+```mermaid
+flowchart TD
+    U["User: goal and constraints"] --> C["Coordinator: plan, assign ownership,<br/>integrate evidence and verify results"]
+    C -->|Investigate unknowns| E["Explorer: read-only investigation"]
+    E -->|Evidence and uncertainties| C
+    C -->|Analyze a concrete decision| A["Advisor: recommendations, no execution"]
+    A -->|Options, tradeoffs and supporting evidence| C
+    C -->|Bounded work or confirmed repairs| W["Worker: produce and check assigned resources"]
+    W -->|Artifacts, check results and blockers| C
+    C -->|Independent review or recheck when worthwhile| R["Reviewer: read-only assessment,<br/>distinct from the producer"]
+    R -->|Findings, checked version and verification gaps| C
+    C -->|Acceptance criteria satisfied| D["Deliver and stop"]
+```
+
 ## Files
 
 - [SKILL.md](SKILL.md): role definitions and essential coordination guidance.
