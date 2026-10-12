@@ -28,8 +28,8 @@ Resolve configuration directly from user preferences and runtime capabilities. D
 Resolve in this order:
 
 1. **Provider:** the user's override, otherwise the initiating agent's current provider. Use verified session metadata and provider identifiers understood by the runtime. Do not infer the provider from an unrelated default or model-name guess. Ask if the current provider cannot be established.
-2. **Model:** the user's override, otherwise the selected provider's best model for general reasoning and analysis, with its next-best model as the sole automatic fallback.
-3. **Effort:** the user's override, otherwise `high`.
+2. **Model:** the user's override, otherwise the selected provider's best model for general reasoning and analysis, with its next-best model as the sole automatic fallback. An explicit `full` context without a model or effort override inherits the parent's instead; see Context selection.
+3. **Effort:** the user's override, otherwise `high`, with the same `full` exception.
 
 Use the runtime's exposed tool documentation, session metadata, or model catalog to establish available providers, models, capability descriptions, and supported effort settings. Reuse information already supplied; do not invent discovery commands. If the runtime only supports one provider, honor a different provider override by reporting that limitation rather than silently using its sole provider.
 
@@ -45,14 +45,14 @@ Validate the provider/model/effort combination and the ability to apply it befor
 - Model fallback addresses model-specific availability or compatibility. Missing provider authentication, unavailable services, permission requests, shared rate limits, missing evidence, and poor advisor reasoning require their own resolution; do not route around them by changing models.
 - Fall back only before substantive analysis begins. If an attempt created an agent before failing, stop that failed attempt through the supported lifecycle tools before creating its replacement; never run the two concurrently.
 
-Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort and use `fork_turns: "none"` for a `brief` context or the interface's full-history value for a `full` context. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
+Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort with `fork_turns: "none"` for a `brief` context. For a `full` context, use the interface's full-history value and pass no model or effort override when the fork inherits the parent's; see Context selection. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
 
 ## Context selection and briefing
 
 Choose how much of the conversation the advisor sees. An explicit `full` or `brief` is pinned; resolve `auto` from the question:
 
 - **`full`**: forward the conversation history when the question reviews work done in this session, such as a pre-delivery check or a stuck debugging loop, and the decisive evidence lives in tool output, errors, or intermediate results that a summary would lose.
-- **`brief`**: start fresh with a self-contained briefing when the question is a choice or tradeoff, when the conversation carries strong hypotheses from the initiating agent that could anchor the advisor, or when most of a long conversation is irrelevant. When unsure, use `brief`; independence is the default value of an advisor.
+- **`brief`**: start fresh with a self-contained briefing when the question is a choice or tradeoff, when the conversation carries strong hypotheses from the initiating agent that could anchor the advisor, or when most of a long conversation is irrelevant. When unsure, use `brief`; independence is the default value of an advisor. Because forks often cannot apply the resolved model and effort, `auto` usually ends in `brief`; request `full` explicitly to forward history.
 
 Some fork mechanisms run on the parent's model and effort and ignore overrides:
 
@@ -60,7 +60,7 @@ Some fork mechanisms run on the parent's model and effort and ignore overrides:
 - An explicit `full` without an explicit model or effort means the user accepts the parent's configuration. Fork with it, without asking, and report the model and effort as inherited.
 - An explicit `full` with an explicit model or effort requires that the runtime confirms the parent already uses those values. Otherwise, or if the runtime cannot fork full history at all, explain the conflict and ask.
 
-For `full`, append the precise question, the requested review scope, and this reminder: the initiating agent's conclusions in the history are claims to check, not established facts.
+For `full`, append the precise question and the requested review scope. State that the advisor is not the initiating agent, must not continue the user's task or any session-mode commitment in the history, and answers only the appended question; the initiating agent's conclusions in the history are claims to check, not established facts.
 
 For `brief`, give the advisor a self-contained briefing containing:
 
@@ -93,11 +93,11 @@ Weigh the advice seriously:
 
 Reuse an advisor for follow-ups on the same approach: clarifications, the conflict follow-up above, or reporting what happened after acting on its advice. Send only what changed since the last consultation. Start a fresh advisor when the topic or required configuration changes, or when the consultation should challenge assumptions the two of you now share, such as a final pre-delivery review or a decision to change approach. Recheck that a retained configuration satisfies any new explicit preferences.
 
-After a one-off consultation, read and retain the response, then release the advisor using a documented close or archive operation if one exists. If the runtime provides no cleanup operation, leave the completed advisor idle rather than inventing one. If the user requests ongoing advice, retain its ID and resolved configuration for follow-ups, and release it when it is no longer needed. Never stop unrelated agents or delete the user's workspace.
+After a one-off consultation, read and retain the response, then, after any conflict follow-up, release the advisor using a documented close or archive operation if one exists. If the runtime provides no cleanup operation, leave the completed advisor idle rather than inventing one. If the user requests ongoing advice, retain its ID and resolved configuration for follow-ups, and release it when it is no longer needed. Never stop unrelated agents or delete the user's workspace.
 
 ## Session mode
 
-`--mode session` makes the initiating agent consult an advisor on its own at checkpoints for the rest of the current task. Confirm activation once, naming the checkpoints. The mode ends with `--mode off`, task completion, or a switch to an unrelated task. This mode is a prompt-level commitment: after context compaction it may be lost, and the user can re-enable it.
+`--mode session` makes the initiating agent consult an advisor on its own at checkpoints for the rest of the current task. Announce activation once, naming the checkpoints; do not ask for confirmation. The mode ends with `--mode off`, task completion, or a switch to an unrelated task. This mode is a prompt-level commitment: after context compaction it may be lost, and the user can re-enable it.
 
 Consult at these checkpoints:
 
