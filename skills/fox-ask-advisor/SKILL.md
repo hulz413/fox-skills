@@ -1,6 +1,6 @@
 ---
 name: fox-ask-advisor
-description: Get an independent second opinion from one analysis-only advisor using the current runtime's subagent tools. Use when the user asks for an advisor, an outside take, or a recommendation before deciding. Supports provider, model, and reasoning-effort overrides.
+description: Get an independent second opinion from one analysis-only advisor using the current runtime's subagent tools. Use when the user asks for an advisor, an outside take, or a recommendation before deciding, or asks to keep consulting an advisor at key checkpoints of the current task. Supports provider, model, reasoning-effort, context, and session-mode overrides.
 ---
 
 # Fox Ask Advisor
@@ -9,12 +9,14 @@ Launch one independent advisor, collect its reasoning, and synthesize a recommen
 
 ## Input
 
-Accept a question or the current task, with optional `--provider <id>`, `--model <id>`, and `--effort <id>`. Equivalent preferences in natural language also count. Each override replaces only its corresponding default. Ask only when conflicting preferences or missing information prevent a valid launch.
+Accept a question or the current task, with optional `--provider <id>`, `--model <id>`, `--effort <id>`, `--context auto|full|brief` (default `auto`), and `--mode once|session|off` (default `once`). Equivalent preferences in natural language also count. Each override replaces only its corresponding default. Ask only when conflicting preferences or missing information prevent a valid launch.
 
 ```text
 $fox-ask-advisor Evaluate the current approach.
 $fox-ask-advisor --provider claude Evaluate the current approach.
 $fox-ask-advisor --provider codex --model MODEL_ID --effort medium Review this decision.
+$fox-ask-advisor --context full Review what I just changed.
+$fox-ask-advisor --mode session
 ```
 
 ## Execution and configuration
@@ -43,11 +45,24 @@ Validate the provider/model/effort combination and the ability to apply it befor
 - Model fallback addresses model-specific availability or compatibility. Missing provider authentication, unavailable services, permission requests, shared rate limits, missing evidence, and poor advisor reasoning require their own resolution; do not route around them by changing models.
 - Fall back only before substantive analysis begins. If an attempt created an agent before failing, stop that failed attempt through the supported lifecycle tools before creating its replacement; never run the two concurrently.
 
-Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort and use `fork_turns: "none"` for fresh context. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
+Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort and use `fork_turns: "none"` for a `brief` context or the interface's full-history value for a `full` context. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
 
-## Independent briefing
+## Context selection and briefing
 
-Use fresh context rather than forking the conversation. Give the advisor a self-contained briefing containing:
+Choose how much of the conversation the advisor sees. An explicit `full` or `brief` is pinned; resolve `auto` from the question:
+
+- **`full`**: forward the conversation history when the question reviews work done in this session, such as a pre-delivery check or a stuck debugging loop, and the decisive evidence lives in tool output, errors, or intermediate results that a summary would lose.
+- **`brief`**: start fresh with a self-contained briefing when the question is a choice or tradeoff, when the conversation carries strong hypotheses from the initiating agent that could anchor the advisor, or when most of a long conversation is irrelevant. When unsure, use `brief`; independence is the default value of an advisor.
+
+Some fork mechanisms run on the parent's model and effort and ignore overrides:
+
+- An automatically selected `full` must not override the resolved configuration. If it cannot apply the resolved provider, model, and effort, use `brief` and say so.
+- An explicit `full` without an explicit model or effort means the user accepts the parent's configuration. Fork with it, without asking, and report the model and effort as inherited.
+- An explicit `full` with an explicit model or effort requires that the runtime confirms the parent already uses those values. Otherwise, or if the runtime cannot fork full history at all, explain the conflict and ask.
+
+For `full`, append the precise question, the requested review scope, and this reminder: the initiating agent's conclusions in the history are claims to check, not established facts.
+
+For `brief`, give the advisor a self-contained briefing containing:
 
 - The precise question and decision to support.
 - Relevant constraints, original evidence, and unresolved uncertainties.
@@ -57,18 +72,40 @@ Use fresh context rather than forking the conversation. Give the advisor a self-
 
 When the user forwards another skill, such as `$fox-ask-advisor /unslop-risk`, instruct the advisor to load that skill through its available skill-loading mechanism and pass the remaining arguments as its input. The advisor executes the forwarded skill. If that skill requires edits or other actions outside analysis, report the conflict rather than expanding permission.
 
-End the briefing with:
+End the advisor's prompt, in either context, with:
 
 ```text
-This is analysis only. Do NOT edit, create, or delete any files. Do NOT write code.
+This is analysis only. Do NOT edit, create, or delete any files. Do NOT write code. Do NOT launch an advisor or any other subagent.
 ```
 
 Use a verified read-only execution mode when the provider offers one. A prompt restriction alone is not a sandbox guarantee. Do not select a mode that silently broadens permissions.
 
 ## Launch, synthesize, and clean up
 
-Launch the advisor with the briefing as its initial prompt, using an advisor task name or `[Advisor] <topic>` title if supported. Reuse the current workspace when accessible; do not create a worktree for an analysis-only consultation. Use the runtime's supported completion events or bounded waits, then retrieve the complete response. Keep completion notifications enabled when configurable; avoid repeated status polling.
+Launch the advisor with the prompt prepared for its context, using an advisor task name or `[Advisor] <topic>` title if supported. Reuse the current workspace when accessible; do not create a worktree for an analysis-only consultation. Use the runtime's supported completion events or bounded waits, then retrieve the complete response. Keep completion notifications enabled when configurable; avoid repeated status polling.
 
-Read the complete response before synthesizing it. Distinguish the advisor's recommendation from your own assessment, state material disagreements and uncertainty, and do not imply that the advice was implemented or independently verified. Briefly report the actual provider, model, and effort, including any fallback and its reason. On an error or permission request, report the actual state rather than presenting a completed consultation.
+Read the complete response before synthesizing it. Distinguish the advisor's recommendation from your own assessment, state material disagreements and uncertainty, and do not imply that the advice was implemented or independently verified. In the final reply, report the configuration actually used in one line, giving the reason for the context and for any fallback, for example: `Advisor: <provider> / <model> / <effort> / context: brief (full-history fork cannot apply the resolved model)`. If the advisor runs the same model as the initiating agent, note that its value comes from a separate context rather than a stronger model. On an error or permission request, report the actual state rather than presenting a completed consultation.
 
-After a one-off consultation, read and retain the response, then release the advisor using a documented close or archive operation if one exists. If the runtime provides no cleanup operation, leave the completed advisor idle rather than inventing one. If the user requests ongoing advice, retain its ID and resolved configuration for follow-ups; recheck that the retained configuration satisfies any new explicit preferences. Start a fresh advisor when the topic or required configuration changes, and release the old advisor when it is no longer needed. Never stop unrelated agents or delete the user's workspace.
+Weigh the advice seriously:
+
+- Override a specific claim only with an empirical failure after following it or primary-source evidence that contradicts it. A passing self-test is not such evidence; it may only show that the test does not check what the advice checks.
+- When the advice conflicts with evidence you already hold, do not silently pick a side or switch direction. Send one follow-up to the same advisor that states the conflict ("I found X, you suggest Y; which constraint breaks the tie?"), then conclude. Report any disagreement that remains after that follow-up.
+
+Reuse an advisor for follow-ups on the same approach: clarifications, the conflict follow-up above, or reporting what happened after acting on its advice. Send only what changed since the last consultation. Start a fresh advisor when the topic or required configuration changes, or when the consultation should challenge assumptions the two of you now share, such as a final pre-delivery review or a decision to change approach. Recheck that a retained configuration satisfies any new explicit preferences.
+
+After a one-off consultation, read and retain the response, then release the advisor using a documented close or archive operation if one exists. If the runtime provides no cleanup operation, leave the completed advisor idle rather than inventing one. If the user requests ongoing advice, retain its ID and resolved configuration for follow-ups, and release it when it is no longer needed. Never stop unrelated agents or delete the user's workspace.
+
+## Session mode
+
+`--mode session` makes the initiating agent consult an advisor on its own at checkpoints for the rest of the current task. Confirm activation once, naming the checkpoints. The mode ends with `--mode off`, task completion, or a switch to an unrelated task. This mode is a prompt-level commitment: after context compaction it may be lost, and the user can re-enable it.
+
+Consult at these checkpoints:
+
+- After orientation and before substantive work. Reading files and gathering sources is orientation; writing, editing, and committing to an interpretation are substantive work.
+- When stuck: recurring errors, an approach that is not converging, or results that do not fit.
+- When considering a change of approach.
+- When you believe the task is complete, before delivering it.
+
+On tasks longer than a few steps, consult at least before committing to an approach and before declaring done. Skip consultation on short reactive steps where the tool output you just read dictates the next action.
+
+Apply the reuse rules above: keep one advisor through an approach, and start a fresh one for the pre-delivery review and for a change of approach, resolving its context again. Checkpoint consultations do not need user confirmation; in your reply, briefly note the checkpoint, the advice, and what you decided. Release every retained advisor when the mode ends.
