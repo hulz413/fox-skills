@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ask Advisor"
+  short_description: "Get an independent recommendation before deciding"
+  default_prompt: "Use $ask-advisor to give me an independent recommendation on the current task."
