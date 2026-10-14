@@ -1,0 +1,146 @@
+{
+  "R01": {
+    "case": "N03",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R02": {
+    "case": "N05",
+    "split": "holdout",
+    "repeat": 1,
+    "arm": "A"
+  },
+  "R03": {
+    "case": "N01",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R04": {
+    "case": "N04",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R05": {
+    "case": "N01",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R06": {
+    "case": "N04",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "A"
+  },
+  "R07": {
+    "case": "N03",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R08": {
+    "case": "N04",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R09": {
+    "case": "N03",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R10": {
+    "case": "N05",
+    "split": "holdout",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R11": {
+    "case": "N02",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R12": {
+    "case": "N06",
+    "split": "holdout",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R13": {
+    "case": "N02",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R14": {
+    "case": "N06",
+    "split": "holdout",
+    "repeat": 1,
+    "arm": "A"
+  },
+  "R15": {
+    "case": "N03",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "A"
+  },
+  "R16": {
+    "case": "N06",
+    "split": "holdout",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R17": {
+    "case": "N06",
+    "split": "holdout",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R18": {
+    "case": "N02",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R19": {
+    "case": "N01",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R20": {
+    "case": "N01",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "A"
+  },
+  "R21": {
+    "case": "N05",
+    "split": "holdout",
+    "repeat": 1,
+    "arm": "B"
+  },
+  "R22": {
+    "case": "N04",
+    "split": "calibration",
+    "repeat": 2,
+    "arm": "A"
+  },
+  "R23": {
+    "case": "N05",
+    "split": "holdout",
+    "repeat": 2,
+    "arm": "B"
+  },
+  "R24": {
+    "case": "N02",
+    "split": "calibration",
+    "repeat": 1,
+    "arm": "A"
+  }
+}

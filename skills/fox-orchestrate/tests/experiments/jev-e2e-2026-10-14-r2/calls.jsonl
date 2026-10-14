@@ -1,0 +1,1 @@
+{"case": "N01", "split": "calibration", "phase": "query", "backend": "codex_cli", "requested_model": "gpt-6.1-sol", "effort": "medium", "http_status": null, "exit_code": 1, "seconds": 2.0247957919928012, "raw_stem": "N01-query-0-shared-0", "usage": null, "error_events": [], "auth_failure": false}

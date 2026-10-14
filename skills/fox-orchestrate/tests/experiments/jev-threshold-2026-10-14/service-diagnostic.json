@@ -1,0 +1,11 @@
+{
+  "method": "GET",
+  "endpoint": "https://api.typesafe.ai/v1/models",
+  "inference": false,
+  "attempts": 1,
+  "key_present": true,
+  "key_has_outer_whitespace": false,
+  "key_has_internal_whitespace": false,
+  "http_status": 401,
+  "recognized_error_phrases": []
+}

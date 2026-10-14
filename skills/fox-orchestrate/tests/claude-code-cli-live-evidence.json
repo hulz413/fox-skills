@@ -1,0 +1,66 @@
+{
+  "first": {
+    "session_id": "f2852327-5daf-4f32-aae8-0c5600c21882",
+    "observed_model": "claude-sonnet-5-5",
+    "subtype": "success",
+    "permission_denials": [],
+    "total_cost_usd": 0.0250796,
+    "result": "**TL;DR**: 输入 3 条记录，去重后输出 2 条。\"Late Lin\" 与 \"Lin\" 的邮箱在忽略大小写后相同，所以保留了第一条 \"Lin\"。\n\n---\n\n```json\n[\n  {\"name\": \"Lin\", \"email\": \"lin@example.test\"},\n  {\"name\": \"Qiu\", \"email\": \"qiu@example.test\"}\n]\n```\n\n- 输入记录数：3\n- 输出记录数：2\n- 没有遇到阻塞。"
+  },
+  "persisted": {
+    "session_id": "1cf2d09d-c7ea-4f08-882e-2c5548303a12",
+    "observed_model": "claude-sonnet-5-5",
+    "subtype": "success",
+    "permission_denials": [],
+    "total_cost_usd": 0.0037434,
+    "result": "**TL;DR**: 输入 3 条记录,去重后输出 2 条。重复项是 `LIN@example.test` 和 `lin@example.test`,保留了第一条的名字 \"Lin\"。\n\n---\n\n```json\n[\n  {\"name\": \"Lin\", \"email\": \"lin@example.test\"},\n  {\"name\": \"Qiu\", \"email\": \"qiu@example.test\"}\n]\n```\n\n- 输入记录数:3\n- 输出记录数:2\n- 没有遇到阻塞。"
+  },
+  "resumed-persisted": {
+    "session_id": "1cf2d09d-c7ea-4f08-882e-2c5548303a12",
+    "observed_model": "claude-sonnet-5-5",
+    "subtype": "success",
+    "permission_denials": [],
+    "total_cost_usd": 0.0067828,
+    "result": "**TL;DR**: 标记是 `fox-cc-retained-7c19`,去重后的输出记录数是 2。\n\n---\n\n- 标记:`fox-cc-retained-7c19`(来自最初指令)\n- 去重后输出数:2(输入 3 条,`LIN@example.test` 与 `lin@example.test` 合并,保留第一个名字 \"Lin\")"
+  },
+  "configuration_evidence": {
+    "requested_model": "claude-sonnet-5-5",
+    "requested_effort": "low",
+    "assistant_entries": [
+      {
+        "uuid": "2f2d3db7-764c-4867-95ab-3ee7fad48506",
+        "effort": "low",
+        "perTurnEffort": "low"
+      },
+      {
+        "uuid": "79663aa2-6bd8-4965-bc23-7eaa88414b03",
+        "effort": "low",
+        "perTurnEffort": "low"
+      },
+      {
+        "uuid": "304a6cc0-34f9-4f24-8743-e037021d6c81",
+        "effort": "low",
+        "perTurnEffort": "low"
+      }
+    ]
+  },
+  "initial_resume_failure": {
+    "subtype": "error_during_execution",
+    "is_error": true,
+    "errors": [
+      "No conversation found with session ID: f2852327-5daf-4f32-aae8-0c5600c21882"
+    ],
+    "num_turns": 0
+  },
+  "artifact_sha256": {
+    "SKILL.md": "cce66475c8fe337a14b71479313f659e785f94d8ed54cb7d6c3743ee1b32dd64",
+    "references/model-routing.md": "46c3c8f1a827d977799b27887dbbcd424b351aec548709062a4f3818b2e5884b",
+    "references/claude-code-cli.md": "c05f489e4e6b293f6f5ad88d436d08834daf6b15c3c951820517e3c7bab65bbf"
+  },
+  "exit_codes": {
+    "first": 0,
+    "initial_resume_failure": 1,
+    "persisted": 0,
+    "resumed-persisted": 0
+  }
+}

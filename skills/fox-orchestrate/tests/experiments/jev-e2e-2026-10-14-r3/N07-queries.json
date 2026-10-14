@@ -1,0 +1,16 @@
+{
+  "subquestions": [
+    {
+      "question": "Archify 的 delivery 锁是按 artifact 生效，还是按目录生效？",
+      "query": "Archify delivery lock scope artifact or directory"
+    },
+    {
+      "question": "Archify 是否会自动清除已确认 PID 死亡的 delivery 锁？",
+      "query": "Archify delivery lock automatic cleanup confirmed dead PID"
+    },
+    {
+      "question": "人工恢复 Archify 的 delivery 锁时，应保留哪些文件？",
+      "query": "Archify delivery lock manual recovery files to preserve"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "created_at": "2026-10-14T04:47:08.062195+00:00",
+  "manifest_sha256": "c93650c19d0f54fdaf10fe6c82993fa09b021676590742c36b6ff7db61ae265a",
+  "calibration_calls_sha256": "aade81d7f2c49311079457d9dadaa22c1b3f99c87cb6e0e7a148e2cf16eadb8d",
+  "policy": "No tuning; same frozen pipeline. Holdout starts only after all calibration requests are valid."
+}

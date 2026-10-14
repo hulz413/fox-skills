@@ -1,0 +1,209 @@
+{
+  "routing_score": {
+    "structure": {
+      "passed": true,
+      "errors": []
+    },
+    "groups": {
+      "autonomous": {
+        "passed": 9,
+        "total": 12,
+        "errors": [
+          "case_025: reasoning_effort: expected 'low', got 'medium'",
+          "case_029: reasoning_effort: expected 'medium', got 'low'",
+          "case_031: reasoning_effort: expected 'xhigh', got 'high'"
+        ]
+      },
+      "rules": {
+        "passed": 43,
+        "total": 45,
+        "errors": [
+          "case_016: reasoning_effort: expected 'high', got 'xhigh'",
+          "case_033: reasoning_effort: expected 'medium', got 'low'"
+        ]
+      }
+    },
+    "runtime_validity": {
+      "passed": 53,
+      "checked": 53,
+      "errors": [],
+      "violations": [],
+      "not_checked": [
+        {
+          "id": "case_010",
+          "reason": "no selected configuration; blocking or inheritance justification needs review"
+        },
+        {
+          "id": "case_044",
+          "reason": "no selected configuration; blocking or inheritance justification needs review"
+        },
+        {
+          "id": "case_047",
+          "reason": "no selected configuration; blocking or inheritance justification needs review"
+        },
+        {
+          "id": "case_061",
+          "reason": "no selected configuration; blocking or inheritance justification needs review"
+        }
+      ]
+    },
+    "expectation_differences_without_runtime_violation": [
+      {
+        "id": "case_016",
+        "fields": [
+          "reasoning_effort"
+        ]
+      },
+      {
+        "id": "case_025",
+        "fields": [
+          "reasoning_effort"
+        ]
+      },
+      {
+        "id": "case_029",
+        "fields": [
+          "reasoning_effort"
+        ]
+      },
+      {
+        "id": "case_031",
+        "fields": [
+          "reasoning_effort"
+        ]
+      },
+      {
+        "id": "case_033",
+        "fields": [
+          "reasoning_effort"
+        ]
+      }
+    ]
+  },
+  "cooperation_first_score": {
+    "runtime_validity": {
+      "passed": 5,
+      "checked": 5,
+      "errors": [],
+      "violations": [],
+      "not_checked": []
+    },
+    "structure": {
+      "passed": true,
+      "errors": []
+    },
+    "cooperation": {
+      "passed": 18,
+      "total": 20,
+      "errors": [
+        {
+          "id": "case_c03",
+          "fields": [
+            "route"
+          ]
+        },
+        {
+          "id": "case_c07",
+          "fields": [
+            "action",
+            "role",
+            "context",
+            "route"
+          ]
+        }
+      ]
+    }
+  },
+  "routing_differences": [
+    {
+      "id": "case_016",
+      "status": "requested",
+      "model": "strong-fixture",
+      "reasoning_effort": "xhigh",
+      "fork_turns": "none",
+      "reason": "跨域冲突和多条因果链需反复核对，xhigh 有助于完成深度综合。"
+    },
+    {
+      "id": "case_025",
+      "status": "requested",
+      "model": "light-fixture",
+      "reasoning_effort": "medium",
+      "fork_turns": "none",
+      "reason": "明确字段映射、去重规则及条数核对，普通规划足够。"
+    },
+    {
+      "id": "case_029",
+      "status": "requested",
+      "model": "light-fixture",
+      "reasoning_effort": "low",
+      "fork_turns": "none",
+      "reason": "复用确认过的服务和模式，状态规则与验收均明确。"
+    },
+    {
+      "id": "case_031",
+      "status": "requested",
+      "model": "standard-fixture",
+      "reasoning_effort": "high",
+      "fork_turns": "none",
+      "reason": "迁移、回填、切换与回滚相互影响，需要深度调试和顺序验证。"
+    },
+    {
+      "id": "case_033",
+      "status": "requested",
+      "model": "light-fixture",
+      "reasoning_effort": "low",
+      "fork_turns": "none",
+      "reason": "局部 formatter 有成熟模式、完整边界和直接检查。"
+    }
+  ],
+  "cooperation_differences": [
+    {
+      "id": "case_c03",
+      "action": "delegate",
+      "context": "supplied",
+      "role": "worker",
+      "route": {
+        "id": "case_c03",
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none",
+        "reason": "用户明确要求委派；CSV 功能独立，模式、验收和独占文件边界齐全。"
+      },
+      "reason": "用户明确要求委派；CSV 功能独立，模式、验收和独占文件边界齐全。"
+    },
+    {
+      "id": "case_c07",
+      "action": "coordinate_decision",
+      "context": "main",
+      "role": null,
+      "route": null,
+      "reason": "咨询依赖主会话中的原始记录；用户禁止新 App 会话，先在主会话处理或明确可行路径。"
+    }
+  ],
+  "cooperation_affected_recheck": [
+    {
+      "id": "case_c07",
+      "action": "consult",
+      "context": "supplied",
+      "role": "advisor",
+      "route": {
+        "id": "case_c07",
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none",
+        "reason": "仪器误差与统计选择偏差相互作用且仍有实质不确定性，需要 frontier 级独立判断；通过 fresh context 提供主会话的原始记录、失败尝试、目标和约束。用户仅禁止新增 App chat，这不禁止 native subagent。"
+      },
+      "reason": "用 fresh native advisor 分析耦合测量偏差；把现有原始证据和失败尝试显式提供给顾问，建议最终返回协调者。"
+    },
+    {
+      "id": "case_c11",
+      "action": "exchange_evidence",
+      "context": "retained",
+      "role": "advisor",
+      "route": null,
+      "reason": "由保留上下文的 Advisor 向持有原始输出的 Explorer 请求证据；Advisor 收到后继续分析，并将建议返回协调者。"
+    }
+  ]
+}

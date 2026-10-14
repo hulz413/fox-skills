@@ -1,0 +1,29 @@
+{
+  "frozen_inputs_identical_to_original": true,
+  "verified_frozen_files": 8,
+  "verified_protected_files": 322,
+  "actual_cli_calls": 2,
+  "successful_initial_answers": 1,
+  "reviewed_packet_arms": 0,
+  "jev_calls": 0,
+  "derived_failure_http_status": 429,
+  "http_status_source": "raw CLI error event; original call field null retained",
+  "known_usage": {
+    "input_tokens": 24538,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 780,
+    "reasoning_output_tokens": 80
+  },
+  "unknown_usage_calls": 1,
+  "raw_hashes": {
+    "raw/S01-t2-initial-0-A-1.stdout.jsonl": "98bb7293950c4180d2fcd9c15ba47c9a45a429dc476320dc3ac5d388f31f4042",
+    "raw/S01-t1-initial-0-A-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "raw/S01-t1-initial-0-A-1.request.json": "e352135d5a1694fa01bdb51b26ff81055fa45ece43c72851c482e6ae4a54e9bd",
+    "raw/S01-t2-initial-0-A-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "raw/S01-t1-initial-0-A-1.stdout.jsonl": "3673a1d81b7624540fa3bc8f70da4d2818017aa25f182823b031ad07d46438cd",
+    "raw/S01-t2-initial-0-A-1.request.json": "5c55590d65264904983d87c87e4118a62c88cd1cc73eff939a8ebdcf375a6166"
+  },
+  "local_retry_settings": "request_max_retries=0;stream_max_retries=0;no experiment restart after429",
+  "previous_preflight_drift": "claude-code-cli.md changed externally; preserved r2 launch-failure and refreshed protection baseline before inference"
+}

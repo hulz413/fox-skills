@@ -1,0 +1,1309 @@
+[
+  {
+    "review_id": "R01",
+    "task": "chromePort 如何识别启动成功并返回端口？如果超时或进程提前退出，如何清理监听器、Chrome 和临时 profile？",
+    "rubric": [
+      {
+        "claim": "parse DevTools listening websocket port from stderr",
+        "anchor": "DevTools listening on ws:",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "timeout is 20000 ms",
+        "anchor": "20000",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "clean removes timer and data/error/exit listeners",
+        "anchor": "chrome.stderr.off(\"data\", data)",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "failure kills SIGKILL, deletes profile recursively, rethrows",
+        "anchor": "chrome.kill(\"SIGKILL\")",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "**TL;DR**: chromePort 根据 stderr 中的 DevTools WebSocket 地址识别启动成功并返回数字端口；超时和提前退出都走同一失败清理流程。[anatomy-01]\n\n---\n\n- 成功：累积 stderr 数据，匹配 `DevTools listening on ws://[^:]+:(\\d+)/`。匹配后清除定时器，移除 stderr 的 `data`、Chrome 的 `error` 和 `exit` 监听器，再以 `Number(match[1])` 完成 Promise。成功路径不关闭 Chrome，也不删除 profile。[anatomy-01]\n- 超时：20 秒后触发 `Chrome did not start` 错误，先清理上述定时器和监听器，再拒绝 Promise；外层 catch 调用 `chrome.kill(\"SIGKILL\")`，随后用 `rmSync(profile, { recursive: true, force: true })` 删除 profile，最后重新抛出错误。[anatomy-01]\n- 提前退出：`exit` 事件生成 `Chrome exited before startup: ${code ?? signal}`，执行相同清理流程；即使进程已退出，catch 仍调用 kill。进程 `error` 事件也走同一路径。[anatomy-01]\n\n限制：代码不等待 kill 完成，也未保护清理操作；若 kill 抛错，删除不会执行；若删除抛错，原始错误不会被重新抛出。[anatomy-01]",
+      "citations": [
+        "anatomy-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-01",
+      "anatomy-02",
+      "anatomy-11",
+      "anatomy-12"
+    ]
+  },
+  {
+    "review_id": "R02",
+    "task": "What activates fox-commit, how many commits does it authorize, and which files should be staged if nothing is staged but unrelated edits exist?",
+    "rubric": [
+      {
+        "claim": "only explicit fox-commit activation; generic commit does not activate",
+        "anchor": "Do not invoke it automatically for a generic request",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "exactly one commit",
+        "anchor": "Create exactly one commit.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "review then stage only relevant reviewed files; not add -A by default",
+        "anchor": "Do not use `git add -A` by default.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "ask if unrelated/surprising changes or cannot safely determine files",
+        "anchor": "intended files cannot be determined safely",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "仅当用户明确要求使用 `fox-commit` 或 `$fox-commit` 时激活；普通的 `commit` 请求不会激活。[commit-01]\n\n一次提交请求授权恰好一个聚焦的 Conventional Commit；若没有任何已暂存、未暂存或未跟踪的改动，则停止，不创建提交。[commit-02]\n\n若没有已暂存内容，应先审查未暂存差异及相关未跟踪文件，只暂存已审查且属于本次请求的文件，保留无关改动，不默认使用 `git add -A`。存在无关或意外改动，或无法安全确定目标文件时，可以要求额外确认。[commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R03",
+    "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?",
+    "rubric": [
+      {
+        "claim": "ORCA_CLI_COMMAND takes precedence",
+        "anchor": "If the `ORCA_CLI_COMMAND` environment variable is set",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "then dev checkout exposes ORCA_DEV_REPO_ROOT -> orca-dev",
+        "anchor": "ORCA_DEV_REPO_ROOT",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "Linux outside Orca uses orca-ide; bare orca may be screen reader",
+        "anchor": "GNOME Orca screen reader",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "selected executable failure is reported and stops; no fallback",
+        "anchor": "Do not fall through",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "Orca 可执行文件按以下优先级选择，选定后在本次会话中持续复用：\n\n1. 若设置了 `ORCA_CLI_COMMAND`，使用其值；它优先于开发检出规则。Orca 会为托管 WSL 会话导出此变量。[orca-01]\n2. 否则，若处于开发检出且会话暴露了 `ORCA_DEV_REPO_ROOT`，使用 `orca-dev`。[orca-01]\n3. 否则，在 Linux 上且位于 Orca 托管终端之外，使用 `orca-ide`。禁止直接运行 `orca`，因为它通常解析为 GNOME 屏幕阅读器 `/usr/bin/orca` 并启动语音。[orca-01]\n4. 其余情况使用 `orca`。[orca-01]\n\n不得静默替换失败的可执行文件。若选定的程序无法运行，必须报告准确错误并停止，不能回退到其他程序，以免指向不同的 Orca 构建。[orca-01]\n\n例外处理针对运行状态，而非更换程序：若命令报告 Orca 未运行，可用同一程序执行 `open --json` 后重试；若为 `runtime_access_denied`，应提升权限重试，不应启动或重启 Orca。[orca-02]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  },
+  {
+    "review_id": "R04",
+    "task": "In rewriteSkillPaths, how are references within the figure source, within the skill, and outside both treated? Does reporting outside references rewrite or fetch them?",
+    "rubric": [
+      {
+        "claim": "inside source: absolute paths become relative, existing relative paths retained",
+        "anchor": "if (inside(source, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "skill references redirected through skillLink relative to destination",
+        "anchor": "if (inside(skill, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "outside code/assets extensions are collected but original literal returned",
+        "anchor": "outside.push(path)",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "function returns rewritten text and outside list, no fetch",
+        "anchor": "return { text: rewritten, outside }",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "**TL;DR**: source 内的引用保留相对路径，skill 内的引用重定位到 skillLink；外部引用保持原文，报告不会改写或获取文件。[anatomy-07]\n\n---\n\n- 匹配范围：仅处理单/双引号包围、以 `./`、`../` 或 `/` 开头的路径，目标按 `fromDir` 解析。[anatomy-07]\n- source 内：相对路径不变；绝对路径改成相对 `fromDir` 的路径。但若路径不以“点加英文字母”结尾且目标不在 skill 内，会提前原样返回。source 判断优先于 skill，重叠时按 source 处理。[anatomy-07]\n- skill 内：保留目标相对 skill 的位置，映射到 `skillLink`，再改成相对 `toDir` 的路径；路径分隔符统一为 `/`。[anatomy-07]\n- 两者之外：原文不变。仅以小写 `.js`、`.mjs`、`.css`、`.json`、`.html`、`.svg` 结尾的路径加入 `outside`；其他外部引用不报告。[anatomy-07]\n- 报告只收集路径，不改写、复制或 fetch。调用方 `publish` 仅对 JS/MJS 文件执行此函数；发现报告项后删除发布目标目录并报错，要求把依赖移入 figure 文件夹。[anatomy-07][anatomy-09]",
+      "citations": [
+        "anatomy-07",
+        "anatomy-09"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-07",
+      "anatomy-09",
+      "anatomy-05",
+      "anatomy-03"
+    ]
+  },
+  {
+    "review_id": "R05",
+    "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?",
+    "rubric": [
+      {
+        "claim": "ORCA_CLI_COMMAND takes precedence",
+        "anchor": "If the `ORCA_CLI_COMMAND` environment variable is set",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "then dev checkout exposes ORCA_DEV_REPO_ROOT -> orca-dev",
+        "anchor": "ORCA_DEV_REPO_ROOT",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "Linux outside Orca uses orca-ide; bare orca may be screen reader",
+        "anchor": "GNOME Orca screen reader",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "selected executable failure is reported and stops; no fallback",
+        "anchor": "Do not fall through",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "可执行文件按以下优先级选择，选定后整场会话复用：\n\n1. 显式覆盖：若设置了 `ORCA_CLI_COMMAND`，使用其值；Orca 会为托管 WSL 会话导出该变量。[orca-01]\n2. 开发检出：仅在没有上述覆盖、且开发检出会话暴露 `ORCA_DEV_REPO_ROOT` 时，使用 `orca-dev`；开发检出不会覆盖显式指定。[orca-01]\n3. Linux：若前两项均不适用，且处于 Orca 管理的终端之外，使用 `orca-ide`。禁止直接运行 `orca`，因为通常会解析为 GNOME 屏幕阅读器 `/usr/bin/orca` 并启动语音。[orca-01]\n4. 其他情况使用 `orca`。[orca-01]\n\n不能静默替换失败的可执行文件。必须报告准确错误并停止，禁止回退到其他可执行文件，以免悄然连接不同的 Orca 构建。[orca-01]\n\n例外是运行状态问题：命令报告 Orca 未运行时，可用同一可执行文件执行 `open --json` 后重试；`runtime_access_denied` 应升级权限重试，不应启动或重启 Orca。这些均不允许更换可执行文件。[orca-02]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  },
+  {
+    "review_id": "R06",
+    "task": "In rewriteSkillPaths, how are references within the figure source, within the skill, and outside both treated? Does reporting outside references rewrite or fetch them?",
+    "rubric": [
+      {
+        "claim": "inside source: absolute paths become relative, existing relative paths retained",
+        "anchor": "if (inside(source, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "skill references redirected through skillLink relative to destination",
+        "anchor": "if (inside(skill, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "outside code/assets extensions are collected but original literal returned",
+        "anchor": "outside.push(path)",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "function returns rewritten text and outside list, no fetch",
+        "anchor": "return { text: rewritten, outside }",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "**TL;DR**: figure 源目录内的引用通常保留，skill 内的引用改指向 skillLink；两者之外的引用保留原文，符合条件时仅记录，不会改写或抓取。[anatomy-07]\n\n---\n\n- 匹配范围：只处理单/双引号包围、以 `./`、`../` 或 `/` 开头的路径；目标按 `fromDir` 解析。路径若不以字母扩展名结尾且目标不在 skill 内，直接保留。[anatomy-07]\n- figure 源目录内：相对路径保持原样；通过上述检查的绝对路径改成相对于 `fromDir` 的路径，使用 `/` 分隔并按需补 `./`。源目录检查先于 skill 检查，因此两者重叠时优先按源目录处理。[anatomy-07]\n- skill 内：改成从 `toDir` 指向 `skillLink` 下对应位置的相对路径；即使没有扩展名也适用。[anatomy-07]\n- 两者之外：原文不变；仅以小写 `.js`、`.mjs`、`.css`、`.json`、`.html`、`.svg` 结尾的路径加入 `outside`，其他扩展名不报告。[anatomy-07]\n- 报告只收集路径字符串，不读取、下载或复制目标。调用方 `publish` 若发现报告项，会删除目标 figure 目录并抛错，要求把所需文件移入 figure 文件夹。[anatomy-07][anatomy-09]",
+      "citations": [
+        "anatomy-07",
+        "anatomy-09"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-09",
+      "anatomy-07",
+      "anatomy-02",
+      "anatomy-10"
+    ]
+  },
+  {
+    "review_id": "R07",
+    "task": "chromePort 如何识别启动成功并返回端口？如果超时或进程提前退出，如何清理监听器、Chrome 和临时 profile？",
+    "rubric": [
+      {
+        "claim": "parse DevTools listening websocket port from stderr",
+        "anchor": "DevTools listening on ws:",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "timeout is 20000 ms",
+        "anchor": "20000",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "clean removes timer and data/error/exit listeners",
+        "anchor": "chrome.stderr.off(\"data\", data)",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "failure kills SIGKILL, deletes profile recursively, rethrows",
+        "anchor": "chrome.kill(\"SIGKILL\")",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 启动成功：累积 Chrome stderr 的 data 分块，用 `/DevTools listening on ws:\\/\\/[^:]+:(\\d+)\\//` 匹配端口；匹配后调用 clean()，清除计时器、移除 stderr 的 data 及进程的 error、exit 监听器，再以 Number(match[1]) 返回端口。成功路径不关闭 Chrome、不删除 profile。[anatomy-01]\n\n2. 超时：20 秒后产生 `Chrome did not start` 错误；先执行上述监听器清理，再拒绝 Promise。外层 catch 调用 chrome.kill(\"SIGKILL\")，随后以 rmSync(profile, { recursive: true, force: true }) 删除 profile，最后重新抛出错误。[anatomy-01]\n\n3. 提前退出：exit 事件生成 `Chrome exited before startup: ${code ?? signal}` 错误，走同一清理路径；即使进程已退出，仍调用 kill，然后删除 profile。进程 error 事件也走该路径。[anatomy-01]\n\n限制：代码未等待或确认 Chrome 已终止，也未检查 kill 返回值；若 kill 同步抛错，后续删除不会执行；若 rmSync 抛错，原启动错误会被替代。因此不能保证所有异常下均完成清理。[anatomy-01]",
+      "citations": [
+        "anatomy-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-01",
+      "anatomy-02",
+      "anatomy-11",
+      "anatomy-12"
+    ]
+  },
+  {
+    "review_id": "R08",
+    "task": "In rewriteSkillPaths, how are references within the figure source, within the skill, and outside both treated? Does reporting outside references rewrite or fetch them?",
+    "rubric": [
+      {
+        "claim": "inside source: absolute paths become relative, existing relative paths retained",
+        "anchor": "if (inside(source, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "skill references redirected through skillLink relative to destination",
+        "anchor": "if (inside(skill, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "outside code/assets extensions are collected but original literal returned",
+        "anchor": "outside.push(path)",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "function returns rewritten text and outside list, no fetch",
+        "anchor": "return { text: rewritten, outside }",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "**TL;DR**: figure source 内的引用通常保留，skill 内的引用改指向 `skillLink`；两者之外的引用保持原文，仅部分类型被报告。报告不会改写或获取外部资源。[anatomy-07]\n\n---\n\n- 匹配范围：仅处理单引号或双引号包围、以 `./`、`../` 或 `/` 开头的路径，并相对 `fromDir` 解析目标。没有字母扩展名且目标不在 skill 内时，直接保留。[anatomy-07]\n- figure source 内：相对路径不变；绝对路径改成相对 `fromDir` 的路径，使用 `/` 分隔，必要时加 `./`。此分支优先于 skill 分支，但受上述扩展名检查限制。[anatomy-07]\n- skill 内：保留目标相对 skill 的位置，映射到 `skillLink`，再改成相对 `toDir` 的路径；无扩展名也可处理。[anatomy-07]\n- 两者之外：始终保留原文；仅以小写 `.js`、`.mjs`、`.css`、`.json`、`.html`、`.svg` 结尾的路径加入 `outside`。其他扩展名及大写后缀不报告。[anatomy-07]\n- `outside` 只是返回的路径列表，没有读取、下载或复制外部目标。调用方 `publish` 仅对 JS/MJS 文件调用该函数；若发现报告项，会删除发布目标目录并抛错，要求把依赖移入 figure 文件夹。[anatomy-07][anatomy-09]",
+      "citations": [
+        "anatomy-07",
+        "anatomy-09"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-07",
+      "anatomy-09",
+      "anatomy-05",
+      "anatomy-04"
+    ]
+  },
+  {
+    "review_id": "R09",
+    "task": "chromePort 如何识别启动成功并返回端口？如果超时或进程提前退出，如何清理监听器、Chrome 和临时 profile？",
+    "rubric": [
+      {
+        "claim": "parse DevTools listening websocket port from stderr",
+        "anchor": "DevTools listening on ws:",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "timeout is 20000 ms",
+        "anchor": "20000",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "clean removes timer and data/error/exit listeners",
+        "anchor": "chrome.stderr.off(\"data\", data)",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "failure kills SIGKILL, deletes profile recursively, rethrows",
+        "anchor": "chrome.kill(\"SIGKILL\")",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 启动成功：持续累积 Chrome 的 stderr，匹配 `DevTools listening on ws://[^:]+:(\\d+)/`；命中后清除定时器，移除 stderr 的 `data` 及 Chrome 的 `error`、`exit` 监听器，再将捕获端口转为 Number 返回。成功路径不终止 Chrome、不删除 profile。[anatomy-01]\n2. 超时：20 秒后生成 `Chrome did not start` 错误，先执行上述监听器和定时器清理，再拒绝 Promise；外层 catch 调用 `chrome.kill(\"SIGKILL\")`，随后以 `{ recursive: true, force: true }` 删除 profile，再抛出错误。[anatomy-01]\n3. 提前退出：`exit` 将 `code ?? signal` 写入 `Chrome exited before startup: …`，进入相同清理和拒绝流程；外层仍尝试 SIGKILL、删除 profile 并重抛。Chrome 的 `error` 事件也走相同流程。[anatomy-01]\n注意：代码不等待进程确认退出；kill 或删除若抛错，后续步骤会中断，原错误可能被覆盖，因此不能保证异常情况下清理完成。[anatomy-01]",
+      "citations": [
+        "anatomy-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-01",
+      "anatomy-03",
+      "anatomy-08",
+      "anatomy-02"
+    ]
+  },
+  {
+    "review_id": "R10",
+    "task": "What activates fox-commit, how many commits does it authorize, and which files should be staged if nothing is staged but unrelated edits exist?",
+    "rubric": [
+      {
+        "claim": "only explicit fox-commit activation; generic commit does not activate",
+        "anchor": "Do not invoke it automatically for a generic request",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "exactly one commit",
+        "anchor": "Create exactly one commit.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "review then stage only relevant reviewed files; not add -A by default",
+        "anchor": "Do not use `git add -A` by default.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "ask if unrelated/surprising changes or cannot safely determine files",
+        "anchor": "intended files cannot be determined safely",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 只有用户明确要求使用 `fox-commit` 或 `$fox-commit` 才会激活；普通的 `commit` 请求不会激活。[commit-01]\n2. 一次提交请求授权恰好一个聚焦的 Conventional Commit；若没有已暂存、未暂存或未跟踪的改动，则停止，不创建提交。[commit-02]\n3. 如果没有已暂存内容，应先审阅未暂存差异和相关未跟踪文件，仅暂存已审阅且属于本次请求的文件，排除无关改动；默认不要使用 `git add -A`。存在无关或意外改动，或无法安全确定目标文件时，可以请求额外确认；这不构成把所有改动一起提交的授权。[commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R11",
+    "task": "Orca 文档加载命令和推荐输出格式是什么？区分 not running、runtime_access_denied 和 skills get 未知时的处理，先不要实际执行。",
+    "rubric": [
+      {
+        "claim": "load guide via selected CLI skills get orca-cli",
+        "anchor": "ORCA skills get orca-cli",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "prefer JSON",
+        "anchor": "Prefer `--json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "not running: selected CLI open --json and retry",
+        "anchor": "start it with `ORCA open --json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "runtime access denied: escalate, not restart",
+        "anchor": "do not run `ORCA open` or restart Orca",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "unknown skills get: explain update, read-only help, no guessing",
+        "anchor": "do not guess unsupported commands",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "仅说明，未执行任何命令。\n\n先确定并固定可执行文件：优先使用 `ORCA_CLI_COMMAND` 的值；否则，开发检出且会话提供 `ORCA_DEV_REPO_ROOT` 时用 `orca-dev`；否则，Linux 非 Orca 托管终端用 `orca-ide`（裸 `orca` 通常是屏幕阅读器，会启动语音）；其余用 `orca`。`ORCA` 只是占位符，须替换，不要创建同名变量或直接执行。所选程序无法运行时，报告原始错误并停止，不切换程序。[orca-01]\n\n加载文档：`ORCA skills get orca-cli`，推荐加 `--json`，获取版本匹配的指南；指南未覆盖的命令或参数查所选程序的 `--help`。[orca-02]\n\n- `not running`：用 `ORCA open --json` 启动，再重试原命令。[orca-02]\n- `runtime_access_denied`：表示沙箱阻断连接，应以提升权限重跑失败命令；不要执行 `ORCA open` 或重启 Orca。[orca-02]\n- `skills get` 未知：说明更新 Orca 可恢复指南；用 `--help` 进行只读发现，不猜测不受支持的命令。[orca-02]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  },
+  {
+    "review_id": "R12",
+    "task": "fox-commit 应使用什么模型和 effort？没有运行时 effort 控制能不能继续，是否可以修改全局默认值？提交后需要报告什么？",
+    "rubric": [
+      {
+        "claim": "current session current model",
+        "anchor": "directly in the current session using its current model",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "lowest supported effort when control exists, respect overrides",
+        "anchor": "respecting explicit user overrides",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "no control: continue actual setting and disclose, not claim lower effort",
+        "anchor": "continue at the actual setting",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "do not change model or global defaults",
+        "anchor": "do not change the model or global defaults",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "report hash and final subject",
+        "anchor": "report the commit hash and final subject",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": false
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "- 模型与 effort：直接使用当前会话的当前模型；运行时提供控制时，选择该模型支持的最低 reasoning effort，并尊重用户显式覆盖。根据运行时元数据确认支持档位，不得切换模型。[commit-01]\n- 没有 effort 控制：可以继续，按实际设置执行，并简短说明限制；不得声称已降低 effort，也不应因此阻止提交。技能指令本身不能改变当前轮次的 reasoning 设置。[commit-01]\n- 全局默认值：不得修改。[commit-01]\n- 提交后：报告 commit hash 和最终 subject；若无法控制 effort，还需简短披露该限制。[commit-01][commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R13",
+    "task": "Orca 文档加载命令和推荐输出格式是什么？区分 not running、runtime_access_denied 和 skills get 未知时的处理，先不要实际执行。",
+    "rubric": [
+      {
+        "claim": "load guide via selected CLI skills get orca-cli",
+        "anchor": "ORCA skills get orca-cli",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "prefer JSON",
+        "anchor": "Prefer `--json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "not running: selected CLI open --json and retry",
+        "anchor": "start it with `ORCA open --json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "runtime access denied: escalate, not restart",
+        "anchor": "do not run `ORCA open` or restart Orca",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "unknown skills get: explain update, read-only help, no guessing",
+        "anchor": "do not guess unsupported commands",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "仅说明，未执行任何命令。\n\n- 文档加载：`ORCA skills get orca-cli`，推荐加 `--json`；指南未覆盖的命令或参数查所选程序的 `--help`。[orca-02]\n- `not running`：执行 `ORCA open --json` 启动，再重试原命令。[orca-02]\n- `runtime_access_denied`：表示沙箱阻止连接；文档要求提升权限重试，不能执行 `ORCA open` 或重启 Orca。[orca-02]\n- `skills get` 未知：说明更新 Orca 可恢复指南；使用 `--help` 做只读探索，不猜测不支持的命令。[orca-02]\n\n`ORCA` 是占位符，不能照字面执行或创建同名 shell 变量。程序按顺序选择：已设置的 `ORCA_CLI_COMMAND`；开发检出且会话提供 `ORCA_DEV_REPO_ROOT` 时用 `orca-dev`；Linux 非 Orca 托管终端用 `orca-ide`；其余用 `orca`。Linux 上述场景禁用裸 `orca`，它通常会启动 GNOME 屏幕阅读器。选定后始终复用；若程序无法运行，报告确切错误并停止，不切换其他程序。[orca-01]",
+      "citations": [
+        "orca-02",
+        "orca-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-02",
+      "orca-01"
+    ]
+  },
+  {
+    "review_id": "R14",
+    "task": "fox-commit 应使用什么模型和 effort？没有运行时 effort 控制能不能继续，是否可以修改全局默认值？提交后需要报告什么？",
+    "rubric": [
+      {
+        "claim": "current session current model",
+        "anchor": "directly in the current session using its current model",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "lowest supported effort when control exists, respect overrides",
+        "anchor": "respecting explicit user overrides",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "no control: continue actual setting and disclose, not claim lower effort",
+        "anchor": "continue at the actual setting",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "do not change model or global defaults",
+        "anchor": "do not change the model or global defaults",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "report hash and final subject",
+        "anchor": "report the commit hash and final subject",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": false
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 模型与 effort：直接使用当前会话的当前模型；运行时提供本次操作的 effort 控制时，根据可用运行时元数据选择该模型支持的最低 reasoning effort，并尊重用户的明确覆盖设置。[commit-01]\n2. 没有受支持的运行时控制也能继续：按实际 effort 执行，并简短说明限制；不能声称已降低 effort，也不能因此阻止提交。技能指令本身无法改变当前轮的 reasoning 设置。[commit-01]\n3. 不可以修改全局默认值，也不可以切换模型。[commit-01]\n4. 提交完成后必须报告 commit hash 和最终 subject；若无法控制 effort，还需披露上述限制。[commit-02][commit-01]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R15",
+    "task": "chromePort 如何识别启动成功并返回端口？如果超时或进程提前退出，如何清理监听器、Chrome 和临时 profile？",
+    "rubric": [
+      {
+        "claim": "parse DevTools listening websocket port from stderr",
+        "anchor": "DevTools listening on ws:",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "timeout is 20000 ms",
+        "anchor": "20000",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "clean removes timer and data/error/exit listeners",
+        "anchor": "chrome.stderr.off(\"data\", data)",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "failure kills SIGKILL, deletes profile recursively, rethrows",
+        "anchor": "chrome.kill(\"SIGKILL\")",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 启动成功：累积 Chrome 的 stderr 数据，用正则 `/DevTools listening on ws:\\/\\/[^:]+:(\\d+)\\//` 匹配调试地址。匹配后先清理计时器和监听器，再以 `Number(match[1])` 返回端口；成功路径保留 Chrome 和 profile。[anatomy-01]\n\n2. 超时：20 秒未匹配成功，触发 `Chrome did not start` 错误。`clean()` 清除计时器，移除 stderr 的 `data`、Chrome 的 `error` 和 `exit` 监听器，然后拒绝 Promise。外层 catch 调用 `chrome.kill(\"SIGKILL\")`，再用 `rmSync(profile, { recursive: true, force: true })` 删除临时 profile，最后重新抛出错误。[anatomy-01]\n\n3. 提前退出：`exit` 监听器生成 `Chrome exited before startup: ${code ?? signal}`，沿用上述清理流程；即使进程已退出，仍调用 kill。Chrome 的 `error` 事件也走同一路径。[anatomy-01]\n\n例外：代码没有等待 kill 后进程退出，也未检查 kill 返回值；若 kill 或 rmSync 抛错，后续步骤会中断，清理异常会取代原错误。[anatomy-01]",
+      "citations": [
+        "anatomy-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-01",
+      "anatomy-02",
+      "anatomy-11",
+      "anatomy-12"
+    ]
+  },
+  {
+    "review_id": "R16",
+    "task": "fox-commit 应使用什么模型和 effort？没有运行时 effort 控制能不能继续，是否可以修改全局默认值？提交后需要报告什么？",
+    "rubric": [
+      {
+        "claim": "current session current model",
+        "anchor": "directly in the current session using its current model",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "lowest supported effort when control exists, respect overrides",
+        "anchor": "respecting explicit user overrides",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "no control: continue actual setting and disclose, not claim lower effort",
+        "anchor": "continue at the actual setting",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "do not change model or global defaults",
+        "anchor": "do not change the model or global defaults",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "report hash and final subject",
+        "anchor": "report the commit hash and final subject",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": false
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 模型与 effort：在当前会话直接使用当前模型；若运行时提供本次操作的 effort 控制，选择该模型支持的最低 reasoning effort，并尊重用户明确覆盖。支持档位应依据可用运行时元数据确认，不得切换模型。[commit-01]\n2. 没有运行时 effort 控制也能继续：按实际设置执行，简短说明限制；不能声称已降低 effort，也不能因此阻止提交。技能文本本身无法改变当前轮次的 reasoning 设置。[commit-01]\n3. 不可以修改全局默认值。[commit-01]\n4. 提交后报告 commit hash 和最终 subject。[commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R17",
+    "task": "fox-commit 应使用什么模型和 effort？没有运行时 effort 控制能不能继续，是否可以修改全局默认值？提交后需要报告什么？",
+    "rubric": [
+      {
+        "claim": "current session current model",
+        "anchor": "directly in the current session using its current model",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "lowest supported effort when control exists, respect overrides",
+        "anchor": "respecting explicit user overrides",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "no control: continue actual setting and disclose, not claim lower effort",
+        "anchor": "continue at the actual setting",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "do not change model or global defaults",
+        "anchor": "do not change the model or global defaults",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "report hash and final subject",
+        "anchor": "report the commit hash and final subject",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": false
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 模型与 effort：直接使用当前会话的当前模型。若运行时提供本次操作的 effort 控制，依据运行时元数据选择该模型支持的最低 effort，并尊重用户显式覆盖设置。[commit-01]\n2. 没有运行时 effort 控制也能继续：按实际设置执行，简短说明限制；不能声称已降低 effort，也不应因此阻止提交。技能指令本身不能改变当前轮次的 reasoning 设置。[commit-01]\n3. 不可以修改全局默认值，也不可以切换模型。[commit-01]\n4. 提交完成后，报告 commit hash 和最终提交标题（subject）。[commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-01",
+      "commit-02"
+    ]
+  },
+  {
+    "review_id": "R18",
+    "task": "Orca 文档加载命令和推荐输出格式是什么？区分 not running、runtime_access_denied 和 skills get 未知时的处理，先不要实际执行。",
+    "rubric": [
+      {
+        "claim": "load guide via selected CLI skills get orca-cli",
+        "anchor": "ORCA skills get orca-cli",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "prefer JSON",
+        "anchor": "Prefer `--json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "not running: selected CLI open --json and retry",
+        "anchor": "start it with `ORCA open --json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "runtime access denied: escalate, not restart",
+        "anchor": "do not run `ORCA open` or restart Orca",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "unknown skills get: explain update, read-only help, no guessing",
+        "anchor": "do not guess unsupported commands",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "仅说明，未执行任何命令。\n\n1. 文档加载：`ORCA skills get orca-cli`，推荐加 `--json`，即 `ORCA skills get orca-cli --json`，加载与所选可执行文件版本匹配的指南。指南未覆盖的命令或参数查该程序的 `--help`。[orca-02]\n2. `not running`：用 `ORCA open --json` 启动，再重试原命令。[orca-02]\n3. `runtime_access_denied`：表示沙箱阻止连接；文档要求以提升权限重试原命令，不要运行 `ORCA open` 或重启 Orca。[orca-02]\n4. `skills get` 未知：说明更新 Orca 可恢复指南；用 `--help` 做只读探索，不猜测不受支持的命令。[orca-02]\n\n`ORCA` 是占位符：依次选择 `ORCA_CLI_COMMAND` 的值、满足开发检出条件时的 `orca-dev`、Linux 非 Orca 托管终端中的 `orca-ide`，其余用 `orca`。选定后始终复用；不要直接执行字面量 `ORCA` 或创建同名 shell 变量。Linux 上述场景不能用裸 `orca`，它通常会启动 GNOME 屏幕阅读器。所选程序无法运行时，报告原始错误并停止，不切换程序。[orca-01]",
+      "citations": [
+        "orca-02",
+        "orca-01"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-02",
+      "orca-01"
+    ]
+  },
+  {
+    "review_id": "R19",
+    "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?",
+    "rubric": [
+      {
+        "claim": "ORCA_CLI_COMMAND takes precedence",
+        "anchor": "If the `ORCA_CLI_COMMAND` environment variable is set",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "then dev checkout exposes ORCA_DEV_REPO_ROOT -> orca-dev",
+        "anchor": "ORCA_DEV_REPO_ROOT",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "Linux outside Orca uses orca-ide; bare orca may be screen reader",
+        "anchor": "GNOME Orca screen reader",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "selected executable failure is reported and stops; no fallback",
+        "anchor": "Do not fall through",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "可执行文件按以下优先级选定一次，后续命令复用：\n1. 设置了 `ORCA_CLI_COMMAND`，就使用其值；这是最高优先级，Orca 也会为受管理的 WSL 会话导出该变量。[orca-01]\n2. 未设置上述覆盖值，且处于开发检出、会话暴露 `ORCA_DEV_REPO_ROOT` 时，使用 `orca-dev`。开发检出不会覆盖显式设置。[orca-01]\n3. 前两项均不适用，且在 Linux 的 Orca 管理终端之外，使用 `orca-ide`。禁止使用裸 `orca`，因为它通常解析为 GNOME 屏幕阅读器 `/usr/bin/orca`，并启动语音。[orca-01]\n4. 其他情况使用 `orca`。[orca-01]\n\n不能静默替换失败的可执行文件：必须报告准确错误并停止，避免切换到另一 Orca 构建。[orca-01]\n\n需区分运行状态错误：命令报告 Orca 未运行时，可用同一可执行文件执行 `open --json` 后重试；`runtime_access_denied` 表示沙箱阻止连接，应提升权限重试，不应启动或重启 Orca。[orca-02]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  },
+  {
+    "review_id": "R20",
+    "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?",
+    "rubric": [
+      {
+        "claim": "ORCA_CLI_COMMAND takes precedence",
+        "anchor": "If the `ORCA_CLI_COMMAND` environment variable is set",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "then dev checkout exposes ORCA_DEV_REPO_ROOT -> orca-dev",
+        "anchor": "ORCA_DEV_REPO_ROOT",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "Linux outside Orca uses orca-ide; bare orca may be screen reader",
+        "anchor": "GNOME Orca screen reader",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "selected executable failure is reported and stops; no fallback",
+        "anchor": "Do not fall through",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "选择顺序如下，选定后整场会话复用同一可执行文件：\n1. 若设置了 `ORCA_CLI_COMMAND`，使用其值；这是最高优先级，Orca 也会为托管 WSL 会话设置它。[orca-01]\n2. 没有上述覆盖时，若处于开发 checkout 且会话暴露 `ORCA_DEV_REPO_ROOT`，使用 `orca-dev`；开发环境不会压过显式覆盖。[orca-01]\n3. 再否则，Linux 上且不在 Orca 托管终端内时，使用 `orca-ide`。禁止使用裸 `orca`，因为它通常解析为 GNOME 屏幕阅读器 `/usr/bin/orca`，并启动语音。[orca-01]\n4. 其余情况使用 `orca`。[orca-01]\n\n不能静默替换失败的可执行文件：必须报告准确错误并停止，避免切换到另一 Orca 构建。[orca-01]\n\n若只是命令报告 Orca 未运行，可用同一可执行文件执行 `open --json` 后重试；`runtime_access_denied` 应通过提升权限重试，不能启动或重启 Orca。这些处理不改变可执行文件选择。[orca-02]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  },
+  {
+    "review_id": "R21",
+    "task": "What activates fox-commit, how many commits does it authorize, and which files should be staged if nothing is staged but unrelated edits exist?",
+    "rubric": [
+      {
+        "claim": "only explicit fox-commit activation; generic commit does not activate",
+        "anchor": "Do not invoke it automatically for a generic request",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "exactly one commit",
+        "anchor": "Create exactly one commit.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "review then stage only relevant reviewed files; not add -A by default",
+        "anchor": "Do not use `git add -A` by default.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "ask if unrelated/surprising changes or cannot safely determine files",
+        "anchor": "intended files cannot be determined safely",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "只有用户明确要求使用 `fox-commit` 或 `$fox-commit` 才会激活；普通的 `commit` 请求不会激活。[commit-02]\n\n一次提交请求授权恰好一个聚焦的 Conventional Commit；若仓库没有任何已暂存、未暂存或未跟踪的变更，则停止，不创建提交。[commit-02]\n\n若没有已暂存文件，应先审阅未暂存差异和相关未跟踪文件，只暂存已审阅且属于本次提交的文件，排除无关改动，不默认使用 `git add -A`。工作区存在无关或意外改动，或无法安全确定提交范围时，属于需要额外确认的例外。[commit-02]",
+      "citations": [
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-02",
+      "commit-01"
+    ]
+  },
+  {
+    "review_id": "R22",
+    "task": "In rewriteSkillPaths, how are references within the figure source, within the skill, and outside both treated? Does reporting outside references rewrite or fetch them?",
+    "rubric": [
+      {
+        "claim": "inside source: absolute paths become relative, existing relative paths retained",
+        "anchor": "if (inside(source, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "skill references redirected through skillLink relative to destination",
+        "anchor": "if (inside(skill, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "outside code/assets extensions are collected but original literal returned",
+        "anchor": "outside.push(path)",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "function returns rewritten text and outside list, no fetch",
+        "anchor": "return { text: rewritten, outside }",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "`rewriteSkillPaths` 按以下规则处理：[anatomy-07]\n\n- 只检查单/双引号包裹、以 `./`、`../` 或 `/` 开头的路径，并相对 `fromDir` 解析目标。非 skill 内的路径若不以“点 + 字母扩展名”结尾，直接保留。\n- figure source 内：相对路径保持原样；绝对路径改成相对 `fromDir` 的路径，统一使用 `/`，必要时补 `./`。source 判断优先，因此同时位于 source 和 skill 内时也走此规则。\n- skill 内、source 外：改写为从 `toDir` 指向 `skillLink` 下对应位置的相对路径；skill 内无扩展名的引用也能改写。\n- 两者之外：原文保持不变；只有以小写 `.js`、`.mjs`、`.css`、`.json`、`.html`、`.svg` 结尾的路径才加入 `outside`。其他扩展名不报告。\n\n报告外部引用不会改写、读取或下载引用目标；函数仅返回改写后的文本及 `outside` 列表。[anatomy-07] 调用方 `publish` 若发现该列表非空，会删除本次目标目录并抛错，要求把依赖移入 figure 文件夹。[anatomy-09]",
+      "citations": [
+        "anatomy-07",
+        "anatomy-09"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "anatomy-09",
+      "anatomy-07",
+      "anatomy-02",
+      "anatomy-10"
+    ]
+  },
+  {
+    "review_id": "R23",
+    "task": "What activates fox-commit, how many commits does it authorize, and which files should be staged if nothing is staged but unrelated edits exist?",
+    "rubric": [
+      {
+        "claim": "only explicit fox-commit activation; generic commit does not activate",
+        "anchor": "Do not invoke it automatically for a generic request",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "exactly one commit",
+        "anchor": "Create exactly one commit.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "review then stage only relevant reviewed files; not add -A by default",
+        "anchor": "Do not use `git add -A` by default.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "ask if unrelated/surprising changes or cannot safely determine files",
+        "anchor": "intended files cannot be determined safely",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "1. 仅当用户明确请求使用 `fox-commit` 或 `$fox-commit` 时激活；普通的 `commit` 请求不会激活该技能。[commit-01, commit-02]\n2. 一次提交请求只授权一个所请求的提交，技能要求恰好创建一个 commit；若没有任何已暂存、未暂存或未跟踪的变更，则告知无内容可提交并停止。[commit-02]\n3. 若尚未暂存任何文件，应先审阅未暂存差异及相关未跟踪文件，只暂存已审阅且属于本次请求的文件，排除无关修改；默认不要使用 `git add -A`。工作区存在无关或意外修改，或无法安全确定目标文件时，属于可额外请求确认的例外。[commit-02]",
+      "citations": [
+        "commit-01",
+        "commit-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "commit-02",
+      "commit-01"
+    ]
+  },
+  {
+    "review_id": "R24",
+    "task": "Orca 文档加载命令和推荐输出格式是什么？区分 not running、runtime_access_denied 和 skills get 未知时的处理，先不要实际执行。",
+    "rubric": [
+      {
+        "claim": "load guide via selected CLI skills get orca-cli",
+        "anchor": "ORCA skills get orca-cli",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "prefer JSON",
+        "anchor": "Prefer `--json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "not running: selected CLI open --json and retry",
+        "anchor": "start it with `ORCA open --json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "runtime access denied: escalate, not restart",
+        "anchor": "do not run `ORCA open` or restart Orca",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "unknown skills get: explain update, read-only help, no guessing",
+        "anchor": "do not guess unsupported commands",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      }
+    ],
+    "final": {
+      "decision": "answer",
+      "answer": "仅说明，未执行任何命令。\n\n- 文档加载：`ORCA skills get orca-cli`，推荐加 `--json`，即 `ORCA skills get orca-cli --json`；指南未覆盖的命令或参数用所选程序的 `--help` 查询。[orca-02]\n- `not running`：用 `ORCA open --json` 启动 Orca，然后重试原命令。[orca-02]\n- `runtime_access_denied`：表示沙箱阻止连接，应提升权限后重试原命令；不要执行 `ORCA open`，也不要重启 Orca。[orca-02]\n- `skills get` 未知：说明更新 Orca 可恢复指南；用 `--help` 做只读探索，不猜测不受支持的命令。[orca-02]\n\n`ORCA` 是占位符，必须替换为选定的可执行程序，不创建同名 shell 变量，也不原样运行。选择顺序：已设置的 `ORCA_CLI_COMMAND` → 开发检出且会话暴露 `ORCA_DEV_REPO_ROOT` 时用 `orca-dev` → Linux 非 Orca 管理终端用 `orca-ide` → 其他情况用 `orca`。Linux 外部终端禁止裸用 `orca`，以免启动 GNOME 屏幕阅读器。选定后始终复用；若无法运行，报告准确错误并停止，不切换程序。[orca-01]",
+      "citations": [
+        "orca-01",
+        "orca-02"
+      ],
+      "missing": []
+    },
+    "read_passage_ids": [
+      "orca-01",
+      "orca-02"
+    ]
+  }
+]

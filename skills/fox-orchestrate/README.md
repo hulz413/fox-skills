@@ -42,6 +42,10 @@ Install this folder as `fox-orchestrate` in your discoverable skills directory.
 
 See [tests/README.md](tests/README.md) for the routing-only behavioral suite and offline checker tests. Run the applicable checks after skill edits; preview sample tasks are never executed. Optional isolated [live cooperation checks](tests/live-cooperation.md) provide separate execution evidence when handoff or coordination changes warrant it. These are maintenance checks, not runtime skill dependencies.
 
+## Optional experiments
+
+The [Jev context filter](references/jev-context-filter.md) is a standalone, shadow-first helper for saved supplementary evidence. It is not enabled in the skill workflow; see its guide for explicit API calls, fallback behavior and evaluation limits.
+
 ## Design references
 
 Conceptual references, not runtime dependencies:

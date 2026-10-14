@@ -1,0 +1,127 @@
+{
+  "status": "completed",
+  "attempts": 192,
+  "http_statuses": {
+    "200": 192
+  },
+  "known_usage": {
+    "input_tokens": 132052,
+    "output_tokens": 4032
+  },
+  "unknown_usage_responses": 0,
+  "api_seconds": 200.073889,
+  "groups": {
+    "calibration": {
+      "A": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.0625,
+        "counter_recall_micro": 0.125,
+        "complete_case_repeats": 0,
+        "selected_bytes": 16160,
+        "oracle_bytes_to_all_facts": [
+          8388,
+          8388,
+          5556,
+          5556,
+          6599,
+          6599,
+          8589,
+          8589
+        ],
+        "ranking_seconds": 0.0015694579924456775
+      },
+      "B": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.875,
+        "counter_recall_micro": 0.875,
+        "complete_case_repeats": 6,
+        "selected_bytes": 19690,
+        "oracle_bytes_to_all_facts": [
+          1977,
+          1977,
+          1573,
+          1573,
+          1202,
+          1202,
+          4118,
+          4118
+        ],
+        "ranking_seconds": 0.009929791005561128
+      },
+      "C": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.9375,
+        "counter_recall_micro": 1.0,
+        "complete_case_repeats": 6,
+        "selected_bytes": 19684,
+        "oracle_bytes_to_all_facts": [
+          1015,
+          1015,
+          1573,
+          1573,
+          1202,
+          1202,
+          5366,
+          5366
+        ],
+        "ranking_seconds": 101.98674179197991
+      }
+    },
+    "holdout": {
+      "A": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.0625,
+        "counter_recall_micro": 0.14285714285714285,
+        "complete_case_repeats": 0,
+        "selected_bytes": 17112,
+        "oracle_bytes_to_all_facts": [
+          5768,
+          5768,
+          12524,
+          12524,
+          11683,
+          11683,
+          13340,
+          13340
+        ],
+        "ranking_seconds": 6.208298145793378e-05
+      },
+      "B": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.8125,
+        "counter_recall_micro": 0.8571428571428571,
+        "complete_case_repeats": 4,
+        "selected_bytes": 17952,
+        "oracle_bytes_to_all_facts": [
+          5973,
+          5973,
+          1785,
+          1785,
+          8855,
+          8855,
+          1926,
+          1926
+        ],
+        "ranking_seconds": 0.01043333305278793
+      },
+      "C": {
+        "case_repeats": 8,
+        "fact_recall_macro": 0.8125,
+        "counter_recall_micro": 0.8571428571428571,
+        "complete_case_repeats": 4,
+        "selected_bytes": 17952,
+        "oracle_bytes_to_all_facts": [
+          7162,
+          7162,
+          1785,
+          1785,
+          6465,
+          7662,
+          1926,
+          1926
+        ],
+        "ranking_seconds": 98.10806208207424
+      }
+    }
+  }
+}

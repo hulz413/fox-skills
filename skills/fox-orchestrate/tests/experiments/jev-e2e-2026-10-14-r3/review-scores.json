@@ -1,0 +1,346 @@
+[
+  {
+    "review_id": "R01",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All startup, timeout, listener and failure cleanup facts are covered; cleanup caveats follow directly from the code."
+  },
+  {
+    "review_id": "R02",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R03",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R04",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All path branches and no-fetch behavior are covered. Extra publish cleanup claims were checked against anatomy-09."
+  },
+  {
+    "review_id": "R05",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R06",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All path branches and no-fetch behavior are covered. Extra publish cleanup claims were checked against anatomy-09."
+  },
+  {
+    "review_id": "R07",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All startup, timeout, listener and failure cleanup facts are covered; cleanup caveats follow directly from the code."
+  },
+  {
+    "review_id": "R08",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All path branches and no-fetch behavior are covered. Extra publish cleanup claims were checked against anatomy-09."
+  },
+  {
+    "review_id": "R09",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All startup, timeout, listener and failure cleanup facts are covered; cleanup caveats follow directly from the code."
+  },
+  {
+    "review_id": "R10",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R11",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R12",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R13",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R14",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R15",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All startup, timeout, listener and failure cleanup facts are covered; cleanup caveats follow directly from the code."
+  },
+  {
+    "review_id": "R16",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R17",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R18",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R19",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R20",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  },
+  {
+    "review_id": "R21",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R22",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "All path branches and no-fetch behavior are covered. Extra publish cleanup claims were checked against anatomy-09."
+  },
+  {
+    "review_id": "R23",
+    "facts": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Activation, staging/confirmation exception, model/effort and reporting claims match the applicable frozen commit sections."
+  },
+  {
+    "review_id": "R24",
+    "facts": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "critical_issue": false,
+    "unsupported_claim": false,
+    "citations_supported": true,
+    "complete": true,
+    "notes": "Executable priority and failure distinctions match the frozen Orca sections; extra operational details are supported."
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "frozen_files_verified": 8,
+  "protected_files_verified": 91,
+  "jev_http_statuses": [
+    200
+  ],
+  "explicit_auth_failure_flags": 0,
+  "cli_calls_without_usage": 1
+}

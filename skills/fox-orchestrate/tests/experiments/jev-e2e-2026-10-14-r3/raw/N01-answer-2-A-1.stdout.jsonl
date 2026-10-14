@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138db-d890-7d71-8961-784aaff3a421"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"decision\":\"answer\",\"answer\":\"可执行文件按以下优先级选定一次，后续命令复用：\\n1. 设置了 `ORCA_CLI_COMMAND`，就使用其值；这是最高优先级，Orca 也会为受管理的 WSL 会话导出该变量。[orca-01]\\n2. 未设置上述覆盖值，且处于开发检出、会话暴露 `ORCA_DEV_REPO_ROOT` 时，使用 `orca-dev`。开发检出不会覆盖显式设置。[orca-01]\\n3. 前两项均不适用，且在 Linux 的 Orca 管理终端之外，使用 `orca-ide`。禁止使用裸 `orca`，因为它通常解析为 GNOME 屏幕阅读器 `/usr/bin/orca`，并启动语音。[orca-01]\\n4. 其他情况使用 `orca`。[orca-01]\\n\\n不能静默替换失败的可执行文件：必须报告准确错误并停止，避免切换到另一 Orca 构建。[orca-01]\\n\\n需区分运行状态错误：命令报告 Orca 未运行时，可用同一可执行文件执行 `open --json` 后重试；`runtime_access_denied` 表示沙箱阻止连接，应提升权限重试，不应启动或重启 Orca。[orca-02]\",\"citations\":[\"orca-01\",\"orca-02\"],\"missing\":[]}"}}
+{"type":"turn.completed","usage":{"input_tokens":19704,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":358,"reasoning_output_tokens":28}}

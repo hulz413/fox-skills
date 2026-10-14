@@ -1,0 +1,28 @@
+{
+  "previous_directory": "skills/fox-orchestrate/tests/experiments/jev-distribute-2026-10-14-r2",
+  "previous_records": {
+    "worker.schema.json": "156925f18e8c1ab2d8142c3e748c3ab032460239f5467c66615e10a6f1c0378f",
+    "build.py": "ff327ae81278d01034a876d7612619f364fe85787235c1f01abf474dfd4089fd",
+    "run.py": "d3de876907f0beaf3b5157dfebacaad33b706c1c3fcec63b98174ffe943cf998",
+    "launch-failure.json": "cca92b4d5381ca53856ac0e2d8809917d203a4bcbfac4e03874d20724daf9ca7",
+    "review.schema.json": "24531b788e44977866aad5139b92ae26cb2070d67e1dce9ccbe94a83b8ac110e",
+    "transport.py": "a25042264514e959ab794dbe0d9e8d3fb3a0a72eb32d8d210556a5c14fb3a0f5",
+    "samples.json": "0901250fac732d3c6e23e741d50d581468f9b0e0f3fdf8cf9ca34b14199bd1d4",
+    "test_run.py": "4a6ac10d383c33a29bd743b44c218bf5c0a5d25c7055e67fbf656e5082cf5c4f",
+    "prior-run.json": "c409c33d7a97710f49550210d374a53e9dac0cc38c19e26cd208e9be1fa268b0",
+    "manifest.json": "898ef1d9017aece3f625aa193d1b298fb7218084d206702fa0daab3d0a132b69",
+    "analyze.py": "32ace152c1d0c7a0653a9404e3b94747615e36fac065e62a368c3c33ce89e58d",
+    "PROTOCOL.md": "c257876ae2b7b339080161e470e43741cc233dab67e52c139a163481f5a5c750"
+  },
+  "identical_frozen_inputs": {
+    "build.py": "ff327ae81278d01034a876d7612619f364fe85787235c1f01abf474dfd4089fd",
+    "run.py": "d3de876907f0beaf3b5157dfebacaad33b706c1c3fcec63b98174ffe943cf998",
+    "transport.py": "a25042264514e959ab794dbe0d9e8d3fb3a0a72eb32d8d210556a5c14fb3a0f5",
+    "test_run.py": "4a6ac10d383c33a29bd743b44c218bf5c0a5d25c7055e67fbf656e5082cf5c4f",
+    "samples.json": "0901250fac732d3c6e23e741d50d581468f9b0e0f3fdf8cf9ca34b14199bd1d4",
+    "worker.schema.json": "156925f18e8c1ab2d8142c3e748c3ab032460239f5467c66615e10a6f1c0378f",
+    "review.schema.json": "24531b788e44977866aad5139b92ae26cb2070d67e1dce9ccbe94a83b8ac110e",
+    "PROTOCOL.md": "c257876ae2b7b339080161e470e43741cc233dab67e52c139a163481f5a5c750"
+  },
+  "reason": "external protected reference changed before any inference; refresh protection baseline only"
+}

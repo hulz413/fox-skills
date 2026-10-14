@@ -1,9 +1,11 @@
 ---
 name: fox-commit
-description: Create exactly one focused Conventional Commit directly in the current session using its current model. Use whenever the user asks to commit the current repository changes.
+description: Create exactly one focused Conventional Commit directly in the current session using its current model. Use only when the user explicitly requests fox-commit or $fox-commit; generic commit requests do not activate this skill.
 ---
 
 # Fox Commit
+
+Use this skill only when the user explicitly asks to use `fox-commit` or `$fox-commit`. Do not invoke it automatically for a generic request such as `commit`.
 
 You are helping the user commit the current repository changes.
 

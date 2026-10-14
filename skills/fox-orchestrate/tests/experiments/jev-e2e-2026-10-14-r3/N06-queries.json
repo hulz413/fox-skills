@@ -1,0 +1,20 @@
+{
+  "subquestions": [
+    {
+      "question": "fox-commit 应使用什么模型和 effort？",
+      "query": "fox-commit required model and effort"
+    },
+    {
+      "question": "没有运行时 effort 控制时，fox-commit 能否继续执行？",
+      "query": "fox-commit continue without runtime effort control"
+    },
+    {
+      "question": "fox-commit 是否可以修改全局默认值？",
+      "query": "fox-commit permission to modify global defaults"
+    },
+    {
+      "question": "fox-commit 提交后需要报告什么？",
+      "query": "fox-commit required report after commit"
+    }
+  ]
+}

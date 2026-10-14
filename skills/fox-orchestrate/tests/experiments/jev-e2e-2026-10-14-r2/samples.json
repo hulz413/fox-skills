@@ -1,0 +1,538 @@
+[
+  {
+    "id": "N01",
+    "split": "calibration",
+    "family": "orca",
+    "kind": "docs",
+    "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?",
+    "rubric": [
+      {
+        "claim": "ORCA_CLI_COMMAND takes precedence",
+        "anchor": "If the `ORCA_CLI_COMMAND` environment variable is set",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "then dev checkout exposes ORCA_DEV_REPO_ROOT -> orca-dev",
+        "anchor": "ORCA_DEV_REPO_ROOT",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "Linux outside Orca uses orca-ide; bare orca may be screen reader",
+        "anchor": "GNOME Orca screen reader",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "selected executable failure is reported and stops; no fallback",
+        "anchor": "Do not fall through",
+        "sources": [
+          "orca-01"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N02",
+    "split": "calibration",
+    "family": "orca",
+    "kind": "docs",
+    "task": "Orca 文档加载命令和推荐输出格式是什么？区分 not running、runtime_access_denied 和 skills get 未知时的处理，先不要实际执行。",
+    "rubric": [
+      {
+        "claim": "load guide via selected CLI skills get orca-cli",
+        "anchor": "ORCA skills get orca-cli",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "prefer JSON",
+        "anchor": "Prefer `--json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "not running: selected CLI open --json and retry",
+        "anchor": "start it with `ORCA open --json`",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "runtime access denied: escalate, not restart",
+        "anchor": "do not run `ORCA open` or restart Orca",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "unknown skills get: explain update, read-only help, no guessing",
+        "anchor": "do not guess unsupported commands",
+        "sources": [
+          "orca-02"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N03",
+    "split": "calibration",
+    "family": "anatomy",
+    "kind": "code",
+    "task": "chromePort 如何识别启动成功并返回端口？如果超时或进程提前退出，如何清理监听器、Chrome 和临时 profile？",
+    "rubric": [
+      {
+        "claim": "parse DevTools listening websocket port from stderr",
+        "anchor": "DevTools listening on ws:",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "timeout is 20000 ms",
+        "anchor": "20000",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "clean removes timer and data/error/exit listeners",
+        "anchor": "chrome.stderr.off(\"data\", data)",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "failure kills SIGKILL, deletes profile recursively, rethrows",
+        "anchor": "chrome.kill(\"SIGKILL\")",
+        "sources": [
+          "anatomy-01"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N04",
+    "split": "calibration",
+    "family": "anatomy",
+    "kind": "code",
+    "task": "In rewriteSkillPaths, how are references within the figure source, within the skill, and outside both treated? Does reporting outside references rewrite or fetch them?",
+    "rubric": [
+      {
+        "claim": "inside source: absolute paths become relative, existing relative paths retained",
+        "anchor": "if (inside(source, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "skill references redirected through skillLink relative to destination",
+        "anchor": "if (inside(skill, target))",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "outside code/assets extensions are collected but original literal returned",
+        "anchor": "outside.push(path)",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "function returns rewritten text and outside list, no fetch",
+        "anchor": "return { text: rewritten, outside }",
+        "sources": [
+          "anatomy-07"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N05",
+    "split": "holdout",
+    "family": "commit",
+    "kind": "docs",
+    "task": "What activates fox-commit, how many commits does it authorize, and which files should be staged if nothing is staged but unrelated edits exist?",
+    "rubric": [
+      {
+        "claim": "only explicit fox-commit activation; generic commit does not activate",
+        "anchor": "Do not invoke it automatically for a generic request",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "exactly one commit",
+        "anchor": "Create exactly one commit.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "review then stage only relevant reviewed files; not add -A by default",
+        "anchor": "Do not use `git add -A` by default.",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "ask if unrelated/surprising changes or cannot safely determine files",
+        "anchor": "intended files cannot be determined safely",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N06",
+    "split": "holdout",
+    "family": "commit",
+    "kind": "docs",
+    "task": "fox-commit 应使用什么模型和 effort？没有运行时 effort 控制能不能继续，是否可以修改全局默认值？提交后需要报告什么？",
+    "rubric": [
+      {
+        "claim": "current session current model",
+        "anchor": "directly in the current session using its current model",
+        "sources": [
+          "commit-01",
+          "commit-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "lowest supported effort when control exists, respect overrides",
+        "anchor": "respecting explicit user overrides",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "no control: continue actual setting and disclose, not claim lower effort",
+        "anchor": "continue at the actual setting",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "do not change model or global defaults",
+        "anchor": "do not change the model or global defaults",
+        "sources": [
+          "commit-01"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "report hash and final subject",
+        "anchor": "report the commit hash and final subject",
+        "sources": [
+          "commit-02"
+        ],
+        "critical": false
+      }
+    ]
+  },
+  {
+    "id": "N07",
+    "split": "holdout",
+    "family": "archify_docs",
+    "kind": "docs",
+    "task": "Archify 的 delivery 锁是按 artifact 还是目录生效？已确认 PID 死亡的锁会自动清除吗，人工恢复应保留哪些文件？",
+    "rubric": [
+      {
+        "claim": "physical output directory mutex serializes different artifact names too",
+        "anchor": "different artifact names in one directory also run serially",
+        "sources": [
+          "archify_docs-02"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "known-dead PID: exit 1 delivery/lock-stale and preserve files",
+        "anchor": "delivery/lock-stale",
+        "sources": [
+          "archify_docs-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "stop attempts, verify no owner/no replaced entry, remove only reported lock",
+        "anchor": "remove only the reported lock",
+        "sources": [
+          "archify_docs-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "preserve artifact provenance pending journal during stale lock recovery",
+        "anchor": "Do not\nremove an artifact, current provenance, or pending journal",
+        "sources": [
+          "archify_docs-02"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N08",
+    "split": "holdout",
+    "family": "archify_docs",
+    "kind": "docs",
+    "task": "After editing a candidate with browser evidence, should I change the HTML path or the evidence directory? Can failed automatic opening invalidate a verified delivery?",
+    "rubric": [
+      {
+        "claim": "fresh evidence dir for changed bytes, retain requested HTML path",
+        "anchor": "Keep the requested HTML path stable.",
+        "sources": [
+          "archify_docs-08"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "reuse evidence dir for retries of unchanged bytes",
+        "anchor": "retain the same directory for retries of unchanged bytes",
+        "sources": [
+          "archify_docs-08"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "never remove unknown evidence to pass",
+        "anchor": "Never remove unknown evidence",
+        "sources": [
+          "archify_docs-08"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "optional opening failure does not invalidate delivery",
+        "anchor": "Failure or unsupported opening does not invalidate delivery",
+        "sources": [
+          "archify_docs-09"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N09",
+    "split": "holdout",
+    "family": "archify_code",
+    "kind": "code",
+    "task": "When does boundedSidecarStem keep the original stem, and how does it bound long names without cutting Unicode code points? What size limits are checked?",
+    "rubric": [
+      {
+        "claim": "keep only if not forced, fits suffixes, and not reserved hash namespace",
+        "anchor": "if (!force && !sidecarStemNeedsBounding",
+        "sources": [
+          "archify_code-15"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "check both JS string length and UTF8 byte length <=255 for each suffix",
+        "anchor": "Buffer.byteLength(value, 'utf8') <= 255",
+        "sources": [
+          "archify_code-14"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "sha256 marker with optional hashDomain plus NUL",
+        "anchor": "const hashInput = hashDomain",
+        "sources": [
+          "archify_code-15"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "spread into code points then pop until fits",
+        "anchor": "const codePoints = [...stem]",
+        "sources": [
+          "archify_code-15"
+        ],
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "N10",
+    "split": "holdout",
+    "family": "archify_code",
+    "kind": "code",
+    "task": "How does sidecarStemFromComponent treat .html compared with other extensions? Is its extension comparison case-sensitive, and how can an already bounded stem be identified?",
+    "rubric": [
+      {
+        "claim": "exact lowercase .html suffix strips extension, options undefined",
+        "anchor": "component.endsWith('.html')",
+        "sources": [
+          "archify_code-16"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "other component retained, force true and full-component domain",
+        "anchor": "hashDomain: 'full-component'",
+        "sources": [
+          "archify_code-16"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "endsWith is case sensitive so .HTML takes other branch",
+        "anchor": "component.endsWith('.html')",
+        "sources": [
+          "archify_code-16"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "bounded marker regex case insensitive ending hash64",
+        "anchor": "SIDECAR_STEM_NAMESPACE.test(stem)",
+        "sources": [
+          "archify_code-15",
+          "archify_code-17"
+        ],
+        "critical": false
+      }
+    ]
+  },
+  {
+    "id": "N11",
+    "split": "holdout",
+    "family": "archify_code",
+    "kind": "code",
+    "task": "createOwnedTempDirectory 的 cleanup 如何避免删掉被替换的路径？哪些错误重试、最多几次？这些检查是否保证消除了恶意竞态？",
+    "rubric": [
+      {
+        "claim": "verify ancestors and directory dev/inode/birthtime every attempt",
+        "anchor": "verifyIdentity(identity)",
+        "sources": [
+          "archify_code-03"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "retry EBUSY EPERM EACCES ENOTEMPTY, 3 retries after initial",
+        "anchor": "attempt < 3",
+        "sources": [
+          "archify_code-03"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "rm internal retries disabled, force false",
+        "anchor": "force: false, maxRetries: 0",
+        "sources": [
+          "archify_code-03"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "path check/rm race remains, not filesystem sandbox",
+        "anchor": "this is not a filesystem sandbox",
+        "sources": [
+          "archify_code-02"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "failure retains path and ARCHIFY_TEMP_CLEANUP",
+        "anchor": "ARCHIFY_TEMP_CLEANUP",
+        "sources": [
+          "archify_code-03"
+        ],
+        "critical": false
+      }
+    ]
+  },
+  {
+    "id": "N12",
+    "split": "holdout",
+    "family": "archify_code",
+    "kind": "code",
+    "task": "Compare portable path profiles repo, output, archive. Which universal path rejections apply, and which Windows filename checks and component length limits are additional?",
+    "rubric": [
+      {
+        "claim": "valid profiles repo output archive",
+        "anchor": "PORTABLE_PATH_PROFILES",
+        "sources": [
+          "archify_code-04",
+          "archify_code-05",
+          "archify_code-06",
+          "archify_code-07",
+          "archify_code-08",
+          "archify_code-09",
+          "archify_code-10",
+          "archify_code-11",
+          "archify_code-12",
+          "archify_code-13"
+        ],
+        "critical": false
+      },
+      {
+        "claim": "all reject absolute/drive-relative/URI/backslash/empty/dot/control/unpaired surrogate",
+        "anchor": "Portable path must not contain dot segments.",
+        "sources": [
+          "archify_code-06"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "Windows constraints only output/archive; repo skips those",
+        "anchor": "if (!WINDOWS_SAFE_PROFILES.has(profile)) continue;",
+        "sources": [
+          "archify_code-06"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "Windows extra ADS invalid chars trailing dot/space reserved/short names",
+        "anchor": "Portable path must not use a reserved Windows device name.",
+        "sources": [
+          "archify_code-06"
+        ],
+        "critical": true
+      },
+      {
+        "claim": "Windows safe component <=255 both UTF8 bytes UTF16 code units",
+        "anchor": "utf8Bytes > 255 || utf16CodeUnits > 255",
+        "sources": [
+          "archify_code-06"
+        ],
+        "critical": true
+      }
+    ]
+  }
+]

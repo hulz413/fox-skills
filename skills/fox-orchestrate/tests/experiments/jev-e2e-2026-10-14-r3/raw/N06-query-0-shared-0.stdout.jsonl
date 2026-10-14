@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138e2-fbaf-7612-8c4a-b305763dd4a7"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"subquestions\":[{\"question\":\"fox-commit 应使用什么模型和 effort？\",\"query\":\"fox-commit required model and effort\"},{\"question\":\"没有运行时 effort 控制时，fox-commit 能否继续执行？\",\"query\":\"fox-commit continue without runtime effort control\"},{\"question\":\"fox-commit 是否可以修改全局默认值？\",\"query\":\"fox-commit permission to modify global defaults\"},{\"question\":\"fox-commit 提交后需要报告什么？\",\"query\":\"fox-commit required report after commit\"}]}"}}
+{"type":"turn.completed","usage":{"input_tokens":18032,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":155,"reasoning_output_tokens":36}}

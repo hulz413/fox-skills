@@ -1,0 +1,158 @@
+{
+  "preregistered_gate_passed": false,
+  "heldout_regressions": [
+    {
+      "case": "C03",
+      "repeat": 1,
+      "against": "B",
+      "C_facts": [
+        "dedupe",
+        "examples"
+      ],
+      "baseline_facts": [
+        "dedupe",
+        "existing",
+        "examples"
+      ],
+      "C_counter_hit": 1,
+      "baseline_counter_hit": 2
+    },
+    {
+      "case": "C03",
+      "repeat": 2,
+      "against": "B",
+      "C_facts": [
+        "dedupe",
+        "examples"
+      ],
+      "baseline_facts": [
+        "dedupe",
+        "existing",
+        "examples"
+      ],
+      "C_counter_hit": 1,
+      "baseline_counter_hit": 2
+    }
+  ],
+  "candidate_pool_gaps": [],
+  "repeat_stability": [
+    {
+      "case": "D01",
+      "order_changed": true,
+      "selection_changed": true,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "D02",
+      "order_changed": false,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "C01",
+      "order_changed": true,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "C02",
+      "order_changed": true,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "D03",
+      "order_changed": true,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "D04",
+      "order_changed": false,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "C03",
+      "order_changed": true,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    },
+    {
+      "case": "C04",
+      "order_changed": true,
+      "selection_changed": false,
+      "facts_changed": false,
+      "recall_changed": false
+    }
+  ],
+  "stratified": {
+    "calibration/code/A": {
+      "macro_recall": 0.125,
+      "complete": 0,
+      "case_repeats": 4
+    },
+    "calibration/code/B": {
+      "macro_recall": 0.75,
+      "complete": 2,
+      "case_repeats": 4
+    },
+    "calibration/code/C": {
+      "macro_recall": 0.875,
+      "complete": 2,
+      "case_repeats": 4
+    },
+    "calibration/docs/A": {
+      "macro_recall": 0.0,
+      "complete": 0,
+      "case_repeats": 4
+    },
+    "calibration/docs/B": {
+      "macro_recall": 1.0,
+      "complete": 4,
+      "case_repeats": 4
+    },
+    "calibration/docs/C": {
+      "macro_recall": 1.0,
+      "complete": 4,
+      "case_repeats": 4
+    },
+    "holdout/code/A": {
+      "macro_recall": 0.0,
+      "complete": 0,
+      "case_repeats": 4
+    },
+    "holdout/code/B": {
+      "macro_recall": 0.875,
+      "complete": 2,
+      "case_repeats": 4
+    },
+    "holdout/code/C": {
+      "macro_recall": 0.75,
+      "complete": 2,
+      "case_repeats": 4
+    },
+    "holdout/docs/A": {
+      "macro_recall": 0.125,
+      "complete": 0,
+      "case_repeats": 4
+    },
+    "holdout/docs/B": {
+      "macro_recall": 0.75,
+      "complete": 2,
+      "case_repeats": 4
+    },
+    "holdout/docs/C": {
+      "macro_recall": 0.875,
+      "complete": 2,
+      "case_repeats": 4
+    }
+  }
+}

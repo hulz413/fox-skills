@@ -1,0 +1,4 @@
+{
+  "instruction": "Decompose the user question into 1 to 4 concrete subquestions without answering them. Preserve every explicit constraint. For each produce an English search query using only the user question, with no guessed source identifiers or facts. Do not call tools, read files, or delegate. Return the required JSON.",
+  "task": "How is the Orca executable selected across explicit overrides, a development checkout, and Linux outside Orca? May a failed executable be replaced silently?"
+}

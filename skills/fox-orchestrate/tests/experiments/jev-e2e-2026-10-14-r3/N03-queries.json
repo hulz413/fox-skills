@@ -1,0 +1,16 @@
+{
+  "subquestions": [
+    {
+      "question": "chromePort 如何识别 Chrome 启动成功并返回端口？",
+      "query": "chromePort detect Chrome startup success and return port"
+    },
+    {
+      "question": "chromePort 在超时时如何清理监听器、Chrome 和临时 profile？",
+      "query": "chromePort timeout cleanup listeners Chrome temporary profile"
+    },
+    {
+      "question": "chromePort 在进程提前退出时如何清理监听器、Chrome 和临时 profile？",
+      "query": "chromePort process exits early cleanup listeners Chrome temporary profile"
+    }
+  ]
+}

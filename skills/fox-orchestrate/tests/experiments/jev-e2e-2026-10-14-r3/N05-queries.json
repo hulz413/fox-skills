@@ -1,0 +1,16 @@
+{
+  "subquestions": [
+    {
+      "question": "What activates fox-commit?",
+      "query": "fox-commit activation conditions"
+    },
+    {
+      "question": "How many commits does fox-commit authorize?",
+      "query": "fox-commit number of commits authorized"
+    },
+    {
+      "question": "Which files should be staged when nothing is staged but unrelated edits exist?",
+      "query": "fox-commit which files to stage when nothing is staged and unrelated edits exist"
+    }
+  ]
+}

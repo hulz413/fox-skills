@@ -7,6 +7,8 @@ description: Coordinate subagents when the user requests delegation or expected 
 
 Own the plan, delegation, final outcome and acceptance.
 
+Use the host's native subagents by default. When Claude Code CLI is requested or already authorized as the execution backend, follow [Claude Code CLI dispatch](references/claude-code-cli.md) to coordinate it from Codex App through the available command tool. The same roles, routing, ownership and acceptance rules apply; a CLI worker is an external process, not a Codex native subagent.
+
 ## Work proportionately
 
 Meet required quality at lower overall cost, considering known model and effort settings. Keep small, tightly coupled or context-heavy work local; consider delegating substantial, bounded work when a lighter model or lower effort can reliably handle it, or to isolate large temporary logs or exploration results from the main context. Count dispatch, context transfer, coordination, verification and likely rework: fewer agents need not save tokens or money, and tokens are not money. Honor explicit user requests within runtime limits; these take precedence over default cost and coordination-overhead judgments. Invocation mandates neither delegation, a pipeline or agent count, nor separate investigation or explanation of that choice.
@@ -28,7 +30,9 @@ Supply each assignment's role, responsibilities and boundaries unless runtime-pr
 
 Consult for concrete decisions worth the overhead, never automatically at startup, on errors or before completion. Advice and independent review are distinct; neither requires the strongest model.
 
-Use `fork_turns: "none"` with the question, goal, constraints, prior decisions, raw evidence, attempts and observed failures. Never fork an App conversation or inherit full history for consultation. Advisors identify missing evidence for the coordinator or request it from relevant agents under the communication rules below. This overrides general routing history options.
+Start advisors with fresh context using the active runtime's [context controls](references/model-routing.md#runtime-adapters), supplying the question, goal, constraints, prior decisions, raw evidence, attempts and observed failures. Never fork an App conversation or inherit full history for consultation. Advisors identify missing evidence for the coordinator or request it from relevant agents under the communication rules below. This overrides general routing history options.
+
+A fresh native subagent or authorized CLI process does not require creating another App chat. A prohibition on additional App chats alone does not prohibit those execution paths; honor any separate restrictions on subagents, external backends or processes.
 
 ## Delegate and coordinate
 
@@ -44,7 +48,7 @@ Observe concurrency and lifecycle limits: returned results may not free slots. R
 
 Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to select capability, effort and context, validate the combination and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 
-At dispatch, show a Markdown table (new for later dispatches): agent/role, assignment, model, effort and selection reason. Omit status columns and routine disclaimers for normal explicit settings. Explain inheritance, fallback, unsupported controls and dispatch errors; report runtime-supplied differing effective values. Distinguish plans and previews from successful creation.
+At dispatch, show a Markdown table (new for later dispatches): agent/role, assignment, model, effort and selection reason; identify the backend when using an external CLI or mixing runtimes. Omit status columns and routine disclaimers for normal explicit settings. Explain inheritance, fallback, unsupported controls and dispatch errors; report runtime-supplied differing effective values. Distinguish plans and previews from successful creation.
 
 ## Return and finish
 

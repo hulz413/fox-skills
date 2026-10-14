@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138e2-bd12-78a2-a2af-c4d7c4ed77f2"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"decision\":\"answer\",\"answer\":\"1. 只有用户明确要求使用 `fox-commit` 或 `$fox-commit` 才会激活；普通的 `commit` 请求不会激活。[commit-01]\\n2. 一次提交请求授权恰好一个聚焦的 Conventional Commit；若没有已暂存、未暂存或未跟踪的改动，则停止，不创建提交。[commit-02]\\n3. 如果没有已暂存内容，应先审阅未暂存差异和相关未跟踪文件，仅暂存已审阅且属于本次请求的文件，排除无关改动；默认不要使用 `git add -A`。存在无关或意外改动，或无法安全确定目标文件时，可以请求额外确认；这不构成把所有改动一起提交的授权。[commit-02]\",\"citations\":[\"commit-01\",\"commit-02\"],\"missing\":[]}"}}
+{"type":"turn.completed","usage":{"input_tokens":19542,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":232,"reasoning_output_tokens":20}}

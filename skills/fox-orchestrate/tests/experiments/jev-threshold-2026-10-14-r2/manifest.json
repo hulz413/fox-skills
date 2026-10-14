@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-10-14T04:24:44.967862+00:00",
+  "original_plan_sha256": "4ea9bcb3d20703898c0cff1729b76adb55ef983ff8f59ef5b67882f3983a734e",
+  "original_files": {
+    "summary.json": "6dbb3404467817b3622f5031afe8580baa6dcf3882e6765f2b3f89433b95fca1",
+    "run.py": "ccb7d65a6b51fc51c241d4147e3f0f0b849928193e0a8f6e421e26e7bf9ebef0",
+    "plan.json": "4ea9bcb3d20703898c0cff1729b76adb55ef983ff8f59ef5b67882f3983a734e",
+    "REPORT.md": "6c06c2bdcd03faf50a21e8d2a9a7b27502a6f8e1c2514ef8812998872e5ddde1",
+    "samples.json": "96320f7f7a76538f5af09540047f2258951b882b8af278a4584e21c76db5e2ae",
+    "service-diagnostic.json": "3673b3c82dad16f4ba0dee0e0ed2ebc4a83565c54bf8b9dff8778d1a28011db9",
+    "calibration.jsonl": "d33dec1746044c245af722c0e00360d23d4e9bba97139689606e9eeab33e199e",
+    "build_samples.py": "05f0aa00937923851f0714a4d97f76c63ab974b2ddf06fb5acd59f25945c01ce",
+    "selection.json": "aaac1de147be87b0c4884fafaa8dc6552d93a080373b744cc250599e9913ced5",
+    "holdout.jsonl": "d77683f4b1b6a75ab91a99a88cc1210ee33f0ebab4dc4b626dbd788dcf8a40ff",
+    "PROTOCOL.md": "48cb70b57b2e6ca88c7b79607aea7e9aad338cc8056e8a019aef152fbac74c59"
+  },
+  "runner_sha256": "76ffdae6d981c4957ba15e6a942bedb703a5f1a11442bed95447402cd17502d7",
+  "total_attempts_unless_auth_failure": 48,
+  "auth_stop_statuses": [
+    401,
+    403
+  ],
+  "retries": 0,
+  "additional_probe_calls": 0,
+  "policy": "Original requests, order, labels, split, candidates and selection/scoring functions unchanged. Lock selection before holdout. Auth failure aborts immediately; no replacement calls. HTTP statuses are recorded without headers or bodies."
+}

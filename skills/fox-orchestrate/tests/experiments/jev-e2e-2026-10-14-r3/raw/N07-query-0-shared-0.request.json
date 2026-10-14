@@ -1,0 +1,4 @@
+{
+  "instruction": "Decompose the user question into 1 to 4 concrete subquestions without answering them. Preserve every explicit constraint. For each produce an English search query using only the user question, with no guessed source identifiers or facts. Do not call tools, read files, or delegate. Return the required JSON.",
+  "task": "Archify 的 delivery 锁是按 artifact 还是目录生效？已确认 PID 死亡的锁会自动清除吗，人工恢复应保留哪些文件？"
+}

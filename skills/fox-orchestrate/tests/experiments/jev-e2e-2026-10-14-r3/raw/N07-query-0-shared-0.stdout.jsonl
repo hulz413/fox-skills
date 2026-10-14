@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138e4-464c-7c20-9669-2959e82db147"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"subquestions\":[{\"question\":\"Archify 的 delivery 锁是按 artifact 生效，还是按目录生效？\",\"query\":\"Archify delivery lock scope artifact or directory\"},{\"question\":\"Archify 是否会自动清除已确认 PID 死亡的 delivery 锁？\",\"query\":\"Archify delivery lock automatic cleanup confirmed dead PID\"},{\"question\":\"人工恢复 Archify 的 delivery 锁时，应保留哪些文件？\",\"query\":\"Archify delivery lock manual recovery files to preserve\"}]}"}}
+{"type":"turn.completed","usage":{"input_tokens":18037,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":150,"reasoning_output_tokens":37}}

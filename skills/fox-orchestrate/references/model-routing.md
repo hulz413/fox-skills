@@ -6,6 +6,8 @@ Choose model and effort once, before each bounded assignment's first dispatch. R
 
 Use the active runtime's models, capability descriptions, supported settings and configuration controls. Reuse available information; consult a catalog or official documentation only for material gaps or conflicts. Product/task recommendations and API defaults do not establish dispatch-interface behavior. Do not maintain production model-ID tables, infer cost from names or invent savings.
 
+For an authorized external backend, use that backend's catalog, installed interface and effective configuration, not the coordinator's model list. Apply the same selection rules within that backend. For Codex App dispatching Claude Code, read [Claude Code CLI dispatch](claude-code-cli.md); CC's `--model` and `--effort` configure the external session without changing the Codex coordinator.
+
 Honor explicit pins, including supported high efforts and older versions. If unavailable or impossible to apply, return `blocked` with the reason; never silently substitute. Missing inputs, permissions or services require resolution, not a stronger model.
 
 Assess the requested output, acceptance criteria, necessary context and reasoning, iteration allowance, latency and known cost constraints, including coordination and likely rework. Judge this deliverable, not the enclosing project's complexity or every unresolved input issue: an initial decision framework may leave questions open that a resolution task must answer. Give separate capability and effort reasons, then check the combination.
@@ -55,7 +57,24 @@ If the preferred tier is missing, use the runtime-recommended compatible default
 
 Apply model, effort and context through supported dispatch parameters or configuration, not prompt prose. If effort cannot be overridden, report its known inherited value or null when unknown. If the interface has no effort control, omit the unsupported setting and report null with the reason; null does not mean no reasoning. In previews, `requested` can pair an explicitly selected model with null effort; `inherited` means the route must inherit its configuration. A conflicting or unverifiable explicit effort pin blocks the route. Disclose the resulting combination and material acceptance limits rather than claiming desired settings took effect.
 
-Advisors follow the [advisor context contract](../SKILL.md#advisor-context): fresh context, explicit evidence, no App fork. Other roles use `fork_turns: "none"` for self-contained assignments or limited history when needed. When full history is necessary and overrides are disallowed, report inherited settings (null if unknown), without conflicting overrides; a conflicting explicit pin blocks. Never inherit merely to avoid selection.
+Advisors follow the [advisor context contract](../SKILL.md#advisor-context): fresh context, explicit evidence, no App fork. Other roles use fresh context for self-contained assignments or limited history when needed, through the runtime adapters below. When full history is necessary and overrides are disallowed, report inherited settings (null if unknown), without conflicting overrides; a conflicting explicit pin blocks. Never inherit merely to avoid selection.
+
+### Runtime adapters
+
+Keep the selection and coordination rules above unchanged across Codex and Claude Code; translate them to the active interface rather than copying another runtime's parameter names. The tools and effective configuration exposed by the current session take precedence over these mappings. If a required control is unavailable, disclose the limit and apply the fallback or blocking rules above.
+
+| Requirement | Codex | Claude Code |
+| --- | --- | --- |
+| Fresh context | Set `fork_turns: "none"` when the dispatch tool supports it. | Use a non-fork subagent through the `Agent` tool, with an appropriate explicit subagent type. Do not choose the `fork` type or pass `fork_turns`; ordinary subagents start with fresh context. |
+| Necessary full history, for non-advisors only | Use the supported history option, such as `fork_turns: "all"`, observing any override restrictions. | Use a fork only when available and permitted. Treat its model and other settings as inherited unless the active interface explicitly supports overrides. |
+| Model and effort | Use the dispatch tool's supported model and effort controls; names vary by interface, such as `model` and `reasoning_effort`. | Use supported `model` and `effort` invocation parameters or subagent definition fields. Check version support and configuration precedence; environment variables or managed settings can override or restrict the request. |
+| Continue an assignment | Use supported follow-up or message tools without changing the selected configuration. | Use a resumable type when follow-ups are needed; Explore and Plan may be one-shot. Resume the existing subagent with its retained context and unchanged selected configuration through the available resume or message interface. |
+
+Role names in this skill describe responsibilities, not required built-in agent types. Select a type with the tools and permissions needed for the assignment, and supply its role and boundaries explicitly. Direct peer messaging and nested delegation are optional capabilities: use coordinator relays or keep dispatch with the main coordinator when unsupported. Do not enable agent teams or change shared configuration merely to apply this skill.
+
+Preview schemas retain `fork_turns` and `reasoning_effort` as normalized reporting fields: `fork_turns: "none"` means fresh context and `"all"` means full history. These fields do not establish which parameters a live runtime accepts; translate them at dispatch. Preview-only numeric history values require corresponding runtime support before live use.
+
+For material Claude Code interface gaps, consult the official [subagent documentation](https://code.claude.com/docs/en/sub-agents). Do not assume that a documented control exists in an older installed version or is available in every session.
 
 ## 5. Keep the selected configuration
 

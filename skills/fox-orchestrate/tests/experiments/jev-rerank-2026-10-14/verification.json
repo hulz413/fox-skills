@@ -1,0 +1,12 @@
+{
+  "protected_files_unchanged": 47,
+  "distinct_planned_requests": 192,
+  "arm_observations": 48,
+  "calibration_prefix_lock_verified": true,
+  "all_request_hashes_recomputed": true,
+  "all_metrics_recomputed": true,
+  "offline_experiment_checks_passed": 9,
+  "existing_checks_passed": 59,
+  "git_diff_check_passed": true,
+  "manifest_sha256": "c93650c19d0f54fdaf10fe6c82993fa09b021676590742c36b6ff7db61ae265a"
+}

@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138e2-7346-7e33-a413-d426c31b5ace"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"decision\":\"answer\",\"answer\":\"1. 仅当用户明确请求使用 `fox-commit` 或 `$fox-commit` 时激活；普通的 `commit` 请求不会激活该技能。[commit-01, commit-02]\\n2. 一次提交请求只授权一个所请求的提交，技能要求恰好创建一个 commit；若没有任何已暂存、未暂存或未跟踪的变更，则告知无内容可提交并停止。[commit-02]\\n3. 若尚未暂存任何文件，应先审阅未暂存差异及相关未跟踪文件，只暂存已审阅且属于本次请求的文件，排除无关修改；默认不要使用 `git add -A`。工作区存在无关或意外修改，或无法安全确定目标文件时，属于可额外请求确认的例外。[commit-02]\",\"citations\":[\"commit-01\",\"commit-02\"],\"missing\":[]}"}}
+{"type":"turn.completed","usage":{"input_tokens":19546,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":278,"reasoning_output_tokens":57}}

@@ -1,0 +1,19 @@
+{
+  "parent": "skills/fox-orchestrate/tests/experiments/jev-e2e-2026-10-14",
+  "files": {
+    "build.py": "eadc9b8fcce4e04e7bb173d4701fc7e76d24f4455d9d0a1edcebacb184395cdf",
+    "run.py": "a6c24d498a719d7c738306c79b075ad3301221d0a56fe046a1544754a2752da5",
+    "corpus.json": "d7ec333fddff86dbd154e2e6dad4f6edbdfc8b14555574965e0c323a4c06fa4b",
+    "run-status.json": "e5371f4a7c85a798746f3148e2f4c06a2f804efd79a626c49572ab6af8008574",
+    "samples.json": "3f6fe485b18506ddd3565a43e32083fabc2410e133bf1da629cdf8dc12526f43",
+    "test_run.py": "968bf606a36fe42d34856ceebc394ae36e448dd743cb05902cdd9ee703545219",
+    "query.schema.json": "97fafa12af9749accdbd3a0a420b648d1a4e2f40b035ac0b579d7b878335e659",
+    "answer.schema.json": "3655088364ca11b6ecd90c2abc96028efe0a0ac24a4fe688b862569412264d21",
+    "manifest.json": "094233d6ff0e687d6959216dde724adf181c25bc65c9246e926defb5608f6934",
+    "calls.jsonl": "17d201fd9e19a52a77ad344640ed7579b30fe5e999ebc1083176868cdbb41fd2",
+    "PROTOCOL.md": "f347d95f4130cd7efd1ae217338cd1d4af3c6c5c1e4670d9bb9b38e847781564",
+    "raw/N01-query-0-shared-0.stdout.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "raw/N01-query-0-shared-0.request.json": "91c4ecaa7e240138e10f3b6a3c0110c46bcec8b73f23e5d5a85bdd400241b458",
+    "raw/N01-query-0-shared-0.stderr.txt": "591e80b1536f862bfd45f8e86670c08d6dc14bc666047ea2e59199e5c6c68d5a"
+  }
+}

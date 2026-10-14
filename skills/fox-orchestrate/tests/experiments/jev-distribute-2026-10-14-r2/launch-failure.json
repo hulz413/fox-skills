@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-14T07:07:29.295698+00:00",
+  "phase": "preflight_integrity",
+  "model_calls": 0,
+  "drift": [
+    {
+      "path": "skills/fox-orchestrate/references/claude-code-cli.md",
+      "frozen_sha256": "622c41770868ebdd60c44687d8b29580ae0d7233d6ce166b9127ef4f93dca283",
+      "current_sha256": "c05f489e4e6b293f6f5ad88d436d08834daf6b15c3c951820517e3c7bab65bbf"
+    }
+  ]
+}

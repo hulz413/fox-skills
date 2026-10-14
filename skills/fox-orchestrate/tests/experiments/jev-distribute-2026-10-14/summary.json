@@ -1,0 +1,241 @@
+{
+  "status": {
+    "status": "invalid_generation_or_tool_use",
+    "completed_packet_arms": 0,
+    "finished_at": "2026-10-14T07:00:59.824828+00:00"
+  },
+  "physical_all_calls": {
+    "codex_cli": {
+      "calls": 1,
+      "usage_missing_calls": 1,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_input_tokens_reported": 0,
+      "seconds_sum": 12.062511166004697
+    },
+    "typesafe": {
+      "calls": 0,
+      "usage_missing_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cached_input_tokens_reported": 0,
+      "seconds_sum": 0
+    },
+    "known_total_tokens": 0
+  },
+  "groups_completed_only": {
+    "calibration": {
+      "A": {
+        "completed_packet_arms": 0,
+        "completed_tasks": 0,
+        "operational_accepted_packets": 0,
+        "accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "seconds": 0,
+        "mean_seconds": null,
+        "repair_tasks": 0,
+        "worker_requested_tasks": 0,
+        "rework_accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "graded_tasks": 0,
+        "initial_fact_coverage": null,
+        "final_fact_coverage": null,
+        "final_complete_supported": 0
+      },
+      "B": {
+        "completed_packet_arms": 0,
+        "completed_tasks": 0,
+        "operational_accepted_packets": 0,
+        "accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "seconds": 0,
+        "mean_seconds": null,
+        "repair_tasks": 0,
+        "worker_requested_tasks": 0,
+        "rework_accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "graded_tasks": 0,
+        "initial_fact_coverage": null,
+        "final_fact_coverage": null,
+        "final_complete_supported": 0
+      }
+    },
+    "holdout": {
+      "A": {
+        "completed_packet_arms": 0,
+        "completed_tasks": 0,
+        "operational_accepted_packets": 0,
+        "accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "seconds": 0,
+        "mean_seconds": null,
+        "repair_tasks": 0,
+        "worker_requested_tasks": 0,
+        "rework_accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "graded_tasks": 0,
+        "initial_fact_coverage": null,
+        "final_fact_coverage": null,
+        "final_complete_supported": 0
+      },
+      "B": {
+        "completed_packet_arms": 0,
+        "completed_tasks": 0,
+        "operational_accepted_packets": 0,
+        "accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "seconds": 0,
+        "mean_seconds": null,
+        "repair_tasks": 0,
+        "worker_requested_tasks": 0,
+        "rework_accounting": {
+          "codex_cli": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "typesafe": {
+            "calls": 0,
+            "usage_missing_calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cached_input_tokens_reported": 0,
+            "seconds_sum": 0
+          },
+          "known_total_tokens": 0
+        },
+        "graded_tasks": 0,
+        "initial_fact_coverage": null,
+        "final_fact_coverage": null,
+        "final_complete_supported": 0
+      }
+    }
+  },
+  "heldout_reductions": null,
+  "allocation_missing_minimum_evidence": [],
+  "heldout_final_quality_regressions": [],
+  "acceptance": "incomplete",
+  "sources_drifted": []
+}

@@ -1,0 +1,20 @@
+{
+  "subquestions": [
+    {
+      "question": "How does rewriteSkillPaths treat references within the figure source?",
+      "query": "rewriteSkillPaths references within figure source treatment"
+    },
+    {
+      "question": "How does rewriteSkillPaths treat references within the skill?",
+      "query": "rewriteSkillPaths references within skill treatment"
+    },
+    {
+      "question": "How does rewriteSkillPaths treat references outside both the figure source and the skill?",
+      "query": "rewriteSkillPaths references outside both figure source and skill treatment"
+    },
+    {
+      "question": "Does reporting outside references in rewriteSkillPaths rewrite or fetch those references?",
+      "query": "rewriteSkillPaths reporting outside references rewrite or fetch"
+    }
+  ]
+}

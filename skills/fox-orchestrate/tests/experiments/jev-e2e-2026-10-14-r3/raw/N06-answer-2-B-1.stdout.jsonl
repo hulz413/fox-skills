@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138e4-03cf-7302-ad73-eb0e083d439d"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"decision\":\"answer\",\"answer\":\"- 模型与 effort：直接使用当前会话的当前模型；运行时提供控制时，选择该模型支持的最低 reasoning effort，并尊重用户显式覆盖。根据运行时元数据确认支持档位，不得切换模型。[commit-01]\\n- 没有 effort 控制：可以继续，按实际设置执行，并简短说明限制；不得声称已降低 effort，也不应因此阻止提交。技能指令本身不能改变当前轮次的 reasoning 设置。[commit-01]\\n- 全局默认值：不得修改。[commit-01]\\n- 提交后：报告 commit hash 和最终 subject；若无法控制 effort，还需简短披露该限制。[commit-01][commit-02]\",\"citations\":[\"commit-01\",\"commit-02\"],\"missing\":[]}"}}
+{"type":"turn.completed","usage":{"input_tokens":19573,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":191,"reasoning_output_tokens":0}}

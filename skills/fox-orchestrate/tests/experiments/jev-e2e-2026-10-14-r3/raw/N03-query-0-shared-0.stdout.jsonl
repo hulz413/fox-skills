@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138dd-b83d-79d2-80a1-334dee1118a7"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"subquestions\":[{\"question\":\"chromePort 如何识别 Chrome 启动成功并返回端口？\",\"query\":\"chromePort detect Chrome startup success and return port\"},{\"question\":\"chromePort 在超时时如何清理监听器、Chrome 和临时 profile？\",\"query\":\"chromePort timeout cleanup listeners Chrome temporary profile\"},{\"question\":\"chromePort 在进程提前退出时如何清理监听器、Chrome 和临时 profile？\",\"query\":\"chromePort process exits early cleanup listeners Chrome temporary profile\"}]}"}}
+{"type":"turn.completed","usage":{"input_tokens":18027,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":155,"reasoning_output_tokens":40}}

@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a138da-8336-7453-9ab9-5c848cf994c1"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"{\"subquestions\":[{\"question\":\"How is the Orca executable selected when explicit overrides are provided?\",\"query\":\"Orca executable selection explicit overrides\"},{\"question\":\"How does a development checkout affect Orca executable selection relative to explicit overrides?\",\"query\":\"Orca executable selection development checkout explicit overrides\"},{\"question\":\"How is the Orca executable selected on Linux outside Orca?\",\"query\":\"Orca executable selection Linux outside Orca\"},{\"question\":\"May a failed Orca executable be replaced silently?\",\"query\":\"Orca failed executable silently replaced\"}]}"}}
+{"type":"turn.completed","usage":{"input_tokens":18025,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":223,"reasoning_output_tokens":102}}

@@ -12,6 +12,8 @@ For model-routing changes, run one fresh-context routing and cooperation preview
 
 Use [live-cooperation.md](live-cooperation.md) when changes to handoffs or coordination warrant actual execution evidence. These optional isolated scenarios are separate from previews and are not required on every skill invocation. [validation-history.md](validation-history.md) preserves earlier fixture revisions; it is not the current procedure.
 
+For Claude Code CLI backend changes, use the [CLI dispatch procedure](../references/claude-code-cli.md) with an isolated small task. Check the actual result, observed model and effort, same-session continuation, and failure diagnostics separately from blind previews. Do not silently broaden permissions when persistence or required tools are denied. See [CLI validation evidence](claude-code-cli-validation.md) for the recorded run and its limits.
+
 ## Generate blind previews
 
 ```sh

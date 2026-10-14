@@ -1,0 +1,20 @@
+{
+  "subquestions": [
+    {
+      "question": "Orca 的文档加载命令和推荐输出格式是什么？仅说明，先不要实际执行。",
+      "query": "Orca documentation loading command recommended output format"
+    },
+    {
+      "question": "Orca 处于 not running 状态时应如何处理？仅说明，先不要实际执行。",
+      "query": "Orca not running handling documentation loading"
+    },
+    {
+      "question": "Orca 返回 runtime_access_denied 时应如何处理？仅说明，先不要实际执行。",
+      "query": "Orca runtime_access_denied handling documentation loading"
+    },
+    {
+      "question": "Orca 的 skills get 未知时应如何处理？仅说明，先不要实际执行。",
+      "query": "Orca skills get unknown handling documentation loading"
+    }
+  ]
+}

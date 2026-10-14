@@ -1,0 +1,21 @@
+{
+  "frozen_at": "2026-10-14T07:00:21.966907+00:00",
+  "frozen_files_verified": 8,
+  "protected_preexisting_files_verified": 288,
+  "source_drift": [],
+  "actual_cli_invocations": 1,
+  "actual_jev_invocations": 0,
+  "completed_tasks": 0,
+  "no_retry_or_fallback": true,
+  "offline_experiment_tests": {
+    "passed": 6
+  },
+  "existing_tests": {
+    "passed": 59
+  },
+  "raw_sha256": {
+    "raw/S01-t1-initial-0-A-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "raw/S01-t1-initial-0-A-1.request.json": "e352135d5a1694fa01bdb51b26ff81055fa45ece43c72851c482e6ae4a54e9bd",
+    "raw/S01-t1-initial-0-A-1.stdout.jsonl": "b9b016c9790865c46895d9aa470fdb83888e1e3e6e227f9d1cdbfc9237b036c2"
+  }
+}

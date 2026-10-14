@@ -1,0 +1,599 @@
+[
+  {
+    "id": "D01",
+    "split": "calibration",
+    "family": "advisor",
+    "kind": "docs",
+    "task": "用户明确要求 full context，同时指定与父会话不同的 model。能否直接 fork，或者自动改 brief？查找约束及无覆盖时的例外。",
+    "search_terms": [
+      "full",
+      "context",
+      "explicit",
+      "model",
+      "fork",
+      "parent",
+      "brief"
+    ],
+    "facts": [
+      {
+        "id": "conflict",
+        "claim": "显式 full 和显式 model/effort 要求父配置一致，否则解释并询问",
+        "anchor": "An explicit `full` with an explicit model or effort",
+        "passage_ids": [
+          "advisor-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-009"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "inherit",
+        "claim": "显式 full 没有 model/effort 覆盖时接受父配置",
+        "anchor": "An explicit `full` without an explicit model or effort",
+        "passage_ids": [
+          "advisor-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-009"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "auto",
+        "claim": "自动选 full 无法应用配置才改 brief",
+        "anchor": "An automatically selected `full` must not override",
+        "passage_ids": [
+          "advisor-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-009"
+          ]
+        ],
+        "counterevidence": true
+      }
+    ]
+  },
+  {
+    "id": "D02",
+    "split": "calibration",
+    "family": "advisor",
+    "kind": "docs",
+    "task": "An explicitly pinned advisor model is unavailable. May we silently use a cheaper model or lower effort? Contrast automatic fallback and shared authentication failures.",
+    "search_terms": [
+      "fallback",
+      "explicit",
+      "model",
+      "effort",
+      "authentication",
+      "provider",
+      "unavailable"
+    ],
+    "facts": [
+      {
+        "id": "pinned",
+        "claim": "显式 model 不可替换前需询问",
+        "anchor": "An explicitly requested model is pinned.",
+        "passage_ids": [
+          "advisor-005"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-005"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "fixed",
+        "claim": "自动 fallback 只允许下一候选，provider 和 effort 固定",
+        "anchor": "Keep the selected provider and effort fixed during fallback.",
+        "passage_ids": [
+          "advisor-005"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-005"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "auth",
+        "claim": "共享认证等失败不能通过换模型规避",
+        "anchor": "Missing provider authentication",
+        "passage_ids": [
+          "advisor-006"
+        ],
+        "evidence_alternatives": [
+          [
+            "advisor-006"
+          ]
+        ],
+        "counterevidence": true
+      }
+    ]
+  },
+  {
+    "id": "C01",
+    "split": "calibration",
+    "family": "installer",
+    "kind": "code",
+    "task": "Explain installer download-to-git fallback: compare auto HTTP 404, auto HTTP 500 and explicit download mode. What happens if HTTPS git fails?",
+    "search_terms": [
+      "download",
+      "auto",
+      "HTTP",
+      "git",
+      "fallback",
+      "prepare",
+      "repo"
+    ],
+    "facts": [
+      {
+        "id": "download",
+        "claim": "download 模式下载错误直接抛出",
+        "anchor": "if method == \"download\":",
+        "passage_ids": [
+          "installer-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-009"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "statuses",
+        "claim": "auto 仅对 401/403/404 转 git",
+        "anchor": "if \"HTTP 401\" in err_msg or \"HTTP 403\" in err_msg or \"HTTP 404\" in err_msg:",
+        "passage_ids": [
+          "installer-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-009"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "other",
+        "claim": "其他下载错误抛出",
+        "anchor": "            else:\n                raise",
+        "passage_ids": [
+          "installer-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-009"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "ssh",
+        "claim": "HTTPS git 失败改 SSH",
+        "anchor": "repo_url = _build_repo_ssh(source.owner, source.repo)",
+        "passage_ids": [
+          "installer-009"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-009"
+          ]
+        ],
+        "counterevidence": false
+      }
+    ]
+  },
+  {
+    "id": "C02",
+    "split": "calibration",
+    "family": "installer",
+    "kind": "code",
+    "task": "安装器是否允许用 ../ 路径安装或覆盖现有目标？查找路径校验、复制保护及 main 调用这些检查的证据。",
+    "search_terms": [
+      "path",
+      "relative",
+      "destination",
+      "exists",
+      "copy",
+      "validate",
+      "main"
+    ],
+    "facts": [
+      {
+        "id": "relative",
+        "claim": "拒绝绝对路径和越界相对路径",
+        "anchor": "if os.path.isabs(path) or os.path.normpath(path).startswith(\"..\"):",
+        "passage_ids": [
+          "installer-005"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-005"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "copy",
+        "claim": "复制时已存在目标拒绝",
+        "anchor": "if os.path.exists(dest_dir):",
+        "passage_ids": [
+          "installer-008",
+          "installer-012"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-008"
+          ],
+          [
+            "installer-012"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "caller",
+        "claim": "main 校验每个 source path",
+        "anchor": "            _validate_relative_path(path)",
+        "passage_ids": [
+          "installer-012"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-012"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "skill",
+        "claim": "复制前验证 skill",
+        "anchor": "                _validate_skill(skill_src, repo_root)",
+        "passage_ids": [
+          "installer-013"
+        ],
+        "evidence_alternatives": [
+          [
+            "installer-013"
+          ]
+        ],
+        "counterevidence": false
+      }
+    ]
+  },
+  {
+    "id": "D03",
+    "split": "holdout",
+    "family": "browser",
+    "kind": "docs",
+    "task": "如何隔离两个浏览器会话并保留其中一个的 profile？close 是否等同 delete-data？找命令及默认内存模式的依据。",
+    "search_terms": [
+      "session",
+      "persistent",
+      "profile",
+      "memory",
+      "close",
+      "delete",
+      "data",
+      "isolated"
+    ],
+    "facts": [
+      {
+        "id": "isolation",
+        "claim": "-s 隔离浏览器 contexts",
+        "anchor": "Use `-s` flag to isolate browser contexts:",
+        "passage_ids": [
+          "browser-010"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-010"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "memory",
+        "claim": "默认 profile 内存，persistent 才持久化",
+        "anchor": [
+          "By default, browser profile is kept in memory only.",
+          "Use persistent profile (by default profile is in-memory)"
+        ],
+        "passage_ids": [
+          "browser-005",
+          "browser-012"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-005"
+          ],
+          [
+            "browser-012"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "close",
+        "claim": "close 停止指定浏览器",
+        "anchor": [
+          "playwright-cli -s=mysession close   # stop a named browser",
+          "playwright-cli -s=mysession close  # stop a named browser"
+        ],
+        "passage_ids": [
+          "browser-007",
+          "browser-010"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-007"
+          ],
+          [
+            "browser-010"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "delete",
+        "claim": "delete-data 删除 profile 数据",
+        "anchor": [
+          "playwright-cli -s=mysession delete-data   # delete named browser data",
+          "playwright-cli -s=mysession delete-data  # delete user data for persistent session"
+        ],
+        "passage_ids": [
+          "browser-007",
+          "browser-011"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-007"
+          ],
+          [
+            "browser-011"
+          ]
+        ],
+        "counterevidence": true
+      }
+    ]
+  },
+  {
+    "id": "D04",
+    "split": "holdout",
+    "family": "browser",
+    "kind": "docs",
+    "task": "How can I reuse authenticated browser storage without logging in again, and can I commit the saved auth file? Find save/load commands and credential-file precautions.",
+    "search_terms": [
+      "storage",
+      "state",
+      "save",
+      "load",
+      "auth",
+      "authentication",
+      "commit",
+      "tokens"
+    ],
+    "facts": [
+      {
+        "id": "save",
+        "claim": "命名文件保存认证态",
+        "anchor": "playwright-cli state-save",
+        "passage_ids": [
+          "browser-003",
+          "browser-015",
+          "browser-018"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-003"
+          ],
+          [
+            "browser-015"
+          ],
+          [
+            "browser-018"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "load",
+        "claim": "加载认证态",
+        "anchor": "playwright-cli state-load",
+        "passage_ids": [
+          "browser-003",
+          "browser-015",
+          "browser-018",
+          "browser-019"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-003"
+          ],
+          [
+            "browser-015"
+          ],
+          [
+            "browser-018"
+          ],
+          [
+            "browser-019"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "security",
+        "claim": "认证文件不可提交",
+        "anchor": "Never commit storage state files containing auth tokens",
+        "passage_ids": [
+          "browser-019"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-019"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "ignore",
+        "claim": "忽略 auth 文件",
+        "anchor": "Add `*.auth-state.json` to `.gitignore`",
+        "passage_ids": [
+          "browser-019"
+        ],
+        "evidence_alternatives": [
+          [
+            "browser-019"
+          ]
+        ],
+        "counterevidence": false
+      }
+    ]
+  },
+  {
+    "id": "C03",
+    "split": "holdout",
+    "family": "creator",
+    "kind": "code",
+    "task": "初始化 skill 时传入混合大小写和重复资源类型，会如何规范化及去重？已有 skill 目录会被覆盖吗，--examples 无 resources 行不行？",
+    "search_terms": [
+      "normalize",
+      "skill",
+      "name",
+      "resources",
+      "examples",
+      "exists",
+      "deduped"
+    ],
+    "facts": [
+      {
+        "id": "normalize",
+        "claim": "名称小写",
+        "anchor": "normalized = skill_name.strip().lower()",
+        "passage_ids": [
+          "creator-010"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-010"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "dedupe",
+        "claim": "resources 保序去重",
+        "anchor": "        if resource not in seen:",
+        "passage_ids": [
+          "creator-011"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-011"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "existing",
+        "claim": "已有目录拒绝",
+        "anchor": "    if skill_dir.exists():",
+        "passage_ids": [
+          "creator-014"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-014"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "examples",
+        "claim": "examples 需要 resources",
+        "anchor": "    if args.examples and not resources:",
+        "passage_ids": [
+          "creator-018"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-018"
+          ]
+        ],
+        "counterevidence": true
+      }
+    ]
+  },
+  {
+    "id": "C04",
+    "split": "holdout",
+    "family": "creator",
+    "kind": "code",
+    "task": "Does quick_validate reject TODO placeholders everywhere, including code fences? Find description TODO detection, body fence handling, and the standalone-line test.",
+    "search_terms": [
+      "validate",
+      "TODO",
+      "description",
+      "placeholder",
+      "fence",
+      "body"
+    ],
+    "facts": [
+      {
+        "id": "description",
+        "claim": "描述起始 TODO 拒绝",
+        "anchor": "    if description.startswith(\"[TODO:\"):",
+        "passage_ids": [
+          "creator-022"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-022"
+          ]
+        ],
+        "counterevidence": false
+      },
+      {
+        "id": "fence",
+        "claim": "跟踪 fence 起止",
+        "anchor": "            elif (\n                marker[0] == fence_marker",
+        "passage_ids": [
+          "creator-022"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-022",
+            "creator-023"
+          ]
+        ],
+        "counterevidence": true
+      },
+      {
+        "id": "body",
+        "claim": "只检查 fence 外匹配整行的 TODO",
+        "anchor": "        if fence_marker is None and re.fullmatch(",
+        "passage_ids": [
+          "creator-023"
+        ],
+        "evidence_alternatives": [
+          [
+            "creator-023"
+          ]
+        ],
+        "counterevidence": true
+      }
+    ]
+  }
+]
