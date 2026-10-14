@@ -14,39 +14,39 @@ Read this when Claude Code CLI is requested or already authorized as an executio
 
 Start a new session for a new assignment, without `--resume`, `--continue` or `--fork-session`. Advisors receive fresh supplied context, never an App fork. Save the prompt as a UTF-8 file containing the task, constraints, necessary raw evidence and acceptance criteria; do not embed untrusted task text in shell code.
 
-Use explicit `--model`, `--effort` and structured output. The following read-only example uses an argv array and stdin, preserving stdout, stderr and the actual process exit status. Replace paths and selected settings with the assignment's values; the example is not a model recommendation or a permission template for writing tasks.
+Use explicit `--model`, `--effort` and structured output. Run the local [progress runner](../scripts/cc_progress.py) to save full stdout/stderr while exposing only a small status record to Codex. The following read-only example is not a model recommendation or a permission template for writing tasks. Use absolute paths and a new run directory for each turn:
 
-```python
-import json
-import subprocess
-from pathlib import Path
-
-assignment_dir = Path("/absolute/path/to/assignment-record")
-assignment_dir.mkdir(parents=True, exist_ok=False)
-argv = [
-    "claude", "-p",
-    "--model", selected_model,
-    "--effort", selected_effort,
-    "--output-format", "stream-json", "--verbose",
-    "--tools", "Read", "--allowedTools", "Read",
-    "--permission-mode", "dontAsk",
-    "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}',
-    "--settings", '{"disableAllHooks":true}',
-]
-# Retain required hooks/MCP tools when the assignment needs them;
-# these invocation-only restrictions do not edit shared settings.
-with prompt_path.open("r", encoding="utf-8") as prompt, \
-     (assignment_dir / "stdout.jsonl").open("w", encoding="utf-8") as out, \
-     (assignment_dir / "stderr.log").open("w", encoding="utf-8") as err:
-    process = subprocess.Popen(argv, cwd=working_directory, stdin=prompt,
-                               stdout=out, stderr=err)
-    # Use the host command session for bounded polling, cancellation and updates.
-    exit_code = process.wait()
-(assignment_dir / "exit.json").write_text(
-    json.dumps({"exit_code": exit_code}), encoding="utf-8")
+```sh
+python3 /absolute/path/to/fox-orchestrate/scripts/cc_progress.py run \
+  --run-dir /absolute/path/to/assignment/turn-1 \
+  --cwd /absolute/path/to/workspace \
+  --prompt-file /absolute/path/to/assignment/prompt.txt \
+  --model SELECTED_CC_MODEL --effort SELECTED_CC_EFFORT \
+  -- --tools Read --allowedTools Read --permission-mode dontAsk \
+  --strict-mcp-config --mcp-config '{"mcpServers":{}}' \
+  --settings '{"disableAllHooks":true}'
 ```
 
-The command may run asynchronously through the host's process-session interface; return to useful coordinator work and maintain progress updates. Track each process and assignment separately. Do not cancel another assignment's process or start overlapping writers on the same resource.
+The runner currently supports POSIX hosts (macOS/Linux). It passes the prompt through stdin and launches CC through an argv array, never shell interpolation. It fixes `-p --output-format stream-json --verbose`; parameters after `--` are authorized CC options, not a shell command. Retain required hooks/MCP tools when the assignment needs them. These invocation-only restrictions do not edit shared settings. The runner does not select models, grant permissions, verify effort or replace coordinator acceptance.
+
+### Background execution and on-demand status
+
+Run CC through the host's asynchronous command/process-session interface. Track the host session and each assignment's run directory separately. Do not start an HTTP server, open a progress UI or external terminal, stream events into chat, or ask CC for progress narration. Continue useful coordinator work and prefer native completion notifications when available. Do not cancel another assignment's process or start overlapping writers on the same resource.
+
+Query status only when it affects a concrete decision: a dependency blocks the next step, the user asks for status, evidence suggests failure or timeout, or completion must be checked for acceptance. Read the local compact record with:
+
+```sh
+python3 /absolute/path/to/fox-orchestrate/scripts/cc_progress.py status \
+  --run-dir /absolute/path/to/assignment/turn-1
+```
+
+This command reads a file; it does not invoke CC. Query once for the decision at hand. An unchanged status is not a reason to query again. Avoid fixed-interval polling, repeated log reads and synthetic progress updates. When completion is required and no independent work remains, use the host's bounded process wait/completion mechanism; do not implement a model-driven refresh loop. Keep required user-facing updates focused on new evidence, decisions or blockers.
+
+Full events remain in `stdout.jsonl`, stderr in `stderr.log`, and the final result in `result.json`. Only brief state is stored in `status.json` and `summary.json`; the runner prints one compact final status. Model text, thinking, tool arguments and tool output are excluded from that state. Unknown events stay in raw logs. After completion inspect only the required result, artifact checks and targeted diagnostics; never `tee` or dump full logs into model-facing tool output.
+
+Malformed JSON, missing/failed results and process errors cannot report success; permission denials reported by either a system event or the final denial list require attention, even when the other source is empty. `permission_denial_seen` preserves the event evidence separately from the final list count. Preserve the distinct CC and runner exit codes. Cancellation remains incomplete and is forwarded/escalated to the assigned process group without changing model/configuration. The runner does not automatically retry a failed turn.
+
+**Token boundary:** local execution, log recording and state updates make no extra model calls. There is no continuous display or monitoring token overhead. Necessary orchestrator queries, interpreting their compact results, dispatch and acceptance still consume normal tokens; do not promise zero total token consumption.
 
 Inspect structured events after completion, not just the last output line or claimed task success:
 
@@ -59,7 +59,7 @@ Inspect structured events after completion, not just the last output line or cla
 
 Save the exact session ID and verify that persistence actually worked before promising continuation. Do not use `--no-session-persistence` for resumable work. A returned session ID alone does not prove that a transcript was saved; sandbox permissions or local persistence policy may prevent it.
 
-For a follow-up, resume the recorded ID in the same working directory using `--resume SESSION_ID`, the same resolved model and selected effort, and the same required permission/tool configuration. Save each turn's stdout, stderr and exit status separately without overwriting earlier evidence. Supply the delta, missing evidence and affected checks. Never use `--continue` to guess which session to resume, or `--fork-session` to replace the existing assignment. Do not change configurations during corrections, repairs or final checks.
+For a follow-up, give the runner a new turn directory and resume the recorded ID in the same working directory using its `--resume SESSION_ID` option, the same resolved model and selected effort, and the same required permission/tool configuration. Save each turn's stdout, stderr and exit status separately without overwriting earlier evidence. Supply the delta, missing evidence and affected checks. Never use `--continue` to guess which session to resume, or `--fork-session` to replace the existing assignment. Do not change configurations during corrections, repairs or final checks.
 
 If the session is missing, report the persistence failure. Restore necessary context only through an authorized fresh-context handoff with the unchanged assignment configuration; disclose the loss of retained context rather than presenting the new process as a successful resume. Resolve permission or persistence conditions before repeating a failed call. Independent reviewers use a separate fresh session from the producer and receive the artifact/version and necessary evidence.
 

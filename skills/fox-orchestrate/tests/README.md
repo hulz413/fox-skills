@@ -14,6 +14,8 @@ Use [live-cooperation.md](live-cooperation.md) when changes to handoffs or coord
 
 For Claude Code CLI backend changes, use the [CLI dispatch procedure](../references/claude-code-cli.md) with an isolated small task. Check the actual result, observed model and effort, same-session continuation, and failure diagnostics separately from blind previews. Do not silently broaden permissions when persistence or required tools are denied. See [CLI validation evidence](claude-code-cli-validation.md) for the recorded run and its limits.
 
+For background execution, `test_cc_progress.py` checks compact status isolation, literal handoff, evidence preservation, on-demand queries without re-invoking CC, failures and cancellation. Verify a real isolated CC task separately; see [background validation](cc-background-validation.md). The [App progress validation](cc-app-progress-validation.md) and [Terminal validation](cc-progress-validation.md) are historical evidence for removed display implementations; neither describes the current runner.
+
 ## Generate blind previews
 
 ```sh
