@@ -2,11 +2,13 @@
 """Run CC with local progress records; never echo its raw output to the caller."""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -318,6 +320,31 @@ def check_acceptance(state, outcome):
         raise ValueError("an unsuccessful execution cannot pass acceptance")
 
 
+def evidence_digest(path):
+    if not stat.S_ISREG(path.stat().st_mode):
+        raise OSError("evidence must be a regular file")
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(65536), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def evidence_integrity(record):
+    if "evidence_sha256" not in record:
+        return "unbound"
+    expected = record["evidence_sha256"]
+    if not isinstance(expected, str) or re.fullmatch(r"[0-9a-f]{64}", expected) is None:
+        raise ValueError("invalid evidence digest")
+    try:
+        actual = evidence_digest(Path(record["evidence_file"]))
+    except FileNotFoundError:
+        return "missing"
+    except OSError:
+        return "unreadable"
+    return "matched" if actual == expected else "mismatch"
+
+
 def record_acceptance(args):
     directory = Path(args.run_dir).resolve()
     state = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
@@ -326,7 +353,7 @@ def record_acceptance(args):
     if not args.artifact_ref.strip() or not evidence.is_file():
         raise ValueError("artifact reference and evidence file are required")
     record = {"outcome": args.outcome, "artifact_ref": args.artifact_ref,
-              "evidence_file": str(evidence)}
+              "evidence_file": str(evidence), "evidence_sha256": evidence_digest(evidence)}
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=directory,
@@ -363,7 +390,8 @@ def read_run(directory):
         raise ValueError("unsupported token accounting scope")
     row = {"run_dir": str(directory), "process_phase": state["phase"],
            "failure_reasons": recorded_failure_reasons(state),
-           "acceptance": acceptance, "elapsed_seconds": state.get("elapsed_seconds"),
+           "acceptance": acceptance, "evidence_integrity": evidence_integrity(record) if record else None,
+           "elapsed_seconds": state.get("elapsed_seconds"),
            "num_turns": state.get("num_turns"),
            "token_usage": token_usage(state.get("token_usage"))}
     return row, record
@@ -427,7 +455,8 @@ def summarize_tasks(manifest):
                 raise ValueError("current selection requires this task's recorded acceptance")
             decision = records[directory][1]
             current = {"run_dir": str(directory),
-                       **{key: decision[key] for key in ("outcome", "artifact_ref", "evidence_file")}}
+                       **{key: decision[key] for key in ("outcome", "artifact_ref", "evidence_file")},
+                       "evidence_integrity": records[directory][0]["evidence_integrity"]}
         summary = summarize_rows(rows)
         summary["invocation_acceptance_counts"] = summary.pop("acceptance_counts")
         tasks.append({"task_id": task_id, "invocation_count": len(rows),

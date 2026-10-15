@@ -59,7 +59,8 @@ class TaskSummaryTests(unittest.TestCase):
             b = report["tasks"][1]
             self.assertEqual(b["invocation_count"], 2)
             self.assertEqual(b["current_acceptance"], {"run_dir": str(repaired.resolve()), "outcome": "passed",
-                "artifact_ref": "repaired-v2", "evidence_file": str(root / "checks.json")})
+                "artifact_ref": "repaired-v2", "evidence_file": str(root / "checks.json"),
+                "evidence_integrity": "unbound"})
             self.assertEqual([row["acceptance"] for row in b["runs"]], ["failed", "passed"])
             self.assertEqual(b["token_totals"]["total_tokens"], {"reported": 20, "unknown_runs": 0})
             self.assertEqual(report["token_totals"]["total_tokens"], {"reported": 30, "unknown_runs": 0})

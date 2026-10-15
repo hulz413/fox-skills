@@ -1,5 +1,6 @@
 import concurrent.futures
 import contextlib
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -67,7 +68,7 @@ class AcceptancePublicationTests(unittest.TestCase):
             manifest.write_text(json.dumps(document))
             self.assertEqual(module.summarize_tasks(manifest)["tasks"][0]["current_acceptance"], {
                 "run_dir": str(root), "outcome": "passed", "artifact_ref": "snapshot-v1",
-                "evidence_file": args.evidence_file})
+                "evidence_file": args.evidence_file, "evidence_integrity": "matched"})
             self.assert_no_temporary_files(root)
 
     def test_competing_publishers_leave_exactly_one_complete_decision(self):
@@ -100,7 +101,8 @@ class AcceptancePublicationTests(unittest.TestCase):
             self.assertEqual(len(set(sources)), 2)
             self.assertEqual(json.loads((root / "acceptance.json").read_text()), {
                 "outcome": winners[0].outcome, "artifact_ref": winners[0].artifact_ref,
-                "evidence_file": winners[0].evidence_file})
+                "evidence_file": winners[0].evidence_file,
+                "evidence_sha256": hashlib.sha256(Path(winners[0].evidence_file).read_bytes()).hexdigest()})
             self.assert_no_temporary_files(root)
 
     def test_repeated_cli_write_preserves_original_bytes(self):
