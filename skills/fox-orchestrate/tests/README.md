@@ -24,6 +24,8 @@ The [task summary validation](task-summary-validation.md) separates 84 offline t
 
 The [acceptance publication validation](acceptance-publication-validation.md) records 90 offline tests, controlled concurrent readers/publishers, duplicate CLI writes, injected-failure cleanup and isolated publication replay. Its limits distinguish atomic visibility from crash durability; no worker calls were added.
 
+The [acceptance evidence binding validation](evidence-binding-validation.md) separates 97 offline tests from retained-record compatibility and isolated binding replay. It covers legacy records, integrity states, unchanged acceptance/selection/token rules and explicit limits; no new worker calls were made.
+
 ## Generate blind previews
 
 ```sh
