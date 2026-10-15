@@ -61,6 +61,8 @@ python3 /absolute/path/to/fox-orchestrate/scripts/cc_progress.py record-acceptan
 
 Use `--outcome failed` for a checked rejection. This command records the coordinator's decision; it does not run or independently validate checks. It requires finished execution, and an unsuccessful execution cannot be marked passed. `acceptance.json` preserves the original decision without changing process state or overwriting an existing decision. Repairs use a new turn directory. The decision is valid only for the recorded artifact version; changed artifacts require new checks and a new record. Missing acceptance remains `pending`.
 
+Acceptance is written to a unique same-directory temporary file, closed, then atomically published with a [hard link](https://pubs.opengroup.org/onlinepubs/9699919799/functions/link.html). Readers see either no decision or the complete record; competing/repeated writers cannot replace an existing destination. Temporary files are removed on ordinary success/error exits; abrupt termination can leave them. The filesystem must support hard links; publication errors are reported without an overwrite fallback. This guarantees publication visibility, not power-loss durability or atomic snapshots across multiple files.
+
 Read a summary for explicitly selected invocation directories, without invoking CC or reading raw message bodies:
 
 ```sh

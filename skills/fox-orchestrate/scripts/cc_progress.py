@@ -9,6 +9,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -326,9 +327,17 @@ def record_acceptance(args):
         raise ValueError("artifact reference and evidence file are required")
     record = {"outcome": args.outcome, "artifact_ref": args.artifact_ref,
               "evidence_file": str(evidence)}
-    # Keep the original decision; repairs belong in a new turn directory.
-    with (directory / "acceptance.json").open("x", encoding="utf-8") as output:
-        output.write(json.dumps(record, ensure_ascii=False) + "\n")
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=directory,
+                                         prefix=".acceptance-", suffix=".tmp", delete=False) as output:
+            temporary = Path(output.name)
+            output.write(json.dumps(record, ensure_ascii=False) + "\n")
+        # Publish closed, complete bytes atomically; link never replaces an existing decision.
+        os.link(temporary, directory / "acceptance.json")
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
     print(json.dumps({"acceptance": args.outcome}))
     return 0
 
