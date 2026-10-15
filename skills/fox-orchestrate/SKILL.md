@@ -46,7 +46,7 @@ Observe concurrency and lifecycle limits: returned results may not free slots. R
 
 ## Choose models
 
-Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to select capability, effort and context, validate the combination and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
+Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to discover the complete inventory when requested (not just abbreviated tool descriptions), apply its current-session provider boundary, check actual dispatch capabilities, select capability, effort and context, and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 
 At dispatch, show a Markdown table (new for later dispatches): agent/role, assignment, model, effort and selection reason; identify the backend when using an external CLI or mixing runtimes. Omit status columns and routine disclaimers for normal explicit settings. Explain inheritance, fallback, unsupported controls and dispatch errors; report runtime-supplied differing effective values. Distinguish plans and previews from successful creation.
 

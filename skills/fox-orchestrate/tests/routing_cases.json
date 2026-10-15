@@ -949,6 +949,146 @@
         "reasoning_effort": null,
         "fork_turns": "none"
       }
+    },
+    {
+      "id": "case_062",
+      "group": "rules",
+      "task": "Discovery evidence: the target running Codex model/list includes catalog-only-fixture with a friendly label, provider metadata and high effort. The current native dispatch tool has a closed model enum containing only the three supplied runtime models; catalog-only-fixture is not accepted. The user pins catalog-only-fixture and forbids another backend. Select a dispatch route, distinguishing catalog inventory from dispatch eligibility.",
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_063",
+      "group": "rules",
+      "task": "The running model/list advertises high for light-fixture. The current dispatch tool explicitly permits only low or medium for that model, represented by the runtime patch. User pins light-fixture/high. Fresh context is required. Catalog metadata must not widen the tool restriction.",
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low",
+            "medium"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_064",
+      "group": "rules",
+      "task": "No supported connection to the target running model/list is exposed. Effective configuration identifies a custom-named model catalog in an active profile; its light-fixture row is readable. Tool declarations independently confirm light-fixture/low with fresh context. User pins that combination for brief extraction. Use the configured catalog fallback without claiming it is the App live menu, assuming a default file name, or starting an app-server.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_065",
+      "group": "rules",
+      "task": "The running inventory calls opaque-worker-fixture \"Vendor-looking Friendly Name\" but does not report provider, account or authentication route. The current dispatch tool independently confirms the exact ID opaque-worker-fixture and effort low via the patch. User pins opaque-worker-fixture/low for brief extraction with fresh context. Provider identity is not a requirement and must remain unknown; neither a label nor an ID establishes it.",
+      "runtime_patch": {
+        "opaque-worker-fixture": {
+          "tier": "efficient",
+          "efforts": [
+            "low"
+          ],
+          "recommended_effort": "low"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "opaque-worker-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_066",
+      "group": "rules",
+      "task": "The dispatch interface accepts model as an unrestricted string, but supplies no availability evidence for unconfirmed-fixture. A file catalog contains it; there is no authoritative per-model dispatch compatibility information and no supported validation-only operation. User pins unconfirmed-fixture/high and forbids another backend. Do not create trial agents to discover availability or interpret accepting a string as confirmation of this model.",
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_067",
+      "group": "rules",
+      "task": "An earlier session snapshot confirmed light-fixture/low. Permissions changed; the refreshed current dispatch capability marks light-fixture unavailable, as in the runtime patch. The user still pins light-fixture/low. Do not retain the stale confirmation or route through another backend.",
+      "runtime_patch": {
+        "light-fixture": {
+          "tier": "efficient",
+          "available": false,
+          "efforts": [
+            "low"
+          ]
+        }
+      },
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_068",
+      "group": "rules",
+      "task": "The target running model/list has two pages. The first page and spawn_agent description list five other models; the second page contains second-page-fixture with high effort. The current target validation contract explicitly looks up exact IDs in the full runtime catalog without a five-model acceptance cap. It confirms second-page-fixture is available and backend-compatible; fresh context supports model and effort overrides. User pins second-page-fixture/high. Select the route; do not treat an abbreviated description as a closed enum.",
+      "runtime_patch": {
+        "second-page-fixture": {
+          "tier": "workhorse",
+          "available": true,
+          "compatible": true,
+          "efforts": [
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "second-page-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_069",
+      "group": "rules",
+      "task": "A complete configured-file inventory includes unadvertised-fixture. A matching authoritative contract for the target confirms exact-ID lookup in the full catalog and permits this model/backend with low and medium; the description only prints five other models. Connection provider is explicitly local-gateway; no upstream metadata is supplied, although the friendly model label looks vendor-specific. User pins unadvertised-fixture/medium for ordinary planning in fresh context. Do not require upstream identity as a condition or claim live-menu or execution verification.",
+      "runtime_patch": {
+        "unadvertised-fixture": {
+          "tier": "efficient",
+          "available": true,
+          "compatible": true,
+          "efforts": [
+            "low",
+            "medium"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "unadvertised-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
     }
   ]
 }
