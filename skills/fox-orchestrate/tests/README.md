@@ -65,8 +65,6 @@ Report offline checker results, final structure validity, first-pass format fail
 
 Unit tests validate the checkers. Fresh-context previews test decisions against fixed routing/cooperation hypotheses; synthetic runtime IDs are fixtures, not a production model catalog. Neither proves effective dispatch settings, actual task quality, repeatability, latency or cost savings. Comparisons of configurations require the same representative inputs and acceptance criteria plus measured results. Live-scenario evidence must be reported separately from preview results.
 
-Discovery cases `case_062`–`case_067` cover catalog-only candidates, catalog/tool effort conflicts, effective configured-file fallback, unknown provider identity, unconfirmed string-parameter models, and invalidated capability snapshots. Review their evidence explanations as well as selected routes. These previews do not establish a live `model/list` connection, effective-profile resolution or an exact match to a running App menu; report those separately if exercised.
-
 check_dispatch.py and test_dispatch.py retain an older actual-trace checker for compatibility; its unit tests are offline. Do not dispatch selected models or execute sample tasks as part of the preview suite. Remove temporary prompts and predictions after inspection, preserving failure evidence when useful. Historical reports remain historical and must not be silently rescored against revised contracts.
 
 
@@ -86,6 +84,4 @@ The existing `groups.rules` and `groups.autonomous` scores remain exact expectat
 
 For checker/report-only changes that leave prompts, selection policy and fixtures unchanged, replay retained predictions and test the checker; a fresh model sample is unnecessary. Label replays with the new checker revision and retain original reports. See [selection-calibration.md](selection-calibration.md) for the reviewed ambiguous cases and evidence needed before changing expectations.
 
-Discovery cases `case_068`–`case_069` cover full-catalog exact-ID acceptance beyond an abbreviated five-model description, pagination, and unknown upstream identity behind a known connection provider. Review complete-inventory behavior separately using a multi-page source and a configured-file snapshot; routing previews alone do not prove that every inventory entry was retained. Preserve hidden entries as inventory without silently selecting them.
-
-See [full-inventory follow-up evidence](runtime-discovery-validation.md#full-inventory-follow-up) for the fresh previews, two-page inventory scenario and actual configured-file discovery, including provider and live-runtime evidence gaps.
+See [runtime discovery validation](runtime-discovery-validation.md) for discovery case coverage and [full-inventory follow-up evidence](runtime-discovery-validation.md#full-inventory-follow-up) for the two-page inventory scenario, configured-file discovery, and provider/live-runtime evidence gaps.
