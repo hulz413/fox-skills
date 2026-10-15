@@ -35,6 +35,8 @@ For CC execution failures, use the adapter's [failure reasons](claude-code-cli.m
 
 Count tasks by task ID, not invocation count. The example has two tasks and three invocations; M01's repair does not create a third task. Report each task's checked artifact and remaining work separately from invocation totals. Preserve the CC token scope and unknown subtotals; native usage is reported only when available, and the CC summary does not account for native workers or coordinator usage.
 
+For CC batches, optional [task summaries](claude-code-cli.md#task-summaries) collect that mapping and an explicitly selected current acceptance record. Selection does not remove earlier attempts or their tokens, and the index is not a dispatch plan. Other task-record formats and native host records remain usable under the same rules.
+
 ## Integrate and accept
 
 The coordinator integrates accepted outputs and checks the combined artifact against the batch goal and relevant cross-task contracts. Individual passes do not establish that the integrated result passes. Apply the existing version-bound review and acceptance rules to the combined result, retaining unresolved tasks and useful failure evidence. Clean up task-created disposable artifacts through the host's supported mechanisms without discarding unintegrated work.

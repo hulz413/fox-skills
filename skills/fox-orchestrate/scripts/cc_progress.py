@@ -333,36 +333,34 @@ def record_acceptance(args):
     return 0
 
 
-def summarize(run_dirs):
-    rows = []
-    seen = set()
-    for run_dir in run_dirs:
-        directory = Path(run_dir).resolve()
-        if directory in seen:
-            continue
-        seen.add(directory)
-        state = json.loads((directory / "status.json").read_text(encoding="utf-8"))
-        if not isinstance(state, dict) or state.get("phase") not in (
-                "starting", "running", "completed", "failed", "needs_attention", "cancelled"):
-            raise ValueError("invalid execution record")
-        acceptance = "pending"
-        decision = directory / "acceptance.json"
-        if decision.exists():
-            record = json.loads(decision.read_text(encoding="utf-8"))
-            if not isinstance(record, dict) or record.get("outcome") not in ("passed", "failed"):
-                raise ValueError("invalid acceptance record")
-            acceptance = record["outcome"]
-            check_acceptance(state, acceptance)
-            if not all(isinstance(record.get(key), str) and record[key].strip()
-                       for key in ("artifact_ref", "evidence_file")):
-                raise ValueError("acceptance must reference artifact and evidence")
-        if state.get("token_usage_scope") not in (None, "main_loop_invocation"):
-            raise ValueError("unsupported token accounting scope")
-        rows.append({"run_dir": str(directory), "process_phase": state["phase"],
-                     "failure_reasons": recorded_failure_reasons(state),
-                     "acceptance": acceptance, "elapsed_seconds": state.get("elapsed_seconds"),
-                     "num_turns": state.get("num_turns"),
-                     "token_usage": token_usage(state.get("token_usage"))})
+def read_run(directory):
+    state = json.loads((directory / "status.json").read_text(encoding="utf-8"))
+    if not isinstance(state, dict) or state.get("phase") not in (
+            "starting", "running", "completed", "failed", "needs_attention", "cancelled"):
+        raise ValueError("invalid execution record")
+    acceptance = "pending"
+    record = None
+    decision = directory / "acceptance.json"
+    if decision.exists():
+        record = json.loads(decision.read_text(encoding="utf-8"))
+        if not isinstance(record, dict) or record.get("outcome") not in ("passed", "failed"):
+            raise ValueError("invalid acceptance record")
+        acceptance = record["outcome"]
+        check_acceptance(state, acceptance)
+        if not all(isinstance(record.get(key), str) and record[key].strip()
+                   for key in ("artifact_ref", "evidence_file")):
+            raise ValueError("acceptance must reference artifact and evidence")
+    if state.get("token_usage_scope") not in (None, "main_loop_invocation"):
+        raise ValueError("unsupported token accounting scope")
+    row = {"run_dir": str(directory), "process_phase": state["phase"],
+           "failure_reasons": recorded_failure_reasons(state),
+           "acceptance": acceptance, "elapsed_seconds": state.get("elapsed_seconds"),
+           "num_turns": state.get("num_turns"),
+           "token_usage": token_usage(state.get("token_usage"))}
+    return row, record
+
+
+def summarize_rows(rows):
     totals = {}
     for key in (*TOKEN_FIELDS, "total_tokens"):
         reported = [row["token_usage"][key] for row in rows if row["token_usage"][key] is not None]
@@ -374,6 +372,70 @@ def summarize(run_dirs):
                          for outcome in ("pending", "passed", "failed")}
     return {"token_usage_scope": "main_loop_invocation", "runs": rows, "token_totals": totals,
             "execution_reason_counts": reason_counts, "acceptance_counts": acceptance_counts}
+
+
+def summarize(run_dirs):
+    directories = dict.fromkeys(Path(run_dir).resolve() for run_dir in run_dirs)
+    return summarize_rows([read_run(directory)[0] for directory in directories])
+
+
+def summarize_tasks(manifest):
+    manifest = Path(manifest).resolve()
+    document = json.loads(manifest.read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or not isinstance(document.get("tasks"), list):
+        raise ValueError("manifest requires a task list")
+    tasks, all_rows = [], []
+    task_ids, owners = set(), set()
+    for task in document["tasks"]:
+        if (not isinstance(task, dict) or not isinstance(task.get("task_id"), str)
+                or not task["task_id"].strip() or task["task_id"] in task_ids
+                or not isinstance(task.get("run_dirs"), list)
+                or "current_acceptance_run" not in task):
+            raise ValueError("invalid task mapping or duplicate task ID")
+        task_id = task["task_id"]
+        task_ids.add(task_id)
+
+        def resolve_run(value):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError("run directory must be a nonempty path")
+            return (manifest.parent / value).resolve()
+
+        records = {}
+        for value in task["run_dirs"]:
+            directory = resolve_run(value)
+            if directory in records:
+                continue
+            if directory in owners:
+                raise ValueError("an invocation cannot belong to multiple tasks")
+            owners.add(directory)
+            records[directory] = read_run(directory)
+        rows = [row for row, _ in records.values()]
+        selection = task["current_acceptance_run"]
+        current = None
+        if selection is not None:
+            directory = resolve_run(selection)
+            if directory not in records or records[directory][1] is None:
+                raise ValueError("current selection requires this task's recorded acceptance")
+            decision = records[directory][1]
+            current = {"run_dir": str(directory),
+                       **{key: decision[key] for key in ("outcome", "artifact_ref", "evidence_file")}}
+        summary = summarize_rows(rows)
+        summary["invocation_acceptance_counts"] = summary.pop("acceptance_counts")
+        tasks.append({"task_id": task_id, "invocation_count": len(rows),
+                      "active_invocation_count": sum(row["process_phase"] in ("starting", "running")
+                                                     for row in rows),
+                      "current_acceptance": current, **summary})
+        all_rows.extend(rows)
+    summary = summarize_rows(all_rows)
+    summary.pop("runs")  # Detailed invocation rows already belong to their tasks.
+    summary["invocation_acceptance_counts"] = summary.pop("acceptance_counts")
+    task_counts = {outcome: sum((task["current_acceptance"]["outcome"]
+                                if task["current_acceptance"] else "pending") == outcome
+                               for task in tasks)
+                   for outcome in ("pending", "passed", "failed")}
+    return {"task_count": len(tasks), "invocation_count": len(all_rows),
+            "active_invocation_count": sum(task["active_invocation_count"] for task in tasks),
+            "task_acceptance_counts": task_counts, "tasks": tasks, **summary}
 
 
 def main():
@@ -389,6 +451,8 @@ def main():
     status.add_argument("--run-dir", required=True)
     report = commands.add_parser("summarize")
     report.add_argument("--run-dir", action="append", required=True)
+    task_report = commands.add_parser("summarize-tasks")
+    task_report.add_argument("--manifest", required=True)
     acceptance = commands.add_parser("record-acceptance")
     acceptance.add_argument("--run-dir", required=True)
     acceptance.add_argument("--outcome", choices=("passed", "failed"), required=True)
@@ -400,6 +464,9 @@ def main():
             return run(args)
         if args.action == "record-acceptance":
             return record_acceptance(args)
+        if args.action == "summarize-tasks":
+            print(json.dumps(summarize_tasks(args.manifest), ensure_ascii=False))
+            return 0
         if args.action == "summarize":
             print(json.dumps(summarize(args.run_dir), ensure_ascii=False))
             return 0
