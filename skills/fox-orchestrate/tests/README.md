@@ -18,6 +18,8 @@ For background execution, `test_cc_progress.py` checks compact status isolation,
 
 The [batch fan-out live validation](batch-fan-out-validation.md) records the 2026-10-15 two-task, three-invocation CC smoke test, with a [sanitized receipt](batch-fan-out-live-evidence.json). Its coverage and unverified items are specific to that run; it does not establish general scheduling, isolation or performance guarantees.
 
+The [failure classification validation](failure-classification-validation.md) separates offline classification/acceptance checks, one induced live CLI turn-limit failure and retained-record compatibility checks. It lists unverified failure paths; documentation added no worker calls.
+
 ## Generate blind previews
 
 ```sh
