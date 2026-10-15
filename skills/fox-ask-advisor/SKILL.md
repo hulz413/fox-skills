@@ -28,14 +28,14 @@ Resolve configuration directly from user preferences and runtime capabilities. D
 Resolve in this order:
 
 1. **Provider:** the user's override, otherwise the initiating agent's current provider. Use verified session metadata and provider identifiers understood by the runtime. Do not infer the provider from an unrelated default or model-name guess. Ask if the current provider cannot be established.
-2. **Model:** the user's override, otherwise the selected provider's best model for general reasoning and analysis, with its next-best model as the sole automatic fallback. An explicit `full` context without a model or effort override inherits the parent's instead; see Context selection.
-3. **Effort:** the user's override, otherwise `high`, with the same `full` exception.
+2. **Model:** the user's override, otherwise the selected provider's best model for general reasoning and analysis, with its next-best model as the sole automatic fallback.
+3. **Effort:** the user's override, otherwise assess the advisor's question before launch, starting from `medium`. Keep `medium` for bounded analysis with clear evidence; lower it for straightforward, narrow questions, or raise it for complex reasoning, interacting constraints, consequential uncertainty, or difficult debugging. Select a supported level proportional to the task; do not automatically choose the maximum. `medium` is a decision baseline, not a required first execution: choose the final effort before launching, without a trial run or an automatic escalation ladder.
 
 Use the runtime's exposed tool documentation, session metadata, or model catalog to establish available providers, models, capability descriptions, and supported effort settings. Reuse information already supplied; do not invent discovery commands. If the runtime only supports one provider, honor a different provider override by reporting that limitation rather than silently using its sole provider.
 
 Rank models using current runtime capability descriptions and applicable official provider guidance. Treat "flagship" and "frontier" as descriptive terms, not model IDs or guaranteed ordering. Do not infer capability from model names, version numbers, cost, or list order. Do not maintain hardcoded model-ID rankings. Establish the next-best candidate only if fallback is needed. If available evidence cannot establish a required ranking, resolve it from official documentation or ask a focused question. A valid explicit model needs no ranking.
 
-Validate the provider/model/effort combination and the ability to apply it before launch. An advertised model is not proof of access. Effort names are provider-specific: use a documented equivalent only when the runtime establishes the mapping. Never treat an unknown inherited setting as confirmed `high`.
+Validate the provider/model/effort combination and the ability to apply it before launch. An advertised model is not proof of access. Effort names are provider-specific: use a documented equivalent only when the runtime establishes the mapping. Never treat an unknown inherited setting as the resolved effort.
 
 ### Fallback and explicit choices
 
@@ -45,7 +45,7 @@ Validate the provider/model/effort combination and the ability to apply it befor
 - Model fallback addresses model-specific availability or compatibility. Missing provider authentication, unavailable services, permission requests, shared rate limits, missing evidence, and poor advisor reasoning require their own resolution; do not route around them by changing models. Treat an error as model-specific when it names that model or its own quota or credits, or tells you to switch models; fall back once. Treat it as shared when it applies to the account, provider, or every model.
 - Fall back only before substantive analysis begins. If an attempt created an agent before failing, stop that failed attempt through the supported lifecycle tools before creating its replacement; never run the two concurrently.
 
-Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort with `fork_turns: "none"` for a `brief` context. For a `full` context, use the interface's full-history value and pass no model or effort override when the fork inherits the parent's; see Context selection. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
+Apply the resolved provider, model, and effort through supported dispatch parameters, not prompt prose. For an interface exposing `model`, `reasoning_effort`, and `fork_turns`, pass the resolved model and effort with `fork_turns: "none"` for a `brief` context. For a `full` context, use the interface's full-history value; if the fork inherits the parent's settings, first verify that they match the resolved configuration. See Context selection. Other runtimes may use different parameter names. If provider selection is implicit, verify that the selected model belongs to the resolved provider. If the interface cannot apply or confirm the required settings, report the limitation instead of claiming success. The input flags are skill conventions, not assumed runtime tool parameters.
 
 ## Context selection and briefing
 
@@ -57,8 +57,7 @@ Choose how much of the conversation the advisor sees. An explicit `full` or `bri
 Some fork mechanisms run on the parent's model and effort and ignore overrides:
 
 - An automatically selected `full` must not override the resolved configuration. If it cannot apply the resolved provider, model, and effort, use `brief` and say so.
-- An explicit `full` without an explicit model or effort means the user accepts the parent's configuration. Fork with it, without asking, and report the model and effort as inherited.
-- An explicit `full` with an explicit model or effort requires that the runtime confirms the parent already uses those values. Otherwise, or if the runtime cannot fork full history at all, explain the conflict and ask.
+- An explicit `full` changes context only; it does not waive the resolved provider, model, or effort. Use an inheriting fork only when the runtime confirms the parent's settings match the resolved configuration. If full history cannot be combined with that configuration, explain the conflict and ask which requirement to change.
 
 For `full`, append the precise question and the requested review scope. State that the advisor is not the initiating agent, must not continue the user's task or any session-mode commitment in the history, and answers only the appended question; the initiating agent's conclusions in the history are claims to check, not established facts.
 
@@ -84,7 +83,7 @@ Use a verified read-only execution mode when the provider offers one. A prompt r
 
 Launch the advisor with the prompt prepared for its context, using an advisor task name or `[Advisor] <topic>` title if supported. Reuse the current workspace when accessible; do not create a worktree for an analysis-only consultation. Use the runtime's supported completion events or bounded waits, then retrieve the complete response. Keep completion notifications enabled when configurable; avoid repeated status polling.
 
-Read the complete response before synthesizing it. Distinguish the advisor's recommendation from your own assessment, state material disagreements and uncertainty, and do not imply that the advice was implemented or independently verified. In the final reply, report the configuration actually used in one line, giving the reason for the context and for any fallback, for example: `Advisor: <provider> / <model> / <effort> / context: brief (full-history fork cannot apply the resolved model)`. If the advisor runs the same model as the initiating agent, note that its value comes from a separate context rather than a stronger model. On an error or permission request, report the actual state rather than presenting a completed consultation.
+Read the complete response before synthesizing it. Distinguish the advisor's recommendation from your own assessment, state material disagreements and uncertainty, and do not imply that the advice was implemented or independently verified. In the final reply, report the configuration actually used in one line, giving a brief reason for the selected effort, context, and any fallback, for example: `Advisor: <provider> / <model> / <effort> / context: brief (full-history fork cannot apply the resolved model)`. If the advisor runs the same model as the initiating agent, note that its value comes from a separate context rather than a stronger model. On an error or permission request, report the actual state rather than presenting a completed consultation.
 
 Weigh the advice seriously:
 
