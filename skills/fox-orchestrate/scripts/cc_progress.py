@@ -10,10 +10,23 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 
 
 TOOLS = {"Read", "Write", "Edit", "Bash", "Glob", "Grep", "Agent",
          "WebFetch", "WebSearch", "TodoWrite", "TaskCreate", "TaskUpdate"}
+TOKEN_FIELDS = ("input_tokens", "output_tokens", "cache_read_input_tokens",
+                "cache_creation_input_tokens")
+
+
+def token_usage(usage):
+    # Result usage covers this invocation's main loop, not nested agents.
+    usage = usage if isinstance(usage, dict) else {}
+    counts = {key: value if type(value := usage.get(key)) is int and value >= 0 else None
+              for key in TOKEN_FIELDS}
+    counts["total_tokens"] = (sum(counts.values())
+                              if all(value is not None for value in counts.values()) else None)
+    return counts
 
 
 def atomic_json(path, value):
@@ -116,10 +129,13 @@ def run(args):
     if not 1 <= len(args.model) <= 512 or not 1 <= len(args.effort) <= 64:
         raise ValueError("model/effort identifiers exceed status limits")
     directory.mkdir(parents=True, exist_ok=False)
+    started = time.monotonic()
     state = {"phase": "starting", "session_id": None, "observed_model": None,
              "requested_model": args.model, "requested_effort": args.effort,
              "effective_effort": None, "events": 0, "invalid_events": 0,
-             "cc_exit_code": None, "runner_exit_code": None, "incomplete": True}
+             "cc_exit_code": None, "runner_exit_code": None, "incomplete": True,
+             "elapsed_seconds": None, "num_turns": None,
+             "token_usage_scope": "main_loop_invocation", "token_usage": token_usage(None)}
     atomic_json(directory / "status.json", state)
     argv = [args.claude, "-p", "--model", args.model, "--effort", args.effort,
             "--output-format", "stream-json", "--verbose"]
@@ -187,6 +203,9 @@ def run(args):
                 result = events.result
                 if result is not None:
                     atomic_json(directory / "result.json", result)
+                    turns = result.get("num_turns")
+                    state.update(token_usage=token_usage(result.get("usage")),
+                                 num_turns=turns if type(turns) is int and turns >= 0 else None)
                 success = (result is not None and result.get("subtype") == "success"
                            and result.get("is_error") is False)
                 denied = result.get("permission_denials") if result else None
@@ -217,10 +236,74 @@ def run(args):
             cancel_timer.cancel()
         for number, handler in previous.items():
             signal.signal(number, handler)
+    state["elapsed_seconds"] = round(time.monotonic() - started, 3)
     atomic_json(directory / "status.json", state)
     atomic_json(directory / "summary.json", state)
     print(json.dumps(state, ensure_ascii=False))
     return state["runner_exit_code"]
+
+
+def check_acceptance(state, outcome):
+    if not isinstance(state, dict) or state.get("phase") not in (
+            "completed", "failed", "needs_attention", "cancelled"):
+        raise ValueError("execution must finish before acceptance is recorded")
+    if outcome == "passed" and not (
+            state.get("phase") == "completed" and state.get("incomplete") is False
+            and state.get("runner_exit_code") == 0 and state.get("cc_exit_code") == 0):
+        raise ValueError("an unsuccessful execution cannot pass acceptance")
+
+
+def record_acceptance(args):
+    directory = Path(args.run_dir).resolve()
+    state = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
+    check_acceptance(state, args.outcome)
+    evidence = Path(args.evidence_file).resolve()
+    if not args.artifact_ref.strip() or not evidence.is_file():
+        raise ValueError("artifact reference and evidence file are required")
+    record = {"outcome": args.outcome, "artifact_ref": args.artifact_ref,
+              "evidence_file": str(evidence)}
+    # Keep the original decision; repairs belong in a new turn directory.
+    with (directory / "acceptance.json").open("x", encoding="utf-8") as output:
+        output.write(json.dumps(record, ensure_ascii=False) + "\n")
+    print(json.dumps({"acceptance": args.outcome}))
+    return 0
+
+
+def summarize(run_dirs):
+    rows = []
+    seen = set()
+    for run_dir in run_dirs:
+        directory = Path(run_dir).resolve()
+        if directory in seen:
+            continue
+        seen.add(directory)
+        state = json.loads((directory / "status.json").read_text(encoding="utf-8"))
+        if not isinstance(state, dict) or state.get("phase") not in (
+                "starting", "running", "completed", "failed", "needs_attention", "cancelled"):
+            raise ValueError("invalid execution record")
+        acceptance = "pending"
+        decision = directory / "acceptance.json"
+        if decision.exists():
+            record = json.loads(decision.read_text(encoding="utf-8"))
+            if not isinstance(record, dict) or record.get("outcome") not in ("passed", "failed"):
+                raise ValueError("invalid acceptance record")
+            acceptance = record["outcome"]
+            check_acceptance(state, acceptance)
+            if not all(isinstance(record.get(key), str) and record[key].strip()
+                       for key in ("artifact_ref", "evidence_file")):
+                raise ValueError("acceptance must reference artifact and evidence")
+        if state.get("token_usage_scope") not in (None, "main_loop_invocation"):
+            raise ValueError("unsupported token accounting scope")
+        rows.append({"run_dir": str(directory), "process_phase": state["phase"],
+                     "acceptance": acceptance, "elapsed_seconds": state.get("elapsed_seconds"),
+                     "num_turns": state.get("num_turns"),
+                     "token_usage": token_usage(state.get("token_usage"))})
+    totals = {}
+    for key in (*TOKEN_FIELDS, "total_tokens"):
+        reported = [row["token_usage"][key] for row in rows if row["token_usage"][key] is not None]
+        totals[key] = {"reported": sum(reported) if reported else None,
+                       "unknown_runs": len(rows) - len(reported)}
+    return {"token_usage_scope": "main_loop_invocation", "runs": rows, "token_totals": totals}
 
 
 def main():
@@ -234,10 +317,22 @@ def main():
     launch.add_argument("cc_args", nargs=argparse.REMAINDER)
     status = commands.add_parser("status")
     status.add_argument("--run-dir", required=True)
+    report = commands.add_parser("summarize")
+    report.add_argument("--run-dir", action="append", required=True)
+    acceptance = commands.add_parser("record-acceptance")
+    acceptance.add_argument("--run-dir", required=True)
+    acceptance.add_argument("--outcome", choices=("passed", "failed"), required=True)
+    acceptance.add_argument("--artifact-ref", required=True)
+    acceptance.add_argument("--evidence-file", required=True)
     args = parser.parse_args()
     try:
         if args.action == "run":
             return run(args)
+        if args.action == "record-acceptance":
+            return record_acceptance(args)
+        if args.action == "summarize":
+            print(json.dumps(summarize(args.run_dir), ensure_ascii=False))
+            return 0
         print((Path(args.run_dir) / "status.json").read_text(encoding="utf-8"), end="")
         return 0
     except (OSError, ValueError) as error:

@@ -44,6 +44,33 @@ This command reads a file; it does not invoke CC. Query once for the decision at
 
 Full events remain in `stdout.jsonl`, stderr in `stderr.log`, and the final result in `result.json`. Only brief state is stored in `status.json` and `summary.json`; the runner prints one compact final status. Model text, thinking, tool arguments and tool output are excluded from that state. Unknown events stay in raw logs. After completion inspect only the required result, artifact checks and targeted diagnostics; never `tee` or dump full logs into model-facing tool output.
 
+### Lightweight records and summaries
+
+Each invocation records local `elapsed_seconds`, reported `num_turns`, and `token_usage` in its compact state. Token fields are `input_tokens`, `output_tokens`, `cache_read_input_tokens`, and `cache_creation_input_tokens`; `total_tokens` adds those four disjoint categories only when all are reported. Missing or invalid counts are null, never assumed zero. Thinking tokens are not added again to output tokens. No monetary estimate is extracted.
+
+`token_usage_scope: main_loop_invocation` means the final result's `usage` for this invocation's main agent loop. It excludes nested agents and coordinator usage. Do not add cumulative `modelUsage` across resumed calls: it includes earlier session activity and can double-count it. Failed calls retain reported usage; a call without final usage remains unknown. The [official usage guide](https://code.claude.com/docs/en/agent-sdk/cost-tracking) explains these scopes. Elapsed time is local invocation time, not a batch's wall-clock time.
+
+`phase: completed` means execution completed without a reported process/result/permission failure; it does **not** mean the task passed acceptance. After checking the assigned artifact and acceptance criteria, the coordinator may explicitly record the decision against a commit, diff hash or other identifiable artifact snapshot and an existing local evidence file:
+
+```sh
+python3 /absolute/path/to/fox-orchestrate/scripts/cc_progress.py record-acceptance \
+  --run-dir /absolute/path/to/assignment/turn-1 \
+  --outcome passed --artifact-ref COMMIT_OR_SNAPSHOT \
+  --evidence-file /absolute/path/to/assignment/verification.json
+```
+
+Use `--outcome failed` for a checked rejection. This command records the coordinator's decision; it does not run or independently validate checks. It requires finished execution, and an unsuccessful execution cannot be marked passed. `acceptance.json` preserves the original decision without changing process state or overwriting an existing decision. Repairs use a new turn directory. The decision is valid only for the recorded artifact version; changed artifacts require new checks and a new record. Missing acceptance remains `pending`.
+
+Read a summary for explicitly selected invocation directories, without invoking CC or reading raw message bodies:
+
+```sh
+python3 /absolute/path/to/fox-orchestrate/scripts/cc_progress.py summarize \
+  --run-dir /absolute/path/to/assignment/turn-1 \
+  --run-dir /absolute/path/to/another-assignment/turn-1
+```
+
+The JSON report separates `process_phase` and `acceptance` for each invocation. Repeated directory paths count once. `token_totals` reports each category's known subtotal as `reported` and the number of unknown invocations as `unknown_runs`; a subtotal with unknown runs is not a complete total. Older records without token fields stay unknown. The report does not count invocations as unique tasks, infer acceptance from model prose, or scan unrelated directories.
+
 Malformed JSON, missing/failed results and process errors cannot report success; permission denials reported by either a system event or the final denial list require attention, even when the other source is empty. `permission_denial_seen` preserves the event evidence separately from the final list count. Preserve the distinct CC and runner exit codes. Cancellation remains incomplete and is forwarded/escalated to the assigned process group without changing model/configuration. The runner does not automatically retry a failed turn.
 
 **Token boundary:** local execution, log recording and state updates make no extra model calls. There is no continuous display or monitoring token overhead. Necessary orchestrator queries, interpreting their compact results, dispatch and acceptance still consume normal tokens; do not promise zero total token consumption.

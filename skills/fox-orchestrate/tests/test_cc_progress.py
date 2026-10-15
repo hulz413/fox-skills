@@ -168,6 +168,117 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
             self.assertNotEqual(result.returncode, 0)
             self.assertFalse(directory.exists())
 
+    def test_invocation_tokens_ignore_cumulative_model_usage_and_keep_failed_usage(self):
+        usage = {"input_tokens": 4, "output_tokens": 279,
+                 "cache_read_input_tokens": 8363, "cache_creation_input_tokens": 5417,
+                 "output_tokens_details": {"thinking_tokens": 10}}
+        for success in (True, False):
+            with self.subTest(success=success), tempfile.TemporaryDirectory() as temporary:
+                event = {"type": "result", "subtype": "success" if success else "error_max_turns",
+                         "is_error": not success, "usage": usage, "num_turns": 2,
+                         "modelUsage": {"test-model": {"inputTokens": 999999}},
+                         "result": "PRIVATE_FINAL", "total_cost_usd": 987.654}
+                body = "import json; print(json.dumps(" + repr(event) + "))"
+                _, directory, argv = self.setup_run(temporary, body)
+                argv[argv.index("--"):argv.index("--")] = ["--resume", "saved-session"]
+                result = subprocess.run(argv, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0 if success else 65, result.stderr)
+                state = json.loads(result.stdout)
+                self.assertEqual(state["token_usage_scope"], "main_loop_invocation")
+                self.assertEqual(state["token_usage"]["total_tokens"], 14063)
+                self.assertEqual(state["num_turns"], 2)
+                self.assertGreater(state["elapsed_seconds"], 0)
+                self.assertNotIn("987.654", result.stdout)
+                self.assertNotIn("PRIVATE_FINAL", result.stdout)
+                self.assertFalse((directory / "acceptance.json").exists())
+
+    def test_missing_or_invalid_token_counts_are_unknown(self):
+        counts = module.token_usage({"input_tokens": 0, "output_tokens": True,
+                                     "cache_read_input_tokens": -1,
+                                     "cache_creation_input_tokens": 1.5})
+        self.assertEqual(counts["input_tokens"], 0)
+        for key in ("output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens",
+                    "total_tokens"):
+            self.assertIsNone(counts[key])
+        self.assertTrue(all(value is None for value in module.token_usage(None).values()))
+
+    def execution_record(self, root, name, phase="completed", usage=None):
+        directory = root / name
+        directory.mkdir()
+        state = {"phase": phase, "incomplete": phase != "completed",
+                 "cc_exit_code": 0, "runner_exit_code": 0 if phase == "completed" else 2,
+                 "token_usage_scope": "main_loop_invocation",
+                 "token_usage": module.token_usage(usage)}
+        for filename in ("status.json", "summary.json"):
+            (directory / filename).write_text(json.dumps(state))
+        return directory
+
+    def record_decision(self, directory, outcome, evidence):
+        return subprocess.run([sys.executable, str(SCRIPT), "record-acceptance",
+                               "--run-dir", str(directory), "--outcome", outcome,
+                               "--artifact-ref", "snapshot-1", "--evidence-file", str(evidence)],
+                              capture_output=True, text=True)
+
+    def test_summary_separates_acceptance_and_reports_unknown_subtotals(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = self.execution_record(root, "first", usage={
+                "input_tokens": 10, "output_tokens": 5,
+                "cache_read_input_tokens": 20, "cache_creation_input_tokens": 0})
+            second = self.execution_record(root, "second", "needs_attention")
+            before = module.summarize([first, second])
+            self.assertEqual([row["acceptance"] for row in before["runs"]], ["pending", "pending"])
+            evidence = root / "verification.json"
+            evidence.write_text('{"checks":"PRIVATE_CHECK_BODY"}')
+            original = (first / "status.json").read_bytes()
+            decision = self.record_decision(first, "passed", evidence)
+            self.assertEqual(decision.returncode, 0, decision.stderr)
+            self.assertEqual((first / "status.json").read_bytes(), original)
+            report = subprocess.run([sys.executable, str(SCRIPT), "summarize",
+                                     "--run-dir", str(first), "--run-dir", str(second),
+                                     "--run-dir", str(first / ".." / "first")],
+                                    capture_output=True, text=True, check=True)
+            summary = json.loads(report.stdout)
+            self.assertEqual(len(summary["runs"]), 2)
+            self.assertEqual(summary["runs"][0]["acceptance"], "passed")
+            self.assertEqual(summary["runs"][1]["process_phase"], "needs_attention")
+            self.assertEqual(summary["runs"][1]["acceptance"], "pending")
+            self.assertEqual(summary["token_totals"]["total_tokens"],
+                             {"reported": 35, "unknown_runs": 1})
+            self.assertEqual(summary["token_totals"]["cache_creation_input_tokens"],
+                             {"reported": 0, "unknown_runs": 1})
+            self.assertNotIn("PRIVATE_CHECK_BODY", report.stdout + decision.stdout)
+            self.assertNotEqual(self.record_decision(first, "failed", evidence).returncode, 0)
+            self.assertEqual(json.loads((first / "acceptance.json").read_text())["outcome"], "passed")
+
+    def test_acceptance_requires_finished_execution_and_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "checks.txt"
+            evidence.write_text("checks failed")
+            for phase in ("running", "failed", "needs_attention", "cancelled"):
+                with self.subTest(phase=phase):
+                    directory = self.execution_record(root, phase, phase)
+                    self.assertNotEqual(self.record_decision(directory, "passed", evidence).returncode, 0)
+                    self.assertFalse((directory / "acceptance.json").exists())
+            directory = self.execution_record(root, "complete")
+            self.assertNotEqual(self.record_decision(directory, "passed", root / "missing").returncode, 0)
+            self.assertFalse((directory / "acceptance.json").exists())
+            self.assertEqual(self.record_decision(directory, "failed", evidence).returncode, 0)
+            self.assertEqual(module.summarize([directory])["runs"][0]["acceptance"], "failed")
+
+    def test_invalid_records_do_not_silently_become_pending(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = self.execution_record(Path(temporary), "run", "failed")
+            for record in ({"outcome": "passed", "artifact_ref": "v1", "evidence_file": "checks"},
+                           {"outcome": "failed"}, [], {"outcome": "unknown"}):
+                with self.subTest(record=record):
+                    (directory / "acceptance.json").write_text(json.dumps(record))
+                    result = subprocess.run([sys.executable, str(SCRIPT), "summarize",
+                                             "--run-dir", str(directory)], capture_output=True, text=True)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertEqual(result.stdout, "")
+
     @unittest.skipUnless(os.name == "posix", "process group signal forwarding")
     def test_cancellation_marks_incomplete_and_stops_child(self):
         with tempfile.TemporaryDirectory() as temporary:
