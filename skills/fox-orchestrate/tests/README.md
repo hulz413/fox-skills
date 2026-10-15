@@ -16,6 +16,8 @@ For Claude Code CLI backend changes, use the [CLI dispatch procedure](../referen
 
 For background execution, `test_cc_progress.py` checks compact status isolation, literal handoff, evidence preservation, on-demand queries without re-invoking CC, failures and cancellation. Verify a real isolated CC task separately; see [background validation](cc-background-validation.md). The [App progress validation](cc-app-progress-validation.md) and [Terminal validation](cc-progress-validation.md) are historical evidence for removed display implementations; neither describes the current runner.
 
+The [batch fan-out live validation](batch-fan-out-validation.md) records the 2026-10-15 two-task, three-invocation CC smoke test, with a [sanitized receipt](batch-fan-out-live-evidence.json). Its coverage and unverified items are specific to that run; it does not establish general scheduling, isolation or performance guarantees.
+
 ## Generate blind previews
 
 ```sh
