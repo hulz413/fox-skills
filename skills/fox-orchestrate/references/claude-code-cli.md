@@ -73,6 +73,25 @@ The JSON report separates `process_phase` and `acceptance` for each invocation. 
 
 Malformed JSON, missing/failed results and process errors cannot report success; permission denials reported by either a system event or the final denial list require attention, even when the other source is empty. `permission_denial_seen` preserves the event evidence separately from the final list count. Preserve the distinct CC and runner exit codes. Cancellation remains incomplete and is forwarded/escalated to the assigned process group without changing model/configuration. The runner does not automatically retry a failed turn.
 
+### Failure reasons
+
+`status.json`, `summary.json` and each `summarize` row include `failure_reasons`: `null` while starting/running, `[]` for completed execution, or a list of fixed reason codes for unsuccessful execution. These codes describe observed evidence, not necessarily the underlying root cause. Independent evidence can produce multiple codes; a known cause suppresses generic missing-result/exit symptoms.
+
+| Code | Evidence |
+| --- | --- |
+| `launch_error` | The runner could not start the CC subprocess. |
+| `permission_denied` | A system denial event or nonempty final denial list. |
+| `limit_reached` | An error result with subtype `error_max_turns`, `error_max_budget_usd` or `error_max_structured_output_retries`. |
+| `invalid_output` | Malformed event JSON, invalid required result/denial fields, or a missing final result without a more specific explanation. |
+| `execution_error` | A failed result not covered above, or a nonzero CC exit without a more specific explanation. |
+| `interrupted` | The runner received and forwarded an interruption signal; this alone does not establish timeout or user intent. |
+| `runner_error` | The runner encountered an error while processing or recording execution. |
+| `unknown` | Unsuccessful execution without classification evidence, including older records without this field. |
+
+The summary adds `execution_reason_counts` and separate `acceptance_counts` (`pending`, `passed`, `failed`). Counts cover deduplicated invocation directories, not unique tasks; reason counts can overlap. A completed execution rejected by the coordinator keeps `failure_reasons: []` and `acceptance: failed`; its check evidence explains the artifact failure. Pending acceptance and unknown token usage are not execution failures. Older completed records summarize with `[]`, active records with `null`, and unsuccessful records with `["unknown"]`; original files are not rewritten. Malformed new reason fields are rejected rather than silently reclassified.
+
+Recovered tool errors and `system/api_retry` events do not themselves establish terminal failure. Do not infer authentication, rate-limit, network or model causes from free-text errors or retry history; inspect retained diagnostics and confirm evidence before treating a problem as shared. Classification adds no retry, dispatch, cancellation or model/effort changes. Preflight errors can occur before a new execution directory exists; they produce a CLI diagnostic rather than a synthetic invocation record. If storage itself fails, a complete failure record may also be unavailable.
+
 **Token boundary:** local execution, log recording and state updates make no extra model calls. There is no continuous display or monitoring token overhead. Necessary orchestrator queries, interpreting their compact results, dispatch and acceptance still consume normal tokens; do not promise zero total token consumption.
 
 Inspect structured events after completion, not just the last output line or claimed task success:

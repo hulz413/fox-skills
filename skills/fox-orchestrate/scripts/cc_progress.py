@@ -17,6 +17,61 @@ TOOLS = {"Read", "Write", "Edit", "Bash", "Glob", "Grep", "Agent",
          "WebFetch", "WebSearch", "TodoWrite", "TaskCreate", "TaskUpdate"}
 TOKEN_FIELDS = ("input_tokens", "output_tokens", "cache_read_input_tokens",
                 "cache_creation_input_tokens")
+FAILURE_REASONS = ("launch_error", "permission_denied", "limit_reached", "invalid_output",
+                   "execution_error", "interrupted", "runner_error", "unknown")
+LIMIT_RESULTS = {"error_max_turns", "error_max_budget_usd",
+                 "error_max_structured_output_retries"}
+
+
+def classify_failure(events, code, interrupted, *, launch_error=False, runner_error=False):
+    # Describe observed terminal evidence, never infer causes from arbitrary text.
+    reasons = set()
+    if launch_error:
+        reasons.add("launch_error")
+    if runner_error:
+        reasons.add("runner_error")
+    if interrupted:
+        reasons.add("interrupted")
+    result = events.result
+    denied = result.get("permission_denials") if result is not None else None
+    if events.permission_denied or (isinstance(denied, list) and denied):
+        reasons.add("permission_denied")
+    if events.invalid:
+        reasons.add("invalid_output")
+    if result is not None:
+        subtype, is_error = result.get("subtype"), result.get("is_error")
+        if (not isinstance(subtype, str) or not subtype or type(is_error) is not bool
+                or (subtype == "success" and is_error)):
+            reasons.add("invalid_output")
+        elif is_error and subtype in LIMIT_RESULTS:
+            reasons.add("limit_reached")
+        elif subtype != "success" or is_error:
+            reasons.add("execution_error")
+    # Do not add missing-result/exit symptoms when a more specific cause explains them.
+    if not reasons:
+        if code:
+            reasons.add("execution_error")
+        elif result is None:
+            reasons.add("invalid_output")
+    return [reason for reason in FAILURE_REASONS if reason in reasons] or ["unknown"]
+
+
+def recorded_failure_reasons(state):
+    active = state["phase"] in ("starting", "running")
+    completed = state["phase"] == "completed"
+    if "failure_reasons" not in state:
+        return None if active else [] if completed else ["unknown"]
+    reasons = state["failure_reasons"]
+    if active:
+        if reasons is not None:
+            raise ValueError("active execution cannot have terminal failure reasons")
+    elif (not isinstance(reasons, list)
+          or any(not isinstance(reason, str) or reason not in FAILURE_REASONS for reason in reasons)
+          or len(set(reasons)) != len(reasons)
+          or (completed and reasons) or (not completed and not reasons)
+          or ("unknown" in reasons and len(reasons) != 1)):
+        raise ValueError("invalid execution failure reasons")
+    return reasons
 
 
 def token_usage(usage):
@@ -134,6 +189,7 @@ def run(args):
              "requested_model": args.model, "requested_effort": args.effort,
              "effective_effort": None, "events": 0, "invalid_events": 0,
              "cc_exit_code": None, "runner_exit_code": None, "incomplete": True,
+             "failure_reasons": None,
              "elapsed_seconds": None, "num_turns": None,
              "token_usage_scope": "main_loop_invocation", "token_usage": token_usage(None)}
     atomic_json(directory / "status.json", state)
@@ -143,6 +199,7 @@ def run(args):
         argv += ["--resume", args.resume]
     argv += extra
     child = None
+    events = Events()
     interrupted = None
     cancel_timer = None
 
@@ -173,15 +230,16 @@ def run(args):
         with (directory / "stdout.jsonl").open("w", encoding="utf-8") as raw, \
              (directory / "stderr.log").open("w", encoding="utf-8") as err, \
              prompt_path.open("r", encoding="utf-8") as prompt:
-            events = Events()
             events.emit("starting CC")
             try:
                 child = subprocess.Popen(argv, cwd=cwd, stdin=prompt, stdout=subprocess.PIPE,
                                          stderr=err, text=True, encoding="utf-8",
                                          errors="replace", start_new_session=True)
             except OSError as error:
+                state.update(phase="failed", runner_exit_code=127,
+                             failure_reasons=classify_failure(events, None, interrupted,
+                                                              launch_error=True))
                 err.write(f"Could not start Claude Code executable: {error}\n")
-                state.update(phase="failed", runner_exit_code=127)
                 events.emit("CC executable unavailable")
             else:
                 state.update(phase="running", pid=child.pid)
@@ -219,11 +277,15 @@ def run(args):
                              permission_denials=denials,
                              permission_denial_seen=events.permission_denied,
                              incomplete=exit_code != 0,
+                             failure_reasons=classify_failure(events, code, interrupted) if exit_code else [],
                              interrupted_signal=interrupted)
                 events.emit(f"process {phase}; CC exit {code}")
             state["last_event"] = events.last
     except (OSError, ValueError, TypeError):
-        state.update(phase="failed", runner_exit_code=1)
+        state.update(phase="failed", runner_exit_code=1,
+                     failure_reasons=classify_failure(events, state["cc_exit_code"], interrupted,
+                                                      launch_error="launch_error" in (state["failure_reasons"] or []),
+                                                      runner_error=True))
     finally:
         if child is not None and child.poll() is None:
             os.killpg(child.pid, signal.SIGTERM)
@@ -232,6 +294,8 @@ def run(args):
             except subprocess.TimeoutExpired:
                 os.killpg(child.pid, signal.SIGKILL)
                 child.wait()
+        if child is not None and child.stdout is not None:
+            child.stdout.close()
         if cancel_timer is not None:
             cancel_timer.cancel()
         for number, handler in previous.items():
@@ -295,6 +359,7 @@ def summarize(run_dirs):
         if state.get("token_usage_scope") not in (None, "main_loop_invocation"):
             raise ValueError("unsupported token accounting scope")
         rows.append({"run_dir": str(directory), "process_phase": state["phase"],
+                     "failure_reasons": recorded_failure_reasons(state),
                      "acceptance": acceptance, "elapsed_seconds": state.get("elapsed_seconds"),
                      "num_turns": state.get("num_turns"),
                      "token_usage": token_usage(state.get("token_usage"))})
@@ -303,7 +368,12 @@ def summarize(run_dirs):
         reported = [row["token_usage"][key] for row in rows if row["token_usage"][key] is not None]
         totals[key] = {"reported": sum(reported) if reported else None,
                        "unknown_runs": len(rows) - len(reported)}
-    return {"token_usage_scope": "main_loop_invocation", "runs": rows, "token_totals": totals}
+    reason_counts = {reason: sum(reason in (row["failure_reasons"] or []) for row in rows)
+                     for reason in FAILURE_REASONS}
+    acceptance_counts = {outcome: sum(row["acceptance"] == outcome for row in rows)
+                         for outcome in ("pending", "passed", "failed")}
+    return {"token_usage_scope": "main_loop_invocation", "runs": rows, "token_totals": totals,
+            "execution_reason_counts": reason_counts, "acceptance_counts": acceptance_counts}
 
 
 def main():

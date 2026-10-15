@@ -1,4 +1,6 @@
 import importlib.util
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -7,6 +9,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "cc_progress.py"
@@ -97,6 +100,7 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
                                         "--run-dir", str(directory)], capture_output=True, text=True, check=True)
                 display = query.stdout
                 self.assertEqual(json.loads(display)["phase"], "running")
+                self.assertIsNone(json.loads(display)["failure_reasons"])
                 self.assertEqual((root / "received.json").read_bytes(), received_before)
                 self.assertIn("Read started", display)
                 self.assertNotIn("PRIVATE", display)
@@ -109,6 +113,7 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
             self.assertNotIn("PRIVATE", stdout + stderr)
             state = json.loads(stdout)
             self.assertEqual(state["phase"], "completed")
+            self.assertEqual(state["failure_reasons"], [])
             self.assertIsNone(state["effective_effort"])
             self.assertFalse((directory / "progress.log").exists())
             self.assertEqual(json.loads((directory / "status.json").read_text()), state)
@@ -123,17 +128,18 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
 
     def test_failure_exit_and_required_attention(self):
         cases = [
-            ('print("unparseable")', 65, "failed"),
-            ('import sys; print("private diagnostic", file=sys.stderr); sys.exit(7)', 7, "failed"),
-            ('import json; print(json.dumps({"type":"result","subtype":"success","is_error":False,"permission_denials":[{"tool":"Write"}]}))', 2, "needs_attention"),
-            ('import json; print(json.dumps({"type":"result","subtype":"success","is_error":False,"permission_denials":42}))', 65, "failed"),
+            ('print("unparseable")', 65, "failed", ["invalid_output"]),
+            ('import sys; print("private diagnostic", file=sys.stderr); sys.exit(7)', 7, "failed", ["execution_error"]),
+            ('import json; print(json.dumps({"type":"result","subtype":"success","is_error":False,"permission_denials":[{"tool":"Write"}]}))', 2, "needs_attention", ["permission_denied"]),
+            ('import json; print(json.dumps({"type":"result","subtype":"success","is_error":False,"permission_denials":42}))', 65, "failed", ["invalid_output"]),
         ]
-        for body, code, phase in cases:
+        for body, code, phase, reasons in cases:
             with self.subTest(code=code), tempfile.TemporaryDirectory() as temporary:
                 _, directory, argv = self.setup_run(temporary, body)
                 result = subprocess.run(argv, capture_output=True, text=True)
                 self.assertEqual(result.returncode, code, result.stderr)
                 self.assertEqual(json.loads(result.stdout)["phase"], phase)
+                self.assertEqual(json.loads(result.stdout)["failure_reasons"], reasons)
                 self.assertNotIn("private diagnostic", result.stdout + result.stderr)
                 self.assertTrue((directory / "summary.json").exists())
 
@@ -149,10 +155,119 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
             state = json.loads(result.stdout)
             self.assertEqual(state["phase"], "needs_attention")
             self.assertIs(state["permission_denial_seen"], True)
+            self.assertEqual(state["failure_reasons"], ["permission_denied"])
             self.assertEqual(state["permission_denials"], 0)
             self.assertIs(state["incomplete"], True)
             self.assertEqual(state["cc_exit_code"], 0)
             self.assertEqual(json.loads((directory / "status.json").read_text()), state)
+
+    def test_terminal_reasons_preserve_evidence_without_guessing_root_causes(self):
+        success = {"type": "result", "subtype": "success", "is_error": False}
+        denied = {"type": "system", "subtype": "permission_denied"}
+        cases = [
+            ([], 0, ["invalid_output"]),
+            ([], 2, ["execution_error"]),  # CC exit 2 alone does not prove a denial.
+            ([denied, "malformed PRIVATE_ERROR", success], 7,
+             ["permission_denied", "invalid_output"]),
+            ([denied, {"type": "result", "subtype": "error_during_execution", "is_error": True}],
+             1, ["permission_denied", "execution_error"]),
+            ([{"type": "result", "subtype": {"PRIVATE_ERROR": 1}, "is_error": True}],
+             0, ["invalid_output"]),
+            ([{"type": "result", "subtype": "success", "is_error": "PRIVATE_ERROR"}],
+             0, ["invalid_output"]),
+            ([{"type": "result", "subtype": "success", "is_error": True}],
+             0, ["invalid_output"]),
+            ([{"type": "result", "subtype": "error_new_version", "is_error": True,
+               "errors": ["PRIVATE_ERROR authentication_failed 429"]}],
+             0, ["execution_error"]),
+        ]
+        for subtype in ("error_max_turns", "error_max_budget_usd", "error_max_structured_output_retries"):
+            cases.append(([{"type": "result", "subtype": subtype, "is_error": True}],
+                          1, ["limit_reached"]))
+        for events, cc_exit, expected in cases:
+            with self.subTest(events=events, cc_exit=cc_exit), tempfile.TemporaryDirectory() as temporary:
+                lines = [event if isinstance(event, str) else json.dumps(event) for event in events]
+                body = ('import sys\nfrom pathlib import Path\n'
+                        'with Path("calls").open("a") as calls: calls.write("one\\n")\n'
+                        f'print({chr(10).join(lines)!r}, end="" if not {lines!r} else "\\n")\n'
+                        f'sys.exit({cc_exit})')
+                root, directory, argv = self.setup_run(temporary, body)
+                result = subprocess.run(argv, capture_output=True, text=True)
+                self.assertNotEqual(result.returncode, 0, result.stderr)
+                state = json.loads(result.stdout)
+                self.assertEqual(state["failure_reasons"], expected)
+                self.assertEqual(json.loads((directory / "summary.json").read_text()), state)
+                self.assertNotIn("PRIVATE_ERROR", result.stdout + result.stderr)
+                self.assertEqual((root / "calls").read_text().splitlines(), ["one"])
+
+    def test_recovered_tool_errors_and_api_retries_are_not_terminal_failures(self):
+        events = [
+            {"type": "user", "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "read", "is_error": True}]}},
+            {"type": "system", "subtype": "api_retry", "error": "rate_limit", "error_status": 429},
+            {"type": "result", "subtype": "success", "is_error": False},
+        ]
+        body = f'import json; events={events!r}\nfor event in events: print(json.dumps(event))'
+        with tempfile.TemporaryDirectory() as temporary:
+            _, directory, argv = self.setup_run(temporary, body)
+            result = subprocess.run(argv, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["failure_reasons"], [])
+            self.assertEqual(module.summarize([directory])["acceptance_counts"]["pending"], 1)
+
+    def test_launch_errors_are_distinct_from_preflight_errors(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root, directory, argv = self.setup_run(temporary, "pass")
+            (root / "fake-claude").unlink()
+            result = subprocess.run(argv, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 127, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["failure_reasons"], ["launch_error"])
+            self.assertIsNone(json.loads(result.stdout)["cc_exit_code"])
+            self.assertTrue((directory / "summary.json").exists())
+        with tempfile.TemporaryDirectory() as temporary:
+            root, directory, argv = self.setup_run(temporary, "pass")
+            (root / "prompt.txt").unlink()
+            result = subprocess.run(argv, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1)
+            self.assertFalse(directory.exists())
+            self.assertEqual(result.stdout, "")
+
+    def test_runner_recording_error_preserves_independent_permission_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, directory, argv = self.setup_run(temporary,
+                'import json; print(json.dumps({"type":"system","subtype":"permission_denied"}))')
+            write_json = module.atomic_json
+            popen = module.subprocess.Popen
+            children = []
+            injected = False
+
+            def launch(*args, **kwargs):
+                child = popen(*args, **kwargs)
+                children.append(child)
+                return child
+
+            def fail_once(path, value):
+                nonlocal injected
+                if value.get("permission_denial_seen") and not injected:
+                    injected = True
+                    raise OSError("PRIVATE_RECORDING_ERROR")
+                return write_json(path, value)
+
+            output = io.StringIO()
+            with mock.patch.object(sys, "argv", argv[1:]), \
+                    mock.patch.object(module, "atomic_json", side_effect=fail_once), \
+                    mock.patch.object(module.subprocess, "Popen", side_effect=launch), \
+                    contextlib.redirect_stdout(output):
+                self.assertEqual(module.main(), 1)
+            self.assertTrue(injected)
+            state = json.loads(output.getvalue())
+            self.assertEqual(state["phase"], "failed")
+            self.assertEqual(state["failure_reasons"], ["permission_denied", "runner_error"])
+            self.assertEqual(json.loads((directory / "summary.json").read_text()), state)
+            self.assertNotIn("PRIVATE_RECORDING_ERROR", output.getvalue())
+            self.assertEqual(len(children), 1)
+            self.assertIsNotNone(children[0].poll())
+            self.assertTrue(children[0].stdout.closed)
 
     def test_no_evidence_overwrite_and_no_configuration_override(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -187,6 +302,7 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
                 self.assertEqual(state["token_usage_scope"], "main_loop_invocation")
                 self.assertEqual(state["token_usage"]["total_tokens"], 14063)
                 self.assertEqual(state["num_turns"], 2)
+                self.assertEqual(state["failure_reasons"], [] if success else ["limit_reached"])
                 self.assertGreater(state["elapsed_seconds"], 0)
                 self.assertNotIn("987.654", result.stdout)
                 self.assertNotIn("PRIVATE_FINAL", result.stdout)
@@ -243,6 +359,8 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
             self.assertEqual(summary["runs"][0]["acceptance"], "passed")
             self.assertEqual(summary["runs"][1]["process_phase"], "needs_attention")
             self.assertEqual(summary["runs"][1]["acceptance"], "pending")
+            self.assertEqual(summary["runs"][0]["failure_reasons"], [])
+            self.assertEqual(summary["runs"][1]["failure_reasons"], ["unknown"])
             self.assertEqual(summary["token_totals"]["total_tokens"],
                              {"reported": 35, "unknown_runs": 1})
             self.assertEqual(summary["token_totals"]["cache_creation_input_tokens"],
@@ -266,6 +384,49 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
             self.assertFalse((directory / "acceptance.json").exists())
             self.assertEqual(self.record_decision(directory, "failed", evidence).returncode, 0)
             self.assertEqual(module.summarize([directory])["runs"][0]["acceptance"], "failed")
+            summary = module.summarize([directory])
+            self.assertEqual(summary["runs"][0]["failure_reasons"], [])
+            self.assertEqual(sum(summary["execution_reason_counts"].values()), 0)
+            self.assertEqual(summary["acceptance_counts"], {"pending": 0, "passed": 0, "failed": 1})
+
+    def test_summary_counts_reasons_separately_and_preserves_legacy_records(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            legacy = self.execution_record(root, "legacy", "failed")
+            original = (legacy / "status.json").read_bytes()
+            failed = self.execution_record(root, "failed", "failed")
+            active = self.execution_record(root, "active", "running")
+            for directory, reasons in ((failed, ["permission_denied", "invalid_output"]), (active, None)):
+                path = directory / "status.json"
+                state = json.loads(path.read_text())
+                state["failure_reasons"] = reasons
+                path.write_text(json.dumps(state))
+            report = module.summarize([legacy, failed, active, failed])
+            self.assertEqual([row["failure_reasons"] for row in report["runs"]],
+                             [["unknown"], ["permission_denied", "invalid_output"], None])
+            self.assertEqual(report["execution_reason_counts"]["permission_denied"], 1)
+            self.assertEqual(report["execution_reason_counts"]["invalid_output"], 1)
+            self.assertEqual(report["execution_reason_counts"]["unknown"], 1)
+            self.assertEqual(report["acceptance_counts"], {"pending": 3, "passed": 0, "failed": 0})
+            self.assertEqual((legacy / "status.json").read_bytes(), original)
+
+    def test_invalid_reason_records_are_rejected_without_echoing_values(self):
+        cases = [("completed", ["permission_denied"]), ("failed", []), ("failed", None),
+                 ("failed", ["PRIVATE_REASON"]), ("failed", [["nested"]]),
+                 ("failed", ["unknown", "permission_denied"]),
+                 ("failed", ["runner_error", "runner_error"]), ("running", [])]
+        for phase, reasons in cases:
+            with self.subTest(phase=phase, reasons=reasons), tempfile.TemporaryDirectory() as temporary:
+                directory = self.execution_record(Path(temporary), "run", phase)
+                path = directory / "status.json"
+                state = json.loads(path.read_text())
+                state["failure_reasons"] = reasons
+                path.write_text(json.dumps(state))
+                result = subprocess.run([sys.executable, str(SCRIPT), "summarize",
+                                         "--run-dir", str(directory)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout, "")
+                self.assertNotIn("PRIVATE_REASON", result.stderr)
 
     def test_invalid_records_do_not_silently_become_pending(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -299,6 +460,7 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
                 self.assertEqual(process.returncode, 143, stderr)
                 self.assertEqual(json.loads(stdout)["phase"], "cancelled")
                 self.assertIs(json.loads(stdout)["incomplete"], True)
+                self.assertEqual(json.loads(stdout)["failure_reasons"], ["interrupted"])
                 with self.assertRaises(ProcessLookupError):
                     os.kill(child, 0)
             finally:
@@ -329,6 +491,7 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
                 state = json.loads(stdout)
                 self.assertEqual(state["phase"], "cancelled")
                 self.assertEqual(state["cc_exit_code"], 0)
+                self.assertEqual(state["failure_reasons"], ["interrupted"])
             finally:
                 if process.poll() is None:
                     process.kill()

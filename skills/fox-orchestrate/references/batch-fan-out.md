@@ -31,6 +31,8 @@ An isolated task failure need not stop independent tasks. When a shared authenti
 
 Maintain the mapping from task ID to all its invocations and the artifact/version each acceptance decision covers. Use the CC adapter's `summarize` for selected turn directories and `record-acceptance` after coordinator checks, following its [recording contract](claude-code-cli.md#lightweight-records-and-summaries). Process completion leaves task acceptance pending. Keep failed attempts in the record; include their reported tokens when summarizing batch consumption.
 
+For CC execution failures, use the adapter's [failure reasons](claude-code-cli.md#failure-reasons) alongside the separate acceptance decision. Reason counts alone do not establish a shared blocker or authorize an automatic retry.
+
 Count tasks by task ID, not invocation count. The example has two tasks and three invocations; M01's repair does not create a third task. Report each task's checked artifact and remaining work separately from invocation totals. Preserve the CC token scope and unknown subtotals; native usage is reported only when available, and the CC summary does not account for native workers or coordinator usage.
 
 ## Integrate and accept
