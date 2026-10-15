@@ -22,6 +22,8 @@ The [failure classification validation](failure-classification-validation.md) se
 
 The [task summary validation](task-summary-validation.md) separates 84 offline tests from local summary replay of three retained real CLI records. It records task/artifact selection, token accounting, compatibility and unverified items; no new worker calls were made.
 
+The [acceptance publication validation](acceptance-publication-validation.md) records 90 offline tests, controlled concurrent readers/publishers, duplicate CLI writes, injected-failure cleanup and isolated publication replay. Its limits distinguish atomic visibility from crash durability; no worker calls were added.
+
 ## Generate blind previews
 
 ```sh
