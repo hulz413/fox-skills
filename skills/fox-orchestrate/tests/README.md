@@ -20,6 +20,8 @@ The [batch fan-out live validation](batch-fan-out-validation.md) records the 202
 
 The [failure classification validation](failure-classification-validation.md) separates offline classification/acceptance checks, one induced live CLI turn-limit failure and retained-record compatibility checks. It lists unverified failure paths; documentation added no worker calls.
 
+The [task summary validation](task-summary-validation.md) separates 84 offline tests from local summary replay of three retained real CLI records. It records task/artifact selection, token accounting, compatibility and unverified items; no new worker calls were made.
+
 ## Generate blind previews
 
 ```sh
