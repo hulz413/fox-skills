@@ -44,6 +44,8 @@ When supported and authorized, agents may exchange evidence, interface clarifica
 
 Observe concurrency and lifecycle limits: returned results may not free slots. Reuse compatible agents under model-routing rules or release them through supported tools. Continue useful local work; prefer completion notifications or bounded waits over unchanged polling and maintain required progress updates.
 
+For batches of independent assignments, use [batch fan-out](references/batch-fan-out.md) to track tasks, isolate parallel work and collect results through the existing dispatch and acceptance rules.
+
 ## Choose models
 
 Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to discover the complete inventory when requested (not just abbreviated tool descriptions), apply its current-session provider boundary, check actual dispatch capabilities, select capability, effort and context, and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
