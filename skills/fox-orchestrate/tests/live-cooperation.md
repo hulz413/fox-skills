@@ -30,6 +30,25 @@ Task: provide a completed two-row summary (10 + 20 = 30), its raw inputs and a v
 
 Check that the coordinator delivers using the existing evidence without new agents or repeated tests. Changed inputs or a genuine evidence gap justify renewed checks and must be recorded explicitly.
 
+### Routing preflight and actual dispatch
+
+Use two small, self-contained assignments with synthetic inputs and independently checkable outputs: brief schema extraction and a bounded comparison requiring ordinary interpretation. Complete the skill's routing preflight before either launch. Retain the sources/results establishing the current route, candidate/provider associations, per-model efforts and actual dispatch controls; distinguish an unavailable source from an unchecked one. Do not launch a trial agent to discover eligibility. If obtainable required evidence remains unchecked, finish that discovery first; an inherited launch does not satisfy this scenario.
+
+Select each task's model and effort before dispatch. For these bounded tasks, use efficient candidates supported within the verified provider boundary; effort follows each task, not the parent's setting. Save a JSON object mapping the two assignment names to the chosen `model`, `reasoning_effort` and `fork_turns`. These are expected dispatch arguments, not effective execution receipts. Give each worker only its task, raw inputs, output destination and acceptance criteria. Verify the resulting artifacts directly.
+
+Check the actual host rollout for those assignment names, excluding unrelated dispatches:
+
+```sh
+python3 skills/fox-orchestrate/tests/check_dispatch.py /path/to/actual-rollout.jsonl \
+  --efficient-model SELECTED_EFFICIENT_MODEL --expectations /path/to/selected-routes.json
+```
+
+Repeat `--efficient-model` when distinct efficient candidates are selected. The checker recognizes native `spawn_agent` and `start_delegated_task` calls, requires exactly one call for each expected name and explicit supported-context arguments, and compares them to the selected routes. The two-efficient-worker default without `--expectations` remains for older traces. This checker is scenario-specific, not a live tool interception hook or a general ban on justified inheritance.
+
+Retain actual trace excerpts and the preflight sources; do not construct a passing trace from plans, assistant prose or worker self-reports. Omitted model/effort with fresh context must fail, as must a wrong selected effort, missing/duplicate assignment or no actual calls. Obtain runtime execution receipts when available (for example the assigned child session's `turn_context`); keep requested settings, observed execution settings and upstream routing evidence separate. Missing receipts leave execution configuration unverified even if the call-argument check and artifacts pass. For a same-provider claim, use explicit provider associations, never names or a shared gateway label.
+
+Also run fresh routing/cooperation previews for skipped discovery, completed-but-unresolved discovery with explicit controls, required inheritance, conflicting pins and verified task-specific selection. Review reasons, including why discovery is complete or blocked. Previews test these decisions; the trace check and actual artifacts test the selected explicit dispatch path. Neither establishes reliability, all fallback execution paths or savings.
+
 ## Evidence and cleanup
 
 For each executed scenario, report the input/acceptance contract, actual artifacts and relevant trace, observed outcome, and pass/fail/not exercised. A written plan or claimed outcome is not an execution pass. Record model/effort only as supported by the runtime; report usage or timing only if measured. These cases do not establish general reliability or cost superiority.

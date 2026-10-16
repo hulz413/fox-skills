@@ -48,7 +48,7 @@ For batches of independent assignments, use [batch fan-out](references/batch-fan
 
 ## Choose models
 
-Before each assignment's first dispatch, apply [model routing](references/model-routing.md) to discover the complete inventory when requested (not just abbreviated tool descriptions), apply its current-session provider boundary, check actual dispatch capabilities, select capability, effort and context, and apply supported settings. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
+Before each assignment's first dispatch, complete the [routing preflight](references/model-routing.md#establish-candidates-and-dispatch-support): establish candidate/provider evidence and actual controls, then select model, effort and context for the task and apply supported settings. Missing evidence requires the necessary discovery before an inheritance fallback; fresh context alone does not select a configuration. Discover the complete inventory when requested, not just abbreviated tool descriptions. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 
 At dispatch, show a Markdown table (new for later dispatches): agent/role, assignment, model, effort and selection reason; identify the backend when using an external CLI or mixing runtimes. Omit status columns and routine disclaimers for normal explicit settings. Explain inheritance, fallback, unsupported controls and dispatch errors; report runtime-supplied differing effective values. Distinguish plans and previews from successful creation.
 

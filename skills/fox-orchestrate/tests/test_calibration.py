@@ -33,6 +33,24 @@ class CalibrationTests(unittest.TestCase):
         self.assertTrue(result['runtime_validity']['violations'])
         self.assertTrue(routing.automatic_failure(result))
 
+    def test_unchecked_discovery_cannot_be_waived_by_inheritance(self):
+        result = self.change('case_070', status='inherited', model='standard-fixture',
+                             reasoning_effort='high')
+        self.assertTrue(routing.automatic_failure(result))
+        self.assertTrue(result['constraints']['errors'])
+
+    def test_route_fallback_still_requires_task_effort_and_explicit_controls(self):
+        result = self.change('case_071', reasoning_effort='high')
+        self.assertTrue(routing.automatic_failure(result))
+        result = self.change('case_074', model='standard-fixture', reasoning_effort='high')
+        self.assertTrue(routing.automatic_failure(result))
+
+    def test_completed_discovery_allows_only_compatible_inheritance(self):
+        self.assertFalse(routing.automatic_failure(routing.report(self.suite, self.answers)))
+        result = self.change('case_073', status='inherited', model='standard-fixture',
+                             reasoning_effort='medium')
+        self.assertTrue(routing.automatic_failure(result))
+
     def test_pins_inheritance_controls_and_fallback_remain_required(self):
         changes = [('case_009', {'reasoning_effort': 'high'}),
                    ('case_013', {'model': 'standard-fixture'}),

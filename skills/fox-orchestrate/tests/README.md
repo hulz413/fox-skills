@@ -57,7 +57,7 @@ Report offline checker results, final structure validity, first-pass format fail
 
 Unit tests validate the checkers. Fresh-context previews test decisions against fixed routing/cooperation hypotheses; synthetic runtime IDs are fixtures, not a production model catalog. Neither proves effective dispatch settings, actual task quality, repeatability, latency or cost savings. Comparisons of configurations require the same representative inputs and acceptance criteria plus measured results. Live-scenario evidence must be reported separately from preview results.
 
-check_dispatch.py and test_dispatch.py retain an older actual-trace checker for compatibility; its unit tests are offline. Do not dispatch selected models or execute sample tasks as part of the preview suite. Remove temporary prompts and predictions after inspection, preserving failure evidence when useful. Historical reports remain historical and must not be silently rescored against revised contracts.
+`check_dispatch.py` checks actual native dispatch calls for an isolated bounded scenario; its unit tests are offline. Use [live dispatch validation](live-cooperation.md#routing-preflight-and-actual-dispatch) when preflight or inheritance rules change. Keep that execution evidence separate from previews: a model's routing JSON or self-report does not establish which arguments were sent or which configuration ran. Do not dispatch selected models or execute sample tasks as part of the preview suite. Remove temporary prompts and predictions after inspection, preserving failure evidence when useful. Historical reports remain historical and must not be silently rescored against revised contracts.
 
 
 ## Runtime legality versus selection calibration

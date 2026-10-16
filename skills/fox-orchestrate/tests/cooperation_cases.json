@@ -258,6 +258,16 @@
       "route_calibration_fields": [
         "reasoning_effort"
       ]
+    },
+    {
+      "id": "case_c22",
+      "task": "用户要求把独立 CSV 导出功能交给子 Agent，模式、验收和独占文件已齐全。当前模型 standard-fixture/high；只读 catalog 和 provider 元数据接口可用，但尚未核对候选模型、provider 或派发覆盖能力。主协调者打算因为 provider 未知而立刻省略 model/effort、仅设 fresh context 启动 Worker。下一步应做什么？",
+      "expected": {
+        "action": "coordinate_decision",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
     }
   ]
 }
