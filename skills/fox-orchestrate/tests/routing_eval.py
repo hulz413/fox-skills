@@ -140,6 +140,34 @@ def check(suite, predictions):
                 errors.append(f"{case['id']}: {key}: expected {value!r}, got {result.get(key)!r}")
     return errors
 
+
+def constraint_report(suite, by_id):
+    """Keep judgment-only baseline fields out of the automatic acceptance gate."""
+    failures, differences = [], []
+    for case in suite["cases"]:
+        calibration = case.get("calibration_fields", [])
+        if (not isinstance(calibration, list)
+                or any(field not in ("model", "reasoning_effort") for field in calibration)
+                or len(set(calibration)) != len(calibration)):
+            raise ValueError("calibration fields must be unique model/effort fields")
+        changed = [key for key, value in case["expected"].items()
+                   if by_id[case["id"]].get(key) != value]
+        required = [key for key in changed if key not in calibration]
+        if required:
+            failures.append({"id": case["id"], "fields": required})
+        soft = [key for key in changed if key in calibration]
+        if soft:
+            differences.append({"id": case["id"], "fields": soft})
+    return {"passed": len(suite["cases"]) - len(failures), "total": len(suite["cases"]),
+            "errors": failures, "calibration_differences": differences}
+
+
+def automatic_failure(result):
+    """A zero exit code covers automated constraints, never unreviewed reasons."""
+    return (not result["structure"]["passed"] or bool(result["runtime_validity"]["violations"])
+            or bool(result["constraints"]["errors"]))
+
+
 def report(suite, predictions):
     """Keep structure, autonomous routing, and rule compliance separate."""
     errors = validate_output(predictions)
@@ -167,6 +195,9 @@ def report(suite, predictions):
             if fields and case['id'] not in invalid:
                 differences.append({'id': case['id'], 'fields': fields})
     return {"structure": {"passed": not errors, "errors": errors}, "groups": groups,
+            "constraints": (constraint_report(suite, by_id) if not errors else
+                            {"passed": None, "total": len(suite["cases"]), "errors": errors,
+                             "calibration_differences": []}),
             "runtime_validity": runtime, "expectation_differences_without_runtime_violation": differences}
 
 if __name__ == "__main__":
@@ -201,4 +232,4 @@ if __name__ == "__main__":
     else:
         results = report(suite, json.loads(args.predictions.read_text()))
         print(json.dumps(results, indent=2))
-        raise SystemExit(not results["structure"]["passed"] or bool(results["runtime_validity"]["violations"]) or any(g["passed"] != g["total"] for g in results["groups"].values()))
+        raise SystemExit(automatic_failure(results))

@@ -24,8 +24,8 @@ including required fragments and metadata, is sent as state when a call is made.
 With `TYPESAFE_API_KEY` exported locally:
 
 ```sh
-python3 skills/fox-orchestrate/scripts/filter_context.py evidence.json > shadow.json
-python3 skills/fox-orchestrate/scripts/filter_context.py evidence.json --apply > filtered.json
+python3 experiments/fox-orchestrate/scripts/filter_context.py evidence.json > shadow.json
+python3 experiments/fox-orchestrate/scripts/filter_context.py evidence.json --apply > filtered.json
 ```
 
 Each invocation makes at most one request (no retries), so the two commands make
@@ -49,8 +49,8 @@ not silent truncation. The network operation has a 20-second socket timeout.
 ## Verification and rollout
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s skills/fox-orchestrate/tests -p 'test_*.py'
-PYTHONDONTWRITEBYTECODE=1 python3 skills/fox-orchestrate/tests/eval_context_filter.py
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s experiments/fox-orchestrate/tests -p 'test_*.py'
+PYTHONDONTWRITEBYTECODE=1 python3 experiments/fox-orchestrate/tests/eval_context_filter.py
 ```
 
 The [initial validation](../tests/context-filter-validation.md) records the first run, including its failed noise-removal check.

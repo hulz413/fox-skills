@@ -63,3 +63,13 @@ User-requested follow-up: normally filter superseded versions out within each ru
 Expectations are fixed before fresh-context evaluation. Keep every pre-existing task and expectation unchanged. New rule cases cover applicable official xhigh guidance for an efficient model without repeated cycles (`case_057`), exacting delivery benefiting from extended checks without those cycles (`case_058`), reliable comparable-task evaluations taking precedence over official starting guidance (`case_059`), and applicable low guidance for a small new implementation (`case_060`). Existing `case_040` and natural `case_051` retain high for ordinary deep conflicting-log investigation; broadening xhigh does not automatically raise them.
 
 Inspect reasons separately: capability and effort must remain distinct; guidance must apply to the chosen model and task; evaluation evidence must be reliable and comparable; explain conflicts and extra-effort benefits. Generic defaults are not model-specific official recommendations. Retain explicit pins, unsupported/inherited controls, latest-family versions and fixed-assignment cooperation regressions. No output field or checker interface changes are required.
+
+## Execution and recording evidence
+
+Historical reports retain their original test counts, artifact hashes and coverage limits; they do not establish validation of the current revision.
+
+- [Batch fan-out](batch-fan-out-validation.md) and [sanitized receipt](batch-fan-out-live-evidence.json): two tasks, three CC invocations.
+- [Failure classification](failure-classification-validation.md): offline checks, one induced live turn-limit failure and retained-record compatibility.
+- [Task summaries](task-summary-validation.md): local replay of retained CLI records; no new worker calls.
+- [Acceptance publication](acceptance-publication-validation.md): concurrent publishers/readers and injected failures; visibility is distinct from crash durability.
+- [Evidence binding](evidence-binding-validation.md): legacy records, integrity states and isolated local replay; no new worker calls.

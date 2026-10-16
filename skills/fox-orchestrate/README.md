@@ -42,7 +42,7 @@ See [tests/README.md](tests/README.md) for the routing-only behavioral suite and
 
 ## Optional experiments
 
-The [Jev context filter](references/jev-context-filter.md) is a standalone, shadow-first helper for saved supplementary evidence. It is not enabled in the skill workflow; see its guide for explicit API calls, fallback behavior and evaluation limits.
+The standalone Jev helper and frozen experiment evidence are preserved in the repository-level [experiment archive](../../experiments/fox-orchestrate/README.md). They are not part of the installed skill or its runtime workflow.
 
 ## Design references
 

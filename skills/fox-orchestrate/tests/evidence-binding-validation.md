@@ -7,7 +7,7 @@ Date: 2026-10-15. Result: scoped validation passed: 97 offline tests, including 
 - Implementation commit: `2c9170013226102efa3ec52e26ec821a9b74ea1e`.
 - Runner SHA-256, matching the retained replay receipt and committed implementation: `18bb0460429a8008daf737e496ad9e061c37b552c571ba9d078d688cb547beeb`.
 - Compatibility base: `ae4a710` (the implementation before content binding).
-- Contract: [CLI recording and summaries](../references/claude-code-cli.md#lightweight-records-and-summaries) and [task summaries](../references/claude-code-cli.md#task-summaries). Focused checks: [test_evidence_binding.py](test_evidence_binding.py); publication and selection regressions: [test_acceptance_publication.py](test_acceptance_publication.py) and [test_task_summary.py](test_task_summary.py).
+- Contract: [CLI recording and summaries](../references/cc-records.md#invocation-records-and-acceptance) and [task summaries](../references/cc-records.md#task-summaries). Focused checks: [test_evidence_binding.py](test_evidence_binding.py); publication and selection regressions: [test_acceptance_publication.py](test_acceptance_publication.py) and [test_task_summary.py](test_task_summary.py).
 - New decisions store a raw-byte SHA-256 alongside the evidence path. Invocation readers compute integrity once and selected task metadata reuses that result. Execution, acceptance guards, task selection and token rules remain separate from integrity.
 
 ## Offline coverage

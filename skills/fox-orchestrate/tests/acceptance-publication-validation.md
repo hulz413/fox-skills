@@ -8,7 +8,7 @@ Date: 2026-10-15. Result: scoped validation passed: 90 offline tests, including 
 - Runner SHA-256, matching the replay receipt and committed implementation: `5c3bd04456e9fd23487efb59020dbcad060dd66a7b59763ff87ae3860592355e`.
 - Pre-fix base: `df24fb5b48c5cecd20f8208413dbb285e6c2995e`. The concurrent-reader regression test failed with `JSONDecodeError`: the old writer created the public file before serializing its contents, allowing a reader to see an empty decision.
 - The fix writes a unique same-directory temporary file, closes it, then publishes with a hard link that cannot replace an existing directory entry. Only the `record_acceptance` function body and a standard-library import changed in the runner; execution, acceptance guards, summaries and token rules were unchanged.
-- Contract: [CLI recording and acceptance](../references/claude-code-cli.md#lightweight-records-and-summaries). Tests: [test_acceptance_publication.py](test_acceptance_publication.py).
+- Contract: [CLI recording and acceptance](../references/cc-records.md#invocation-records-and-acceptance). Tests: [test_acceptance_publication.py](test_acceptance_publication.py).
 
 ## Offline coverage
 

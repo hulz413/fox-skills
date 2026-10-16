@@ -16,15 +16,7 @@ For Claude Code CLI backend changes, use the [CLI dispatch procedure](../referen
 
 For background execution, `test_cc_progress.py` checks compact status isolation, literal handoff, evidence preservation, on-demand queries without re-invoking CC, failures and cancellation. Verify a real isolated CC task separately; see [background validation](cc-background-validation.md). The [App progress validation](cc-app-progress-validation.md) and [Terminal validation](cc-progress-validation.md) are historical evidence for removed display implementations; neither describes the current runner.
 
-The [batch fan-out live validation](batch-fan-out-validation.md) records the 2026-10-15 two-task, three-invocation CC smoke test, with a [sanitized receipt](batch-fan-out-live-evidence.json). Its coverage and unverified items are specific to that run; it does not establish general scheduling, isolation or performance guarantees.
-
-The [failure classification validation](failure-classification-validation.md) separates offline classification/acceptance checks, one induced live CLI turn-limit failure and retained-record compatibility checks. It lists unverified failure paths; documentation added no worker calls.
-
-The [task summary validation](task-summary-validation.md) separates 84 offline tests from local summary replay of three retained real CLI records. It records task/artifact selection, token accounting, compatibility and unverified items; no new worker calls were made.
-
-The [acceptance publication validation](acceptance-publication-validation.md) records 90 offline tests, controlled concurrent readers/publishers, duplicate CLI writes, injected-failure cleanup and isolated publication replay. Its limits distinguish atomic visibility from crash durability; no worker calls were added.
-
-The [acceptance evidence binding validation](evidence-binding-validation.md) separates 97 offline tests from retained-record compatibility and isolated binding replay. It covers legacy records, integrity states, unchanged acceptance/selection/token rules and explicit limits; no new worker calls were made.
+Historical run reports and their limits are indexed in [validation-history.md](validation-history.md#execution-and-recording-evidence).
 
 ## Generate blind previews
 
@@ -33,7 +25,7 @@ python3 skills/fox-orchestrate/tests/routing_eval.py
 python3 skills/fox-orchestrate/tests/cooperation_eval.py
 ```
 
-These commands emit prompts, not model calls. Give the relevant generated prompt(s), current SKILL.md and references/model-routing.md to one fresh evaluator. Keep routing_cases.json, cooperation_cases.json, expected answers and checker sources hidden. A cooperation-only prompt includes its own routing output contract.
+These commands emit prompts, not model calls. Give the relevant generated prompt(s), current SKILL.md, references/model-routing.md and references/model-discovery.md to one fresh evaluator. Keep routing_cases.json, cooperation_cases.json, expected answers and checker sources hidden. A cooperation-only prompt includes its own routing output contract.
 
 Prohibit delegation, App forks, execution of scenario tasks, and tools other than reading the supplied policy/prompts, writing predictions, and running the structure-only gates below. Request JSON decisions using the embedded contracts; save routing and cooperation answers separately. Reasons belong in their own field, never in fork_turns. Use one evaluator for the suite, not one agent per case.
 
@@ -80,8 +72,10 @@ python3 skills/fox-orchestrate/tests/routing_eval.py /path/to/predictions.json -
 
 This command returns nonzero for violations, invalid structure, or incomplete runtime verification. It is not an automatic repair gate: changing model/effort is a decision change, not a format-only repair. Keep the original prediction and record any later decision separately. This offline checker is not a hook into the host's live dispatch API.
 
-The existing `groups.rules` and `groups.autonomous` scores remain exact expectation matches, not task-success or quality scores. `expectation_differences_without_runtime_violation` lists remaining mismatches separately; absence of a detected runtime violation does not prove a choice obeys every instruction or is optimal. Runtime-invalid choices must not be reported as merely calibration differences. Do not merge these categories into one accuracy number.
+The existing `groups.rules`, `groups.autonomous` and `cooperation` scores retain exact baseline matches for historical comparison, not task-success or quality scores. `constraints` separately checks required fields; only fixture-declared `calibration_fields` (or nested `route_calibration_fields`) may differ without an automatic constraint failure. These hidden lists contain model/effort preferences that require judgment, not pins, inheritance, unavailable controls, fallback/precedence or discovery requirements. Baseline answers are unchanged and classification is fixed before evaluation.
 
-For checker/report-only changes that leave prompts, selection policy and fixtures unchanged, replay retained predictions and test the checker; a fresh model sample is unnecessary. Label replays with the new checker revision and retain original reports. See [selection-calibration.md](selection-calibration.md) for the reviewed ambiguous cases and evidence needed before changing expectations.
+The scoring commands exit nonzero for invalid structure/coverage, detected runtime violations or required-field mismatches. Judgment-only baseline differences remain visible in `constraints.calibration_differences`; a zero exit code does not approve their reasons or establish complete runtime verification. Check `runtime_validity.not_checked`, pins and every reason before behavioral acceptance. Unsupported model/effort combinations still fail even when the changed field is a calibration field. `expectation_differences_without_runtime_violation` lists remaining mismatches separately; absence of a detected runtime violation does not prove a choice obeys every instruction or is optimal. Runtime-invalid choices must not be reported as merely calibration differences. Do not merge these categories into one accuracy number.
+
+For checker/report-only changes that leave prompts, selection policy and fixtures unchanged, replay retained predictions and test the checker; a fresh model sample is unnecessary. Label replays with the new checker revision and retain original reports. See [selection-calibration.md](selection-calibration.md) for the versioned distinction and evidence needed before changing expectations.
 
 See [runtime discovery validation](runtime-discovery-validation.md) for discovery case coverage and [full-inventory follow-up evidence](runtime-discovery-validation.md#full-inventory-follow-up) for the two-page inventory scenario, configured-file discovery, and provider/live-runtime evidence gaps.

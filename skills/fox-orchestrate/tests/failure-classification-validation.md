@@ -6,7 +6,7 @@ Date: 2026-10-15. Result: scoped validation passed. The offline suite passed 79 
 
 - Implementation commit: `1c988727772d2ec55a3a4e5c67be27bbae73e7d1`.
 - Runner SHA-256, identical for the live run and committed implementation: `31d20a9ecf86da4c5e325bb2eda3eac40f682bbaaea8bd3602e1887089187279`.
-- Classification and recording contract: [CLI failure reasons](../references/claude-code-cli.md#failure-reasons). Executable offline checks: [test_cc_progress.py](test_cc_progress.py).
+- Classification and recording contract: [CLI failure reasons](../references/cc-records.md#failure-reasons). Executable offline checks: [test_cc_progress.py](test_cc_progress.py).
 - Retained live evidence in the originating chat's local `work/failure-classification-live/` directory: frozen manifest, prompt/input, one-off harness, raw events/stderr, result/status/summary and controller receipt. These local files are not repository dependencies or a portable replay fixture; raw session identifiers and local paths are not copied here.
 - Saved live `result.json` SHA-256: `a07c5a5952b282ce9902ee482c91eaf2d1e93b5d02a6c0cf6dc53809b5ac1726`; raw `stdout.jsonl` SHA-256: `01a396b53f2c95043c0b4426e4e1e2c9599d14989137a768dbb036d8d4786485`. Hashes identify retained artifacts; they do not replace their contents or independently attest to provider behavior.
 

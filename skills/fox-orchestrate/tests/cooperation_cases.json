@@ -34,7 +34,11 @@
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     },
     {
       "id": "case_c04",
@@ -50,7 +54,11 @@
           "reasoning_effort": "high",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     },
     {
       "id": "case_c05",
@@ -86,7 +94,11 @@
           "reasoning_effort": "high",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     },
     {
       "id": "case_c08",
@@ -102,7 +114,11 @@
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     },
     {
       "id": "case_c09",
@@ -218,7 +234,11 @@
           "reasoning_effort": "low",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     },
     {
       "id": "case_c21",
@@ -234,7 +254,10 @@
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }
-      }
+      },
+      "route_calibration_fields": [
+        "reasoning_effort"
+      ]
     }
   ]
 }

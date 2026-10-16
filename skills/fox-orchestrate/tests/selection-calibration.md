@@ -1,6 +1,6 @@
 # Selection calibration review
 
-This is a review of fixed hypotheses, not a revision of expected answers. No fixture expectation was changed. A legal configuration can still conflict with a pin or policy; runtime legality alone is insufficient. Historical replay cannot establish an optimal configuration or the causal effect of a prompt edit.
+This records fixed baseline hypotheses and a versioned distinction between required fields and judgment-only model/effort preferences. No baseline answer was changed. A legal configuration can still conflict with a pin or policy; runtime legality alone is insufficient. Historical replay cannot establish an optimal configuration or the causal effect of a prompt edit.
 
 | Case | Retained expectation / observed choice | Evidence assessment | Next useful evidence |
 | --- | --- | --- | --- |
@@ -15,3 +15,9 @@ This is a review of fixed hypotheses, not a revision of expected answers. No fix
 Before running, fix representative raw inputs, resource boundaries, acceptance criteria and a result rubric without seeing outputs. Use the same inputs, tools and permissions for the competing configurations; evaluate artifacts without revealing model labels where practical. Record actual settings, quality failures, repair work, elapsed time and usage only when available. Convert usage to money only with applicable verified pricing. A single result cannot establish reliability; choose repetitions proportionately to the decision and observed variance rather than repeatedly sampling until a preferred answer wins.
 
 A reviewer may conclude the original fixed hypothesis lacks support. Keep its historical score, document the evidence, and version a future expectation before evaluating new outputs. Do not enlarge an accepted set merely because the latest sample disagrees. Real execution comparisons have not been performed in this revision.
+
+## Constraint and calibration separation (2026-10-16)
+
+Before fresh evaluation, fixtures now identify judgment-only model/effort fields as `calibration_fields` (routing) or `route_calibration_fields` (cooperation). Broad task-complexity choices and unpinned effort estimates are diagnostic baselines. Explicit pins, inheritance, unavailable controls, fallback/precedence and discovery restrictions remain required. For example, case_016's unpinned high-versus-xhigh choice is diagnostic; case_009's explicit max pin and case_017's exclusion of unrequested ultra still gate acceptance. Cooperation actions, roles and context boundaries remain required.
+
+The checker preserves exact baseline scores and adds a separate `constraints` report. Its exit code gates structure, runtime violations and required fields. A diagnostic difference still needs task-specific reason review; legal settings do not establish sufficient capability, adherence to prose constraints or an optimal configuration. Runtime violations are never excused by calibration metadata. Unknown inherited settings and blocked-route justifications require manual review. Historical reports retain their original scores and meanings.

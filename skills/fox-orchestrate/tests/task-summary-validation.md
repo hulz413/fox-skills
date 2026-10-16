@@ -6,7 +6,7 @@ Date: 2026-10-15. Result: scoped validation passed: 84 offline tests and a local
 
 - Implementation commit: `7da5bb53903708e705f2fcaa4769064386f9e0d5`.
 - Runner SHA-256, matching the replay receipt and committed implementation: `a3eeee2dc7a7d5f3d3771755cb479062e688dfd5c4120d9c214053415f88242b`.
-- Contract and usage: [CLI task summaries](../references/claude-code-cli.md#task-summaries). Task-specific offline checks: [test_task_summary.py](test_task_summary.py); existing invocation checks: [test_cc_progress.py](test_cc_progress.py).
+- Contract and usage: [CLI task summaries](../references/cc-records.md#task-summaries). Task-specific offline checks: [test_task_summary.py](test_task_summary.py); existing invocation checks: [test_cc_progress.py](test_cc_progress.py).
 - Replay source: the A/turn-1, B/turn-1 and B/turn-2 records from the [earlier fan-out run](batch-fan-out-validation.md). Its [sanitized receipt](batch-fan-out-live-evidence.json) records the original live evidence and configuration; replay did not revalidate model, effort, authentication or provider routing.
 - The originating chat retains `work/task-summary-validation/` with the explicit task index, captured summary and replay receipt; source records remain in `work/fan-out-live-20261015/`. These local files are not repository dependencies or a portable replay fixture. Raw session identifiers and absolute local paths are not copied here.
 

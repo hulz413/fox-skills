@@ -67,23 +67,34 @@ def report(suite, items, runtime=None):
         ids = [i['id'] for i in items]
         if len(ids) != len(set(ids)) or set(ids) != {c['id'] for c in suite['cases']}:
             errors.append('Missing, duplicate or unexpected case IDs')
-    failures = []
+    failures, constraint_failures, calibration_differences = [], [], []
     passed = None
     if not errors:
         by_id = {i['id']: i for i in items}
         passed = 0
         for case in suite['cases']:
             result = by_id[case['id']]
-            bad = []
+            bad, required = [], []
             for k, v in case['expected'].items():
                 actual = result.get(k)
                 matches = (isinstance(actual, dict) and all(actual.get(field) == value for field, value in v.items())) if isinstance(v, dict) else actual == v
                 if not matches:
                     bad.append(k)
+                    if k == 'route' and isinstance(v, dict) and isinstance(actual, dict):
+                        changed = [field for field, value in v.items() if actual.get(field) != value]
+                        calibration = case.get('route_calibration_fields', [])
+                        required.extend('route.' + field for field in changed if field not in calibration)
+                        soft = [field for field in changed if field in calibration]
+                        if soft:
+                            calibration_differences.append({'id': case['id'], 'fields': soft})
+                    else:
+                        required.append(k)
             if bad:
                 failures.append({'id': case['id'], 'fields': bad})
             else:
                 passed += 1
+            if required:
+                constraint_failures.append({'id': case['id'], 'fields': required})
     routes = [i['route'] for i in items if i['route'] is not None] if not errors else []
     route_ids = {i['id'] for i in routes}
     inputs = {'cases': [c for c in suite['cases'] if c['id'] in route_ids]}
@@ -91,6 +102,9 @@ def report(suite, items, runtime=None):
         inputs['runtime'] = runtime
     legality = runtime_report(inputs, routes) if not errors else None
     return {'runtime_validity': legality, 'structure': {'passed': not errors, 'errors': errors},
+            'constraints': {'passed': len(suite['cases']) - len(constraint_failures) if not errors else None,
+                            'total': len(suite['cases']), 'errors': errors or constraint_failures,
+                            'calibration_differences': calibration_differences},
             'cooperation': {'passed': passed, 'total': len(suite['cases']), 'errors': failures}}
 
 
@@ -116,4 +130,4 @@ if __name__ == '__main__':
         runtime = json.loads(CASES.with_name('routing_cases.json').read_text())['runtime']
         result = report(suite, json.loads(args.predictions.read_text()), runtime)
         print(json.dumps(result, indent=2))
-        raise SystemExit(not result['structure']['passed'] or bool(result['runtime_validity']['violations']) or result['cooperation']['passed'] != result['cooperation']['total'])
+        raise SystemExit(not result['structure']['passed'] or bool(result['runtime_validity']['violations']) or bool(result['constraints']['errors']))
