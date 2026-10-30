@@ -1,0 +1,3 @@
+interface:
+  display_name: "Fox Fix Aliyun Bug"
+  short_description: "Investigate and fix Projex bugs with local commits"
