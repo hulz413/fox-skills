@@ -1,4 +1,4 @@
 interface:
   display_name: "Fox Ask Advisor"
-  short_description: "Consult one or more independent advisors"
+  short_description: "Seek independent advice on request or when stuck"
   default_prompt: "Use $fox-ask-advisor to give me an independent recommendation on the current task."

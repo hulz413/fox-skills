@@ -1,11 +1,21 @@
 ---
 name: fox-ask-advisor
-description: Get independent advice from one or more analysis-only advisors for decisions, difficult debugging, planning, research, or review. Use when the user asks for an outside opinion, multiple independent perspectives, or ongoing advice at key checkpoints. Supports advisor count, per-advisor configuration, context, and session-mode preferences.
+description: Get independent, analysis-only advice for decisions, debugging, planning, research, or review. Use when the user requests outside perspectives or checkpoint advice; also invoke proactively when the agent is stuck, repeated attempts yield no useful progress, or the current approach is not converging.
 ---
 
 # Fox Ask Advisor
 
 Consult one advisor by default, or multiple advisors when requested. Collect independent reasoning, examine material disagreements, and synthesize a recommendation. The initiating agent retains ownership of the work and the final judgment.
+
+## Proactive consultation
+
+Unless automatic consultation is off for the current task, consult proactively when reasoning is stuck: repeated attempts are not producing useful evidence, the same failure persists without a better-supported next step, or contradictory results leave the approach unable to converge. Do not wait for a fixed number of failures or an explicit user request. A normal failed experiment that narrows the problem, or an error with a clear corrective next step, is not by itself a trigger.
+
+Briefly announce the blocker and the question before launching; no renewed confirmation is needed within the task's existing authorization. Use one advisor unless the user requested more. Include the failed approaches, original errors, and assumptions needing challenge. Missing permissions, credentials, or a necessary user decision require their own resolution; advice cannot replace them.
+
+Do not open repeated consultations for an unchanged blocker. Follow up with the involved advisor when new evidence or a materially different question warrants it; otherwise report what remains blocked and continue independent authorized work. Resume implementation only after the analysis-only consultation ends.
+
+`once` covers one consultation and its follow-ups, while leaving this default stuck-trigger behavior enabled. `session` adds the checkpoints below. `off` ends session mode and disables all automatic consultations for the current task until the user explicitly re-enables them. A later explicit one-off consultation is allowed without itself re-enabling automatic consultations. These are prompt-level instructions, not a background monitor or a guarantee that every runtime will select the skill.
 
 ## Input
 
@@ -27,15 +37,17 @@ $fox-ask-advisor --mode session
 
 Use the current runtime's native subagent tools or a documented CLI that can apply every advisor's requested configuration. Prefer native tools when they support the resolved configuration. This skill has no dependency on another skill, external agent manager, or additional CLI installation. Verify the complete advisor list before launching anyone. If no available interface can apply and confirm every resolved configuration, explain the blocker without claiming the consultation ran. Do not simulate independent advisors in the host's own response.
 
-Resolve each advisor's configuration directly from user preferences and runtime capabilities. Do not let named profiles or unrelated runtime defaults overwrite the resolved configuration. For a single advisor, do not select a different provider merely for contrast.
+Resolve each advisor's configuration directly from user preferences and runtime capabilities. Do not let named profiles or unrelated runtime defaults overwrite the resolved configuration. Apply explicit choices before filling defaults: when a model is specified without a provider, use its verified provider rather than applying the automatic provider route. Clarify ambiguous model ownership or conflicting explicit choices.
 
 Resolve in this order:
 
-1. **Provider:** the user's override; otherwise, for one advisor use the initiating agent's current provider. For multiple advisors, default slots 1 and 2 to Codex and Claude Code; additional slots require an explicit provider. Map these execution routes to verified provider identifiers supported by the interface, using session metadata and documented capabilities rather than model-name guesses. If discovery confirms only one provider is available, use it for both unpinned default slots and disclose the selection. Incomplete discovery or a failed launch does not establish that only one provider is available. Explicit providers remain pinned.
+1. **Provider:** honor explicit choices as above. Otherwise, for one advisor use the initiating agent's current provider unless the initiating agent already uses that provider's best general reasoning and analysis model; in that case choose another available provider. Verify the initiating model and the required capability ranking; do not infer that it is already the best from its effort setting. If several alternative providers are available, choose one with verified suitability for the question and explain the choice; do not claim a universal cross-provider ranking. For multiple advisors, retain the existing route: default slots 1 and 2 to Codex and Claude Code; additional slots require an explicit provider. The single-advisor switching rule does not apply to these slots. Map execution routes to verified provider identifiers using session metadata and documented capabilities rather than model-name guesses. If discovery confirms only one provider is available, use it for unpinned default slots and disclose that independent context supplies the second perspective. Incomplete discovery or a failed launch does not establish that only one provider is available. Explicit providers remain pinned, even when the initiating agent already uses their best model.
 2. **Model:** the user's override; otherwise, for one advisor use the selected provider's best model for general reasoning and analysis, with its next-best model as the sole automatic fallback. For multiple advisors, select task-appropriate model + effort combinations of comparable capability and reasoning depth across providers, rather than always choosing flagships or matching effort labels alone. Disclose material comparability gaps. Use the same model + effort for both default slots when they share a provider unless the user specifies otherwise. Identical configurations are allowed; independence then comes from separate contexts.
 3. **Effort:** the user's override, otherwise assess the advisor's question before launch, starting from `medium`. Keep `medium` for bounded analysis with clear evidence; lower it for straightforward, narrow questions, or raise it for complex reasoning, interacting constraints, consequential uncertainty, or difficult debugging. Select a supported level proportional to the task; do not automatically choose the maximum. `medium` is a decision baseline, not a required first execution: choose the final effort before launching, without a trial run or an automatic escalation ladder.
 
 Use the runtime's exposed tool documentation, session metadata, or model catalog to establish available providers, models, capability descriptions, and supported effort settings. Reuse information already supplied; do not invent discovery commands. If the runtime only supports one provider, honor a different provider override by reporting that limitation rather than silently using its sole provider.
+
+If the initiating provider/model cannot be verified sufficiently to resolve the automatic route, report the missing information and ask for a provider choice rather than guessing. Switching providers because the initiating agent already uses its provider's best model is an initial selection rule, not a recovery path after launch failure.
 
 Select or rank models using current runtime capability descriptions and applicable official provider guidance. Treat "flagship" and "frontier" as descriptive terms, not model IDs or guaranteed ordering. Do not infer capability from model names, version numbers, cost, or list order. Do not maintain hardcoded model-ID rankings. Establish the next-best candidate only if fallback is needed. If available evidence cannot establish a required ranking, resolve it from official documentation or ask a focused question. A valid explicit model needs no ranking.
 
