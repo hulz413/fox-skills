@@ -1,6 +1,6 @@
 # Task-specific model routing
 
-Within the provider boundary below, choose model and effort once, before each bounded assignment's first dispatch. Roles do not determine model or effort; this skill does not change the coordinator's configuration.
+Within the provider boundary below, choose model and effort once, before each bounded assignment's first dispatch. Except for the advisor capability default below, roles do not determine model or effort; this skill does not change the coordinator's configuration.
 
 ## 1. Establish requirements and runtime limits
 
@@ -38,7 +38,7 @@ Assess the requested output, acceptance criteria, necessary context and reasonin
 
 Map tiers to runtime descriptions. Within each runtime-identified family, exclude superseded versions before comparing candidates or applying recommendations: normally consider only the latest available, authorized, compatible version. Honor version pins; explain why an older version is needed when the newer one cannot be used. Never infer family/version ordering from names or assume availability.
 
-Among suitable candidates, prefer the runtime recommendation, then its configured default; disclose remaining ambiguity instead of guessing cost or superiority. Demanding delivery or consultation alone does not require frontier. When an advisor's question needs the strongest capability, choose the most capable suitable model actually available and authorized.
+Among suitable candidates, prefer the runtime recommendation, then its configured default; disclose remaining ambiguity instead of guessing cost or superiority. Demanding delivery alone does not require frontier. For a new advisor assignment without an explicit model pin, default to the highest-capability model actually available, authorized and dispatchable within the selected provider boundary, even for ordinary consultation. This advisor default takes precedence over task-based capability and cost preferences, but does not require a highest effort: choose effort independently for the question. Honor explicit user model choices and constraints; never cross providers or claim an unavailable capability to satisfy this default. Other roles retain task-based capability selection.
 
 ## 3. Choose effort
 

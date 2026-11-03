@@ -530,7 +530,7 @@
       "task": "Advisor: compare two mature implementation options using the supplied caller contracts, maintenance costs and measured tradeoffs. It requires broader technical judgment, but ordinary planning and separately checkable conclusions suffice.",
       "expected": {
         "status": "requested",
-        "model": "standard-fixture",
+        "model": "strong-fixture",
         "reasoning_effort": "medium",
         "fork_turns": "none"
       },
