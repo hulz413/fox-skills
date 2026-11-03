@@ -50,7 +50,7 @@
         "route": {
           "id": "case_c04",
           "status": "requested",
-          "model": "standard-fixture",
+          "model": "strong-fixture",
           "reasoning_effort": "high",
           "fork_turns": "none"
         }
@@ -110,7 +110,7 @@
         "route": {
           "id": "case_c08",
           "status": "requested",
-          "model": "light-fixture",
+          "model": "strong-fixture",
           "reasoning_effort": "medium",
           "fork_turns": "none"
         }

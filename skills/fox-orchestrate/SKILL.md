@@ -28,7 +28,7 @@ Supply each assignment's role, responsibilities and boundaries unless runtime-pr
 
 ## Advisor context
 
-Consult for concrete decisions worth the overhead, never automatically at startup, on errors or before completion. Advice and independent review are distinct; neither requires the strongest model.
+Consult for concrete decisions worth the overhead, never automatically at startup, on errors or before completion. For new advisor assignments, use the highest-capability available and authorized model within the selected provider boundary by default, honoring explicit user overrides; choose effort for the question. Follow the [model-routing rules](references/model-routing.md#2-choose-capability) for dispatch eligibility and selection constraints. Advice and independent review are distinct; reviewers retain task-based model selection.
 
 Start advisors with fresh context using the active runtime's [context controls](references/model-routing.md#runtime-adapters), supplying the question, goal, constraints, prior decisions, raw evidence, attempts and observed failures. Never fork an App conversation or inherit full history for consultation. Advisors identify missing evidence for the coordinator or request it from relevant agents under the communication rules below. This overrides general routing history options.
 
