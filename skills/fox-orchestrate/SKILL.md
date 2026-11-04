@@ -28,7 +28,7 @@ Supply each assignment's role, responsibilities and boundaries unless runtime-pr
 
 ## Advisor context
 
-Consult for concrete decisions worth the overhead, never automatically at startup, on errors or before completion. For new advisor assignments, use the highest-capability available and authorized model within the selected provider boundary by default, honoring explicit user overrides; choose effort for the question. Follow the [model-routing rules](references/model-routing.md#2-choose-capability) for dispatch eligibility and selection constraints. Advice and independent review are distinct; reviewers retain task-based model selection.
+Consult for concrete decisions worth the overhead, never automatically at startup, on errors or before completion. For new advisor assignments, default to the Claude flagship, falling back to the GPT flagship when unavailable; honor explicit user overrides and choose effort independently for the question. Follow the [model-routing rules](references/model-routing.md#2-choose-capability) for dispatch eligibility and selection constraints. Advice and independent review are distinct; reviewers retain task-based model selection.
 
 Start advisors with fresh context using the active runtime's [context controls](references/model-routing.md#runtime-adapters), supplying the question, goal, constraints, prior decisions, raw evidence, attempts and observed failures. Never fork an App conversation or inherit full history for consultation. Advisors identify missing evidence for the coordinator or request it from relevant agents under the communication rules below. This overrides general routing history options.
 
@@ -47,6 +47,8 @@ Observe concurrency and lifecycle limits: returned results may not free slots. R
 For batches of independent assignments, use [batch fan-out](references/batch-fan-out.md) to track tasks, isolate parallel work and collect results through the existing dispatch and acceptance rules.
 
 ## Choose models
+
+Keep the main Orchestrator on the current task model. Default advisors to Claude flagship → GPT flagship fallback, and all other subagents (including delegated coordinators) to task-selected GPT models. User model/provider/version/effort choices override these defaults. Apply the [role defaults and fallback boundaries](references/model-routing.md#role-defaults-and-user-overrides); reasoning-effort selection is unchanged.
 
 Before each assignment's first dispatch, complete the [routing preflight](references/model-routing.md#establish-candidates-and-dispatch-support): establish candidate/provider evidence and actual controls, then select model, effort and context for the task and apply supported settings. Missing evidence requires the necessary discovery before an inheritance fallback; fresh context alone does not select a configuration. Discover the complete inventory when requested, not just abbreviated tool descriptions. Initial overrides are allowed unless pinned by the user or higher-priority instructions.
 

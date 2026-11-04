@@ -73,3 +73,15 @@ Historical reports retain their original test counts, artifact hashes and covera
 - [Task summaries](task-summary-validation.md): local replay of retained CLI records; no new worker calls.
 - [Acceptance publication](acceptance-publication-validation.md): concurrent publishers/readers and injected failures; visibility is distinct from crash durability.
 - [Evidence binding](evidence-binding-validation.md): legacy records, integrity states and isolated local replay; no new worker calls.
+
+## 2026-11-04 — Role-based model defaults
+
+Main coordinator retains the current task model; new advisors prefer the available Claude flagship, then GPT flagship; other new subagents select task-appropriate GPT models. Explicit overrides win. Effort selection (section 3) is byte-for-byte unchanged. Unknown family routes now block default dispatch after discovery rather than silently inheriting an unverified route.
+
+- Offline suite: 104 tests passed. Skill structure validator and `git diff --check` passed.
+- One fresh-context GPT-6.1 Sol evaluator, requested medium, received policy and generated prompts without expectations/checker sources. Both structure gates passed on the first attempt, zero repairs.
+- Routing: rules 64/64; autonomous 12/12; required constraints 76/76; selected-runtime checks 63/63. Thirteen blocked cases required reason review rather than selected-model validation.
+- Cooperation: 21/21; selected-runtime checks 6/6. Proportionate-work cases c15–c17 and boundary cases c18–c20 passed separately on reason review.
+- Coordinator reviewed every routing and cooperation reason: all passed, none unreviewed. New cases 075–080 cover Claude preference, GPT fallback, unavailable explicit Claude pin, GPT worker under a Claude coordinator, explicit Claude worker override, and GPT provider override for an advisor. Cases 071–072 now require blocking when GPT association cannot be established.
+- Preview metadata explicitly identifies synthetic GPT candidates and Claude unavailability unless a scenario overrides it. Historical execution reports retain their original scope. Final wording restricts generic capability-tier fallback to non-advisor selection; the preview advisor outcomes already obey flagship routing, so those results remain applicable.
+- No live Claude/GPT fallback or inheritance execution was tested. These are decision previews, not evidence of effective model/effort, account availability, task quality, latency or savings.
