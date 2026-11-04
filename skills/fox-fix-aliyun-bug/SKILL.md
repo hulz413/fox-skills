@@ -7,7 +7,7 @@ description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key suc
 
 ## Scope
 
-Use Projex OpenAPI independently of the `pr` skill. Keep the current repository and branch by default, and create one local commit per bug. Do not automatically create or switch branches, push, open an MR, deploy, or operate shared environments. The status `开发完成` means the fix has been validated and committed locally; pushing is not required.
+Use Projex OpenAPI independently of the `pr` skill. Keep the current repository and branch by default, and create one local commit per bug. Do not automatically create or switch branches, push, open an MR, deploy, or operate shared environments. The status `开发完成` means the fix has been validated and either committed locally or already contained in the remote default branch; pushing is not required.
 
 A user request to fix a specific bug with this skill authorizes the chat rename, both status updates, the local fix and commit, and the final repair comment. Do not ask for each action again. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
 
@@ -39,7 +39,8 @@ After investigation, briefly report in plain Chinese what the evidence supports,
 | Confirmed defect, clear expected behavior, supported root cause, bounded scope, and meaningful validation available | Fix directly |
 | Missing business context, conflicting descriptions or comments, or a product disagreement about expected behavior | Summarize the evidence and material questions, ask them together, and wait |
 | A design choice, migration compatibility, public contract change, or material scope expansion is required | Present a recommendation, useful alternatives, and their main tradeoffs; wait for confirmation |
-| Already fixed on this branch, currently unreproducible, a duplicate, or no change needed | Distinguish conclusions from evidence gaps; explain the basis without manufacturing a commit, closing the bug, or marking development complete |
+| Already fixed by a commit contained in the remote default branch, such as `origin/master` | After fetching, verify that the commit is an ancestor of the default branch and addresses the reported behavior, and run focused checks on the current branch. Without creating a new commit, post the repair comment citing that commit and mark `开发完成` |
+| Already fixed only on an unmerged branch, currently unreproducible, a duplicate, or no change needed | Distinguish conclusions from evidence gaps; explain the basis without manufacturing a commit, closing the bug, or marking development complete |
 
 Judge complexity by impact and uncertainty, not file or line counts. Leave disputed product-value decisions to the user. While awaiting an answer, continue independent read-only investigation but do not make dependent changes. Keep the issue selected and do not post waiting comments. Return to clarification if implementation uncovers new material evidence, uncertainty, or broader scope.
 
@@ -55,7 +56,7 @@ If `.git` writes need additional execution permissions, finish read-only review 
 
 ## Comment and mark completion
 
-Only after required validation passes and the local commit succeeds, automatically post one repair comment. Recheck the bug identity and existing comments first. When resuming, reuse an existing repair comment that identifies the same commit and contains the repair details rather than posting another.
+Only after required validation passes and the local commit succeeds, or an existing default-branch fix has been verified, automatically post one repair comment. Recheck the bug identity and existing comments first. When resuming, reuse an existing repair comment that identifies the same commit and contains the repair details rather than posting another.
 
 Write the comment in Chinese using actual validation results. Pass its body through a UTF-8 file with real newlines, following this template:
 
