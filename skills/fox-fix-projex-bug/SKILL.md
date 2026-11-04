@@ -56,7 +56,7 @@ If `.git` writes need additional execution permissions, finish read-only review 
 
 ## Comment and mark completion
 
-Only after required validation passes and the local commit succeeds, or an existing default-branch fix has been verified, automatically post one repair comment. Recheck the bug identity and existing comments first. When resuming, reuse an existing repair comment that already describes this repair rather than posting another.
+Only after required validation passes and the local commit succeeds, or an existing default-branch fix has been verified, automatically post one repair comment. Recheck the bug identity and existing comments first. A known gap against the reported expected behavior, including one a delegate left unresolved, blocks completion: fix it or raise it as a material question. When resuming, reuse an existing repair comment that already describes this repair rather than posting another.
 
 Write the comment in Chinese using actual validation results. Pass its body through a UTF-8 file with real newlines, following this template:
 
