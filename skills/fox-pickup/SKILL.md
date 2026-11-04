@@ -53,6 +53,7 @@ Report concisely in Chinese:
 - key decisions and constraints;
 - risks or blockers;
 - the first recommended next step;
+- the directory for later reads and writes, when the recorded workspace differs from the current working directory, and whether the sandbox can write there directly;
 - environment drift relative to the checkpoint, or that the current environment was not verified.
 
 Stop after reporting by default and do not execute the next step automatically. Continue working only when the user explicitly asks to restore and continue in the same request. After restoration and drift checks, continue under the current session's permissions and scope.
