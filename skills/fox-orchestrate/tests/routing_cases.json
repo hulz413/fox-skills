@@ -1282,22 +1282,22 @@
     {
       "id": "case_071",
       "group": "rules",
-      "task": "A brief complete-schema extraction task needs fresh context. Necessary discovery is complete: the target exposes no live catalog interface; the effectively configured catalog was read, and all available nonsecret runtime/provider metadata was checked. Upstream associations remain unavailable. Current standard-fixture route is known, and authoritative dispatch facts confirm that explicitly selecting standard-fixture preserves that same route and permits low/medium/high effort with fresh context. No pins or comparable-task evaluations. Select the safe current-model fallback with task-specific effort; do not inherit high just because upstream identity remains unknown.",
+      "task": "A brief complete-schema extraction task needs fresh context. Necessary discovery is complete: the target exposes no live catalog interface; the effectively configured catalog was read, and all available nonsecret runtime/provider metadata was checked. Upstream associations remain unavailable. Current standard-fixture route is known, and authoritative dispatch facts confirm that explicitly selecting standard-fixture preserves that same route and permits low/medium/high effort with fresh context. No pins or comparable-task evaluations. No GPT family association can be established for any route. Decide whether the default worker route can be dispatched.",
       "expected": {
-        "status": "requested",
-        "model": "standard-fixture",
-        "reasoning_effort": "low",
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
         "fork_turns": "none"
       }
     },
     {
       "id": "case_072",
       "group": "rules",
-      "task": "Ordinary planning needs fresh context. Necessary discovery is complete: live catalog and configured-file interfaces are unavailable with recorded limitations; available runtime/provider metadata was checked without establishing upstream associations. The current route standard-fixture/medium is known and sufficient for acceptance. The dispatch interface confirms that fresh agents must inherit this route and exposes no model or effort override. No settings are pinned. Select the supported inherited route and disclose the limits.",
+      "task": "Ordinary planning needs fresh context. Necessary discovery is complete: live catalog and configured-file interfaces are unavailable with recorded limitations; available runtime/provider metadata was checked without establishing upstream associations. The current route standard-fixture/medium is known and sufficient for acceptance. The dispatch interface confirms that fresh agents must inherit this route and exposes no model or effort override. No settings are pinned. No GPT family association can be established for the inherited route. Decide whether the default worker route can be dispatched.",
       "expected": {
-        "status": "inherited",
-        "model": "standard-fixture",
-        "reasoning_effort": "medium",
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
         "fork_turns": "none"
       },
       "runtime_patch": {
@@ -1327,11 +1327,144 @@
     {
       "id": "case_074",
       "group": "rules",
-      "task": "Perform brief exact-schema extraction in fresh context. Necessary current evidence confirms the parent standard-fixture/high and light-fixture both belong to upstream provider alpha; light-fixture/low is available, compatible and sufficient, and the native interface supports explicit model/effort controls. No pins or remaining discovery gaps. Select the task route explicitly; the parent provider boundary is not a requirement to inherit its model or high effort.",
+      "task": "Perform brief exact-schema extraction in fresh context. Necessary current evidence confirms the parent standard-fixture/high and light-fixture both belong to OpenAI and are confirmed GPT models; light-fixture/low is available, compatible and sufficient, and the native interface supports explicit model/effort controls. No pins or remaining discovery gaps. Select the task route explicitly; the GPT default is not a requirement to inherit the parent model or high effort.",
       "expected": {
         "status": "requested",
         "model": "light-fixture",
         "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_075",
+      "group": "rules",
+      "task": "An advisor compares three fully supplied meeting options, requiring ordinary interpretation. Claude flagship claude-fixture is available, authorized and dispatchable; GPT flagship is also available. No pins.",
+      "runtime_patch": {
+        "claude-fixture": {
+          "tier": "frontier",
+          "model_family": "Claude",
+          "provider": "Anthropic",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "claude-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_076",
+      "group": "rules",
+      "task": "An advisor compares three fully supplied meeting options, requiring ordinary interpretation. Discovery confirms no Claude model is available on the authorized backend. No pins.",
+      "runtime_patch": {},
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_077",
+      "group": "rules",
+      "task": "An advisor compares three fully supplied meeting options. User pins Claude claude-fixture/medium, but authoritative discovery confirms it is unavailable. GPT flagship is available.",
+      "runtime_patch": {
+        "claude-fixture": {
+          "tier": "frontier",
+          "model_family": "Claude",
+          "provider": "Anthropic",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium",
+          "available": false
+        }
+      },
+      "expected": {
+        "status": "blocked",
+        "model": null,
+        "reasoning_effort": null,
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_078",
+      "group": "rules",
+      "task": "A worker extracts dates using supplied exact rules and direct checks. The main coordinator uses Claude claude-fixture/high. Both GPT candidates and the Claude flagship are available. No pins.",
+      "runtime_patch": {
+        "claude-fixture": {
+          "tier": "frontier",
+          "model_family": "Claude",
+          "provider": "Anthropic",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_079",
+      "group": "rules",
+      "task": "A worker extracts dates using supplied exact rules. User explicitly pins Claude claude-fixture/low, which is authorized and dispatchable.",
+      "runtime_patch": {
+        "claude-fixture": {
+          "tier": "frontier",
+          "model_family": "Claude",
+          "provider": "Anthropic",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "claude-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      }
+    },
+    {
+      "id": "case_080",
+      "group": "rules",
+      "task": "An advisor compares three supplied meeting options. User explicitly selects OpenAI/GPT as provider; Claude flagship is also available. Ordinary interpretation is sufficient.",
+      "runtime_patch": {
+        "claude-fixture": {
+          "tier": "frontier",
+          "model_family": "Claude",
+          "provider": "Anthropic",
+          "efforts": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "recommended_effort": "medium"
+        }
+      },
+      "expected": {
+        "status": "requested",
+        "model": "strong-fixture",
+        "reasoning_effort": "medium",
         "fork_turns": "none"
       }
     }
