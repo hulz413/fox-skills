@@ -36,7 +36,7 @@ A fresh native subagent or authorized CLI process does not require creating anot
 
 ## Delegate and coordinate
 
-Before dispatch, define goal, constraints, resource owner, inputs, deliverable and destination, acceptance criteria and dependencies (independent work versus work awaiting upstream evidence). Supply necessary domain context, workflows and prior decisions; prefer fresh or limited context over full history or copied orchestration instructions for convenience. Keep assignments proportional; no fixed template is required.
+Before dispatch, define goal, constraints, resource owner, inputs, deliverable and destination, acceptance criteria and dependencies (independent work versus work awaiting upstream evidence). Supply necessary domain context, workflows and prior decisions; prefer fresh or limited context over full history or copied orchestration instructions for convenience. Keep assignments proportional; no fixed template is required. Label each constraint's source: user requirements bind; coordinator assumptions may be challenged. Check rules that change product behavior against their requirement source before dispatch.
 
 The main coordinator owns dispatch unless explicitly delegating bounded coordination. Pass this boundary to agents; delegated coordinators observe shared limits and report assignments and owners. Give each mutable resource one owner, separate coordinator and agent work, and serialize conflicts. Consider context location before moving even small remainders. Preserve unrelated work, authorization and permissions; update active agents on scope or ownership changes and adapt to evidence or blockers.
 
