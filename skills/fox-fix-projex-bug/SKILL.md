@@ -1,5 +1,5 @@
 ---
-name: fox-fix-aliyun-bug
+name: fox-fix-projex-bug
 description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key such as FISN-1134. Read details and comments, investigate the current branch, and fix well-understood issues with focused validation and one local commit. Post a repair comment and mark development complete, or pause for material questions. Use when asked to fix a Yunxiao bug; viewing, discussing, or creating this skill does not authorize taking or fixing an issue.
 ---
 

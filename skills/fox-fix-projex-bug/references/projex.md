@@ -20,14 +20,14 @@ Core permissions under Projex (`项目协作`) are work items (`工作项`): rea
 Use the bundled `scripts/projex.py`, which requires only the Python 3.10+ standard library. Replace `SKILL_DIR` below with this skill's actual absolute path, then run commands from the target code repository:
 
 ```bash
-SKILL_DIR='/Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-aliyun-bug'
+SKILL_DIR='/Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-projex-bug'
 python3 "$SKILL_DIR/scripts/projex.py" --help
 ```
 
 If the credential was not inherited, use an explicit login shell. Apply the same method to subsequent commands; loading a variable in one child process does not make later tool calls inherit it:
 
 ```bash
-/bin/zsh -lc 'python3 /Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-aliyun-bug/scripts/projex.py project ab491d6f94800aaeb9ef68e915'
+/bin/zsh -lc 'python3 /Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-projex-bug/scripts/projex.py project ab491d6f94800aaeb9ef68e915'
 ```
 
 Successful commands emit a JSON object with the original response in `body` and pagination headers in `pagination`. Redirect large responses to the task's temporary directory and parse them locally to avoid tool truncation. Errors go to stderr with a nonzero exit code. The script does not retry or load shell configuration automatically.
