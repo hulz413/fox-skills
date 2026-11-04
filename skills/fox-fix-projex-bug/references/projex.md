@@ -59,7 +59,7 @@ python3 "$SKILL_DIR/scripts/projex.py" status '<workitem-id>' --status-id '<veri
 python3 "$SKILL_DIR/scripts/projex.py" get '<workitem-id>'
 ```
 
-Read the completion comment from a local UTF-8 file. The script sends it as `MARKDOWN`. Include only the confirmed cause, repair details, actual validation results, and full commit hash:
+Read the completion comment from a local UTF-8 file. The script sends it as `MARKDOWN`. Include only the confirmed cause, repair details, and actual validation results. Omit commit hashes because rebases change them:
 
 ```bash
 python3 "$SKILL_DIR/scripts/projex.py" comment '<workitem-id>' --body-file '/absolute/path/to/comment.md'
