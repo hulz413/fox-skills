@@ -28,6 +28,8 @@ Prefer reliable facts already present in the current session. Perform read-only 
 
 When a Git repository is relevant, record the workspace path, branch, HEAD, staged changes, unstaged changes, untracked files, and the relevant files. Record validation commands that were actually run and their results. Mark unavailable or unchecked information as unverified instead of inventing placeholders.
 
+Record facts as observations, not timeless truths. Date claims about external, environment, or deployment state. Tie claims about code or validation to the commit they were observed at (`repo@sha`), or state that they cover uncommitted changes. When a decision or finding was replaced during the task, record the new one and mark the old one as superseded, citing why, instead of silently dropping it.
+
 Do not include passwords, tokens, private keys, complete environment variable values, or other secrets. Record only variable names or redacted facts when needed.
 
 ## Create the checkpoint
