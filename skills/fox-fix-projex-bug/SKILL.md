@@ -1,6 +1,6 @@
 ---
 name: fox-fix-projex-bug
-description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key such as FISN-1134. Read details and comments, investigate the current branch, and fix well-understood issues with focused validation and one local commit. Post a repair comment and mark development complete, or pause for material questions. Use when asked to fix a Yunxiao bug; viewing, discussing, or creating this skill does not authorize taking or fixing an issue.
+description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key such as FISN-1134. Read details and comments, investigate the current branch, and fix well-understood issues with focused validation and one local commit. Post a repair comment and mark development complete, post a conclusion comment when no fix is needed, or pause for material questions. Use when asked to fix a Yunxiao bug; viewing, discussing, or creating this skill does not authorize taking or fixing an issue.
 ---
 
 # Fix Projex bugs
@@ -9,7 +9,7 @@ description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key suc
 
 Use Projex OpenAPI independently of the `pr` skill. Keep the current repository and branch by default, and create one local commit per bug. Do not automatically create or switch branches, push, open an MR, deploy, or operate shared environments. The status `开发完成` means the fix has been validated and either committed locally or already contained in the remote default branch; pushing is not required.
 
-A user request to fix a specific bug with this skill authorizes the chat rename, both status updates, the local fix and commit, and the final repair comment. Do not ask for each action again. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
+A user request to fix a specific bug with this skill authorizes the chat rename, both status updates, the local fix and commit, and the final repair comment, or the conclusion comment when no fix is made. Do not ask for each action again. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
 
 ## Identify and take the issue
 
@@ -40,7 +40,7 @@ After investigation, briefly report in plain Chinese what the evidence supports,
 | Missing business context, conflicting descriptions or comments, or a product disagreement about expected behavior | Summarize the evidence and material questions, ask them together, and wait |
 | A design choice, migration compatibility, public contract change, or material scope expansion is required | Present a recommendation, useful alternatives, and their main tradeoffs; wait for confirmation |
 | Already fixed by a commit contained in the remote default branch, such as `origin/master` | After fetching, verify that the commit is an ancestor of the default branch and addresses the reported behavior, and run focused checks on the current branch. Without creating a new commit, post the repair comment and mark `开发完成` |
-| Already fixed only on an unmerged branch, currently unreproducible, a duplicate, or no change needed | Distinguish conclusions from evidence gaps; explain the basis without manufacturing a commit, closing the bug, or marking development complete |
+| Already fixed only on an unmerged branch, currently unreproducible, a duplicate, or no change needed | Distinguish conclusions from evidence gaps; explain the basis without manufacturing a commit, closing the bug, or marking development complete. Once the conclusion is settled, post the conclusion comment described below |
 
 Judge complexity by impact and uncertainty, not file or line counts. Leave disputed product-value decisions to the user. While awaiting an answer, continue independent read-only investigation but do not make dependent changes. Keep the issue selected and do not post waiting comments. Return to clarification if implementation uncovers new material evidence, uncertainty, or broader scope.
 
@@ -70,6 +70,18 @@ Write the comment in Chinese using actual validation results. Pass its body thro
 
 After the comment succeeds, set the status to `开发完成` and read back to confirm. Skip a redundant update and never move a later status backward. If the comment succeeds but the status update fails, report only the pending status update. If the commit succeeds but the comment fails, preserve the commit and report the pending comment and status update; do not roll back, redo, or recommit the fix.
 
-If a network failure leaves a write outcome uncertain, first check its effect through read-only calls. Do not blindly resend comments or repeat transitions. Report uncertainty if the outcome cannot be established. Without a completed repair, do not post this completion comment or automatically write other comments.
+If a network failure leaves a write outcome uncertain, first check its effect through read-only calls. Do not blindly resend comments or repeat transitions. Report uncertainty if the outcome cannot be established. Without a completed repair, do not post this completion comment; the only other automatic comment is the conclusion comment below.
+
+When the decision table ends without a fix, post one conclusion comment so the reporter can see why. Post it only after the conclusion is settled: the evidence supports it, and any product or expected-behavior question it depends on has been answered by the user. Do not post it while a material question is still open. Recheck the bug identity and existing comments first, and reuse an existing comment that already states this conclusion. Write it in Chinese through a UTF-8 file, following this template; omit the follow-up line when nobody needs to act:
+
+```text
+结论：<无需修改 / 重复 / 暂无法复现 / 已在未合并分支修复>
+
+原因：<evidence-backed reasoning, including what was checked and any confirmed product decision>
+
+后续：<who needs to do what next, such as closing the issue, supplying a reproduction, or waiting for a branch to merge>
+```
+
+A conclusion comment does not change the status. Keep the current status unless the user asks for a specific one, such as `暂不修复`; then map that exact name to one status ID and read back to confirm, as for other transitions. If an earlier step moved the issue to `已选择` and no work remains, tell the user rather than silently reverting it.
 
 Report the issue key and URL, the repair or no-change conclusion, validation results and gaps, the commit hash, and the outcomes of the chat rename, comment, and status updates. Remove task-created temporary files that are no longer needed; preserve user files and evidence still needed for recovery.
