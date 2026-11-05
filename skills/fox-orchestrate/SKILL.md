@@ -68,6 +68,6 @@ When stalled, supply evidence, repair the environment, correct the approach or s
 
 Stop at acceptance. Reopen only for changed inputs, new evidence, a different approach to an unresolved problem or a verification gap; these judgments add no reporting or approval step.
 
-When the same kind of failure recurs across assignments, repairs or rechecks, identify its likely structural cause, such as a missing check, constraint, data source or instruction, as an improvement candidate. If a retrospective skill such as `fox-retro` is available, use it on the evidence; otherwise report the candidate, its evidence and a proposed fix in the final result. Recommend these improvements only; implementing them requires separate authorization.
+When the same kind of failure recurs across assignments, repairs or rechecks, identify its likely structural cause, such as a missing check, constraint, data source or instruction, as an improvement candidate. Report the candidate, its evidence and a proposed fix in the final result. Recommend these improvements only; implementing them requires separate authorization.
 
 For routing previews and maintenance, follow [model routing](references/model-routing.md#routing-only-mode-and-maintenance) and [tests/README.md](tests/README.md). Report offline checks and behavioral results separately.
