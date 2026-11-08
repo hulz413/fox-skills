@@ -253,21 +253,74 @@ print(json.dumps({"type":"result","subtype":"success","is_error":False,"result":
                     raise OSError("PRIVATE_RECORDING_ERROR")
                 return write_json(path, value)
 
-            output = io.StringIO()
+            output, diagnostics = io.StringIO(), io.StringIO()
             with mock.patch.object(sys, "argv", argv[1:]), \
                     mock.patch.object(module, "atomic_json", side_effect=fail_once), \
                     mock.patch.object(module.subprocess, "Popen", side_effect=launch), \
-                    contextlib.redirect_stdout(output):
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(diagnostics):
                 self.assertEqual(module.main(), 1)
             self.assertTrue(injected)
             state = json.loads(output.getvalue())
             self.assertEqual(state["phase"], "failed")
             self.assertEqual(state["failure_reasons"], ["permission_denied", "runner_error"])
             self.assertEqual(json.loads((directory / "summary.json").read_text()), state)
-            self.assertNotIn("PRIVATE_RECORDING_ERROR", output.getvalue())
+            self.assertEqual(json.loads(diagnostics.getvalue())["runner_diagnostic"],
+                             state["runner_diagnostic"])
+            self.assertNotIn("PRIVATE_RECORDING_ERROR", output.getvalue() + diagnostics.getvalue())
             self.assertEqual(len(children), 1)
             self.assertIsNotNone(children[0].poll())
             self.assertTrue(children[0].stdout.closed)
+
+    def test_runner_diagnostics_distinguish_failures_without_exposing_messages(self):
+        for error in (PermissionError(13, "PRIVATE_DENIAL", "/PRIVATE_PATH"),
+                      OSError(28, "PRIVATE_DISK_FULL"), ValueError("PRIVATE_VALUE")):
+            with self.subTest(error=type(error).__name__), tempfile.TemporaryDirectory() as temporary:
+                _, directory, argv = self.setup_run(temporary,
+                    'import json; print(json.dumps({"type":"system","subtype":"init"}))')
+                write_json = module.atomic_json
+                injected = False
+
+                def fail_once(path, value):
+                    nonlocal injected
+                    if value.get("events") and not injected:
+                        injected = True
+                        raise error
+                    return write_json(path, value)
+
+                output, diagnostics = io.StringIO(), io.StringIO()
+                with mock.patch.object(sys, "argv", argv[1:]), \
+                        mock.patch.object(module, "atomic_json", side_effect=fail_once), \
+                        contextlib.redirect_stdout(output), contextlib.redirect_stderr(diagnostics):
+                    self.assertEqual(module.main(), 1)
+                state = json.loads(output.getvalue())
+                expected = {"stage": "record_status", "error_type": type(error).__name__,
+                            "errno": getattr(error, "errno", None)}
+                self.assertEqual(state["failure_reasons"], ["runner_error"])
+                self.assertEqual(state["runner_diagnostic"], expected)
+                self.assertEqual(json.loads(diagnostics.getvalue()), {"runner_diagnostic": expected})
+                self.assertEqual(json.loads((directory / "summary.json").read_text()), state)
+                self.assertNotIn("PRIVATE", output.getvalue() + diagnostics.getvalue())
+
+    def test_final_record_failure_still_reports_safe_diagnostics(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, directory, argv = self.setup_run(temporary,
+                'import json; print(json.dumps({"type":"result","subtype":"success","is_error":False}))')
+            write_json = module.atomic_json
+
+            def fail_final(path, value):
+                if path.name == "summary.json":
+                    raise OSError(28, "PRIVATE_STORAGE_ERROR")
+                return write_json(path, value)
+
+            output, diagnostics = io.StringIO(), io.StringIO()
+            with mock.patch.object(sys, "argv", argv[1:]), \
+                    mock.patch.object(module, "atomic_json", side_effect=fail_final), \
+                    contextlib.redirect_stdout(output), contextlib.redirect_stderr(diagnostics):
+                self.assertEqual(module.main(), 1)
+            self.assertFalse((directory / "summary.json").exists())
+            self.assertEqual(json.loads(diagnostics.getvalue()), {"runner_diagnostic": {
+                "stage": "run", "error_type": "OSError", "errno": 28}})
+            self.assertNotIn("PRIVATE", output.getvalue() + diagnostics.getvalue())
 
     def test_no_evidence_overwrite_and_no_configuration_override(self):
         with tempfile.TemporaryDirectory() as temporary:

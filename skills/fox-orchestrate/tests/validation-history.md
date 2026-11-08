@@ -2,6 +2,27 @@
 
 Historical notes preserved from the former test README. These record fixture revisions and earlier validation boundaries, not current execution instructions or proof of current test results. Follow [README.md](README.md) for the maintained procedure.
 
+## 2026-11-08: context fidelity, CC reuse and diagnostics
+
+The public cooperation action definitions now assign dispatch preflight to `coordinate_decision`, excluding it from `local`; c22's expected answer is unchanged. Earlier label mismatches remain historical, not evidence of bypassed preflight. New c23–c26 expectations and hidden review criteria were fixed before evaluation. `supplied` now explicitly covers new agents with either fresh or inherited history.
+
+- Offline: 107 tests passed, including distinct recording-error diagnostics, private-message/path exclusion, final-record failure reporting and inherited-context scoring. Skill validation and diff whitespace checks passed.
+- Fresh cooperation preview: first response structurally valid, no repairs; all 25 cases matched required fields and baselines. All 8 new-agent routes were runtime-valid with no calibration differences. Reasons were individually reviewed and passed for c01–c11 and c13–c26, including proportionate-work c15–c17 (3/3), boundaries c18–c20 (3/3), and new cases c23–c26 (4/4). The c25 handoff explicitly withdrew purchasing, quoted query-only/no-order/no-message constraints and excluded supplier B.
+- The full routing-only suite was not rerun: routing policy was not changed, and repeated entrypoint wording was consolidated into existing references. The fresh cooperation preview covered its 8 embedded route decisions; this is not a new full-routing result.
+- Live CC 2.1.319: two tool-disabled calculation assignments resumed session `15407f61-f137-472c-874a-bf9ccd24da87`. The first supplied A=10/B=7 and returned 27; the second supplied only new quantities and correctly returned 44 using retained context. Both init receipts reported `claude-sonnet-5-5`; assigned-session assistant receipts reported `effort=low` and `perTurnEffort=low` on both turns. Both process and runner exits were 0, with no permission denials or tool calls. The alias `sonnet` was resolved on turn one and its exact model ID used on turn two.
+- Sandboxed auth inspection initially returned logged-out; a read-only check outside the sandbox confirmed the existing login. No login, credential copying or permission-bypass flags were used.
+
+The live check verifies runner collection and same-session reuse for two bounded assignments, not arbitrary task quality or cost savings. Error paths were tested by local fault injection, not induced live provider failures. Reviewed source SHA-256 prefixes:
+
+| File | Digest prefix |
+| --- | --- |
+| `SKILL.md` | `335330befa0b295c` |
+| `references/model-routing.md` | `cd1e4785b529f2a4` |
+| `references/claude-code-cli.md` | `6718a6b63b7d4236` |
+| `scripts/cc_progress.py` | `a09fd195897428c7` |
+| `tests/cooperation_eval.py` | `6b0d4bf22cbcbfc6` |
+| `tests/cooperation_cases.json` | `f6a384edb059f2ad` |
+
 ### Adjacent-effort coverage
 
 All routing case IDs are neutral numeric labels in both fixtures and emitted prompts. Existing rule cases were renamed without changing their expected decisions; historical reports retain their original IDs and results. Rule task wording remains deliberately cued and is scored separately from natural requests.

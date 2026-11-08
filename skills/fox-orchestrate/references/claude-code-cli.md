@@ -12,7 +12,7 @@ Read this when Claude Code CLI is requested or already authorized as an executio
 
 ## Start and collect
 
-Start a new session for a new assignment, without `--resume`, `--continue` or `--fork-session`. Advisors receive fresh supplied context, never an App fork. Save the prompt as a UTF-8 file containing the task, constraints, necessary raw evidence and acceptance criteria; do not embed untrusted task text in shell code.
+Choose a new or existing agent under the [reuse rules](model-routing.md#5-keep-the-selected-configuration). When creating a new agent, start a fresh session without `--resume`, `--continue` or `--fork-session`. When reusing one, [resume its recorded session](#resume-without-changing-configuration), including for a separate assignment whose configuration fits and retained context helps; supply the new scope, ownership and acceptance criteria. New advisors receive fresh supplied context. Save each prompt as a UTF-8 file; do not embed untrusted task text in shell code.
 
 Use explicit `--model`, `--effort` and structured output. Run the local [progress runner](../scripts/cc_progress.py) to save full stdout/stderr while exposing only a small status record to Codex. The following read-only example is not a model recommendation or a permission template for writing tasks. Use absolute paths and a new run directory for each turn:
 
@@ -52,7 +52,7 @@ The runner records elapsed time, reported turns, scoped token usage and terminal
 
 Malformed JSON, missing/failed results and process errors cannot report success; permission denials reported by either a system event or the final denial list require attention, even when the other source is empty. `permission_denial_seen` preserves the event evidence separately from the final list count. Preserve the distinct CC and runner exit codes. Cancellation remains incomplete and is forwarded/escalated to the assigned process group without changing model/configuration. The runner does not automatically retry a failed turn.
 
-Failure codes describe observed terminal evidence, not necessarily root causes. Inspect retained diagnostics before declaring a shared blocker; recovered tool errors and API retries alone do not establish terminal failure. Classification adds no retries, dispatches or configuration changes. Preflight/storage failures can prevent an execution record; retain the CLI diagnostic when available.
+Failure codes describe observed terminal evidence, not necessarily root causes. Inspect retained diagnostics before declaring a shared blocker; recovered tool errors and API retries alone do not establish terminal failure. Runner exceptions expose only their stage, exception type and numeric errno through stderr and, when recording succeeds, `runner_diagnostic` in the state. Exception messages and paths are excluded. Preflight/storage failures can prevent records, so retain caller stderr as well as CC logs. Classification adds no retries, dispatches or configuration changes.
 
 **Token boundary:** local execution, log recording and state updates make no extra model calls. There is no continuous display or monitoring token overhead. Necessary orchestrator queries, interpreting their compact results, dispatch and acceptance still consume normal tokens; do not promise zero total token consumption.
 

@@ -44,6 +44,16 @@ class CooperationTests(unittest.TestCase):
             answer.update(action=action, context='retained')
             self.assertTrue(validate_output([answer]))
 
+    def test_inherited_new_agent_uses_route_history_and_preserves_constraints(self):
+        case = next(c for c in self.suite['cases'] if c['id'] == 'case_c24')
+        answer = dict(id=case['id'], reason='Necessary history with verified parent settings',
+                      **copy.deepcopy(case['expected']))
+        answer['route']['reason'] = 'Full history forbids overrides'
+        self.assertEqual(validate_output([answer]), [])
+        self.assertEqual(report({'cases': [case]}, [answer])['constraints']['passed'], 1)
+        answer['route']['fork_turns'] = 'none'
+        self.assertEqual(report({'cases': [case]}, [answer])['constraints']['passed'], 0)
+
     def test_followup_route_is_unscored(self):
         self.answers[0]['route'] = copy.deepcopy(self.answers[2]['route'])
         self.answers[0]['route']['id'] = self.answers[0]['id']
