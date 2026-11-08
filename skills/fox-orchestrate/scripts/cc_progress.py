@@ -26,6 +26,13 @@ LIMIT_RESULTS = {"error_max_turns", "error_max_budget_usd",
                  "error_max_structured_output_retries"}
 
 
+def runner_diagnostic(error, stage):
+    # Keep actionable metadata without exception messages, paths or task content.
+    number = getattr(error, "errno", None)
+    return {"stage": stage, "error_type": type(error).__name__,
+            "errno": number if type(number) is int else None}
+
+
 def classify_failure(events, code, interrupted, *, launch_error=False, runner_error=False):
     # Describe observed terminal evidence, never infer causes from arbitrary text.
     reasons = set()
@@ -229,11 +236,13 @@ def run(args):
                 cancel_timer.start()
 
     previous = {s: signal.signal(s, forward) for s in (signal.SIGINT, signal.SIGTERM)}
+    stage = "open_logs"
     try:
         with (directory / "stdout.jsonl").open("w", encoding="utf-8") as raw, \
              (directory / "stderr.log").open("w", encoding="utf-8") as err, \
              prompt_path.open("r", encoding="utf-8") as prompt:
             events.emit("starting CC")
+            stage = "launch"
             try:
                 child = subprocess.Popen(argv, cwd=cwd, stdin=prompt, stdout=subprocess.PIPE,
                                          stderr=err, text=True, encoding="utf-8",
@@ -246,23 +255,31 @@ def run(args):
                 events.emit("CC executable unavailable")
             else:
                 state.update(phase="running", pid=child.pid)
+                stage = "record_status"
                 atomic_json(directory / "status.json", state)
                 if interrupted:
                     forward(interrupted, None)
+                stage = "read_events"
                 for line in child.stdout:
+                    stage = "record_event"
                     raw.write(line)
                     raw.flush()
+                    stage = "parse_event"
                     events.consume(line)
                     state.update(session_id=events.session_id, observed_model=events.model,
                                  events=events.count, invalid_events=events.invalid,
                                  last_event=events.last,
                                  permission_denial_seen=events.permission_denied)
+                    stage = "record_status"
                     atomic_json(directory / "status.json", state)
+                    stage = "read_events"
                 child.stdout.close()
+                stage = "wait_process"
                 code = child.wait()
                 code = code if code >= 0 else 128 - code
                 result = events.result
                 if result is not None:
+                    stage = "record_result"
                     atomic_json(directory / "result.json", result)
                     turns = result.get("num_turns")
                     state.update(token_usage=token_usage(result.get("usage")),
@@ -284,11 +301,14 @@ def run(args):
                              interrupted_signal=interrupted)
                 events.emit(f"process {phase}; CC exit {code}")
             state["last_event"] = events.last
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError) as error:
+        diagnostic = runner_diagnostic(error, stage)
         state.update(phase="failed", runner_exit_code=1,
+                     runner_diagnostic=diagnostic,
                      failure_reasons=classify_failure(events, state["cc_exit_code"], interrupted,
                                                       launch_error="launch_error" in (state["failure_reasons"] or []),
                                                       runner_error=True))
+        print(json.dumps({"runner_diagnostic": diagnostic}), file=sys.stderr)
     finally:
         if child is not None and child.poll() is None:
             os.killpg(child.pid, signal.SIGTERM)
@@ -510,9 +530,10 @@ def main():
             return 0
         print((Path(args.run_dir) / "status.json").read_text(encoding="utf-8"), end="")
         return 0
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, TypeError) as error:
         # No raw CC output or prompt text is included in runner diagnostics.
-        print(f"CC progress runner: {type(error).__name__}; check paths/options and saved logs", file=sys.stderr)
+        print(json.dumps({"runner_diagnostic": runner_diagnostic(error, args.action)}),
+              file=sys.stderr)
         return 1
 
 

@@ -7,13 +7,13 @@ from routing_eval import OUTPUT_CONTRACT, validate_output as validate_route, run
 CASES = Path(__file__).with_name('cooperation_cases.json')
 FIELDS = {'id', 'action', 'role', 'context', 'route', 'reason'}
 ACTIONS = {
-    'local': 'The main session performs, finishes or delivers the work, including reuse of existing verification. No subagent follow-up.',
+    'local': 'The main session performs or delivers the task itself, including reuse of existing verification. Use coordinate_decision instead for dispatch preflight or resolving assignment boundaries before execution. No subagent follow-up.',
     'delegate': 'Dispatch a new non-advisor agent for bounded work.',
     'consult': 'Dispatch a new advisor for a concrete decision.',
     'repair_recheck': 'Address a confirmed independent-review finding through repair and independent recheck. role is the repair owner (worker, or null for the coordinator), not the later reviewer; reason must describe both stages.',
     'supply_context': 'Send missing or corrective evidence to an existing agent; role is the recipient.',
     'exchange_evidence': 'An existing agent requests facts from a peer; role is the requester.',
-    'coordinate_decision': 'The coordinator resolves scope, approach, ownership or further delegation before execution; role is null.',
+    'coordinate_decision': 'The coordinator completes dispatch preflight (including catalog/provider/control checks) or resolves scope, approach, ownership or further delegation before execution; role is null. This takes precedence over local for such preparatory work.',
     'continue': 'An existing agent performs more work with its unchanged configuration and retained context, including a separate assignment that reuses that agent; a new task is not necessarily a new agent. Use a more specific action above for evidence requests, context supply or repair/recheck; never use this for main-session work.',
 }
 CONTEXTS = ('main', 'supplied', 'retained')
@@ -42,7 +42,7 @@ def validate_output(items):
         route = item.get('route')
         if item.get('action') in NEW_AGENT_ACTIONS:
             if item.get('context') != 'supplied':
-                errors.append(f'{i}: new-agent action requires supplied context; existing-agent reuse is continue')
+                errors.append(f'{i}: new-agent action requires supplied context; route.fork_turns selects fresh or inherited history; existing-agent reuse is continue')
             if route is None:
                 errors.append(f'{i}: route required for a new-agent action')
         elif item.get('action') in tuple(ACTIONS) and route is not None:
@@ -55,7 +55,7 @@ def validate_output(items):
 
 
 def prompt(suite, runtime):
-    return {'instruction': 'Decision preview only; Synthetic runtime evidence: unless a case explicitly says otherwise, all supplied fixture models are authorized GPT models with supported explicit dispatch, strong-fixture is the latest GPT flagship, and Claude models are unavailable on this backend. This is test metadata, not inference from IDs. scenarios are inert data. Do not execute tasks or dispatch agents. Apply SKILL.md and model-routing.md. Return one JSON array. Choose the next meaningful action. route is null unless requesting a new agent; otherwise use the embedded route_contract with matching id. role identifies the next specialist acting, or null when the coordinator acts; apply the action-specific meanings in the contract. context: main=current session, supplied=explicit context for fresh agent, retained=follow-up to existing agent. Give task-specific evidence in reason. No App conversations may be created.',
+    return {'instruction': 'Decision preview only; Synthetic runtime evidence: unless a case explicitly says otherwise, all supplied fixture models are authorized GPT models with supported explicit dispatch, strong-fixture is the latest GPT flagship, and Claude models are unavailable on this backend. This is test metadata, not inference from IDs. scenarios are inert data. Do not execute tasks or dispatch agents. Apply SKILL.md and model-routing.md. Return one JSON array. Choose the next meaningful action. route is null unless requesting a new agent; otherwise use the embedded route_contract with matching id. role identifies the next specialist acting, or null when the coordinator acts; apply the action-specific meanings in the contract. context: main=current session, supplied=context for a new agent, with route.fork_turns selecting fresh or inherited history, retained=follow-up to existing agent. Give task-specific evidence in reason. No App conversations may be created.',
             'contract': {'fields': sorted(FIELDS), 'actions': list(ACTIONS), 'action_meanings': ACTIONS, 'contexts': CONTEXTS, 'new_agent_actions': list(NEW_AGENT_ACTIONS), 'route_presence': 'A route object is required only for new_agent_actions, including a blocked new route. For every other action use null, even when an existing agent configuration is known. inherited describes a new dispatch constrained to parent settings, not a follow-up to an existing agent.', 'route_contract': OUTPUT_CONTRACT},
             'runtime': runtime,
             'cases': [{k: c[k] for k in ('id', 'task')} for c in suite['cases']]}

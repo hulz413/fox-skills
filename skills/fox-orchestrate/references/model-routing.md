@@ -83,7 +83,7 @@ For task-based capability selection, if the preferred tier is missing, use the r
 
 Apply model, effort and context through supported dispatch parameters or configuration, not prompt prose. If effort cannot be overridden, report its known inherited value or null when unknown. If the interface has no effort control, omit the unsupported setting and report null with the reason; null does not mean no reasoning. In previews, `requested` can pair an explicitly selected model with null effort; `inherited` means the route must inherit its configuration. A conflicting or unverifiable explicit effort pin blocks the route. Disclose the resulting combination and material acceptance limits rather than claiming desired settings took effect.
 
-Advisors follow the [advisor context contract](../SKILL.md#advisor-context): fresh context, explicit evidence, no App fork. Other roles use fresh context for self-contained assignments or limited history when needed, through the runtime adapters below. When full history is necessary and overrides are disallowed, report inherited settings (null if unknown), without conflicting overrides; a conflicting explicit pin blocks. Never inherit merely to avoid selection.
+Advisors follow the [advisor context contract](../SKILL.md#advisor-context): fresh context, explicit evidence, no App fork. Other roles follow the [context selection rules](../SKILL.md#delegate-and-coordinate), applied through the runtime adapters below. When full history is necessary and overrides are disallowed, report inherited settings (null if unknown), without conflicting overrides; a conflicting explicit pin blocks. Never inherit merely to avoid selection.
 
 ### Runtime adapters
 
