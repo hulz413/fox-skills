@@ -1467,6 +1467,36 @@
         "reasoning_effort": "medium",
         "fork_turns": "none"
       }
+    },
+    {
+      "id": "case_081",
+      "task": "Extract specified fields from 20 supplied records. A deterministic check compares each field against the source and detects missing records.",
+      "expected": {
+        "status": "requested",
+        "model": "light-fixture",
+        "reasoning_effort": "low",
+        "fork_turns": "none"
+      },
+      "group": "rules",
+      "calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
+    },
+    {
+      "id": "case_082",
+      "task": "Investigate all callers of a service across multiple interfaces and dynamic registrations; checking found matches cannot establish completeness. Reconstruct nonlocal interfaces and assess omissions.",
+      "expected": {
+        "status": "requested",
+        "model": "standard-fixture",
+        "reasoning_effort": "high",
+        "fork_turns": "none"
+      },
+      "group": "rules",
+      "calibration_fields": [
+        "model",
+        "reasoning_effort"
+      ]
     }
   ]
 }

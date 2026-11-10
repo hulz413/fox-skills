@@ -336,6 +336,46 @@
       "review_criteria": [
         "Resume the recorded session ID with unchanged configuration; supply the new assignment scope/owner/acceptance rather than starting a new session solely because the assignment is new."
       ]
+    },
+    {
+      "id": "case_c27",
+      "task": "已授权委派的独立批量提取任务有逐项完整性和正确性检查；低成本 worker 完成全部项目，仅两项被可靠检查判失败，输入、工具和方法已充分检查，原始证据和验收条件完整；具体失败表明该 worker 推理不足。用户未指定模型。协调者应决定是否升级并重跑失败项，计入全部费用。",
+      "expected": {
+        "action": "coordinate_decision",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c28",
+      "task": "Worker 一次失败，关键输入尚缺；用户未指定模型。下一步提供可用的缺失原始输入。",
+      "expected": {
+        "action": "supply_context",
+        "role": "worker",
+        "context": "retained",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c29",
+      "task": "Worker 因服务权限被拒而阻塞；证据显示需要协调者处理权限，不能将其视为模型能力不足。",
+      "expected": {
+        "action": "coordinate_decision",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
+    },
+    {
+      "id": "case_c30",
+      "task": "Worker 使用用户明确指定的模型和 effort，经过充分检查仍无法满足验收。用户未授权其他配置。协调者需要报告阻塞和所需决定。",
+      "expected": {
+        "action": "local",
+        "role": null,
+        "context": "main",
+        "route": null
+      }
     }
   ]
 }

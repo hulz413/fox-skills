@@ -1,6 +1,6 @@
 # Task-specific model routing
 
-Within the provider boundary below, choose model and effort once, before each bounded assignment's first dispatch. Roles set the default model route below, while task evidence determines capability for non-advisors and effort for every assignment. Keep the main coordinator on the current task model unless the user explicitly requests a change; delegated coordinators follow the other-subagent default.
+Within the provider boundary below, choose model and effort before each bounded assignment's first dispatch. Roles set the default model route below, while task evidence determines capability for non-advisors and effort for every assignment. Keep the main coordinator on the current task model unless the user explicitly requests a change; delegated coordinators follow the other-subagent default.
 
 ## 1. Establish requirements and runtime limits
 
@@ -36,7 +36,7 @@ Use the host's native subagents by default. A model preference alone does not au
 
 Honor explicit pins, including supported high efforts and older versions. If unavailable or impossible to apply, return `blocked` with the reason; never silently substitute. Missing inputs, permissions or services require resolution, not a stronger model.
 
-Assess the requested output, acceptance criteria, necessary context and reasoning, iteration allowance, latency and known cost constraints, including coordination and likely rework. Judge this deliverable, not the enclosing project's complexity or every unresolved input issue: an initial decision framework may leave questions open that a resolution task must answer. Give separate capability and effort reasons, then check the combination.
+Assess the requested output, acceptance criteria, necessary context and reasoning, iteration allowance, latency and known cost constraints, including coordination, verification and likely rework. Assess whether critical errors and omissions are detectable, coverage of those checks, and verification cost; checking returned hits does not establish search completeness. Judge this deliverable, not the enclosing project's complexity or every unresolved input issue: an initial decision framework may leave questions open that a resolution task must answer. Give separate capability and effort reasons, then check the combination.
 
 ## 2. Choose capability
 
@@ -49,6 +49,8 @@ Assess the requested output, acceptance criteria, necessary context and reasonin
 Map tiers to runtime descriptions. Within each runtime-identified family, exclude superseded versions before comparing candidates or applying recommendations: normally consider only the latest available, authorized, compatible version. Honor version pins; explain why an older version is needed when the newer one cannot be used. Never infer family/version ordering from names or assume availability.
 
 Among suitable candidates, prefer the runtime recommendation, then its configured default; disclose remaining ambiguity instead of guessing cost or superiority. Demanding delivery alone does not require frontier. For a new advisor assignment without an explicit model pin, apply the flagship route and fallback in [role defaults](#role-defaults-and-user-overrides), even for ordinary consultation. This advisor default takes precedence over task-based capability and cost preferences, but does not require a highest effort: choose effort independently for the question. Honor explicit user model choices and constraints; cross providers only through the defined default advisor fallback or an explicit user override; never claim an unavailable capability. Other roles retain task-based capability selection.
+
+For independent batches, optionally start with a lower-cost configuration and retry only detected failures at a stronger configuration when acceptance checks detect critical failures and the added latency is acceptable. Compare all attempts, checks and coordination costs; do not treat undetected errors as passes. Apply the escalation and authorization rules below.
 
 ## 3. Choose effort
 
@@ -94,7 +96,7 @@ Keep the selection and coordination rules above unchanged across Codex and Claud
 | Fresh context | Set `fork_turns: "none"` when the dispatch tool supports it. | Use a non-fork subagent through the `Agent` tool, with an appropriate explicit subagent type. Do not choose the `fork` type or pass `fork_turns`; ordinary subagents start with fresh context. |
 | Necessary full history, for non-advisors only | Use the supported history option, such as `fork_turns: "all"`, observing any override restrictions. | Use a fork only when available and permitted. Treat its model and other settings as inherited unless the active interface explicitly supports overrides. |
 | Model and effort | Use the dispatch tool's supported model and effort controls; names vary by interface, such as `model` and `reasoning_effort`. | Use supported `model` and `effort` invocation parameters or subagent definition fields. Check version support and configuration precedence; environment variables or managed settings can override or restrict the request. |
-| Continue an assignment | Use supported follow-up or message tools without changing the selected configuration. | Use a resumable type when follow-ups are needed; Explore and Plan may be one-shot. Resume the existing subagent with its retained context and unchanged selected configuration through the available resume or message interface. |
+| Continue an assignment | Use supported follow-up or message tools with unchanged settings by default; change only if the runtime supports it and evidence-based escalation below applies. | Use a resumable type when follow-ups are needed; Explore and Plan may be one-shot. Resume the existing subagent with its retained context and unchanged selected configuration through the available resume or message interface; use a new attempt for justified escalation unless the runtime explicitly supports changing it. |
 
 Role names in this skill describe responsibilities, not required built-in agent types. Select a type with the tools and permissions needed for the assignment, and supply its role and boundaries explicitly. Direct peer messaging and nested delegation are optional capabilities: use coordinator relays or keep dispatch with the main coordinator when unsupported. Do not enable agent teams or change shared configuration merely to apply this skill.
 
@@ -102,11 +104,13 @@ Preview schemas retain `fork_turns` and `reasoning_effort` as normalized reporti
 
 For material Claude Code interface gaps, consult the official [subagent documentation](https://code.claude.com/docs/en/sub-agents). Do not assume that a documented control exists in an older installed version or is available in every session.
 
-## 5. Keep the selected configuration
+## 5. Continue or escalate
 
-Keep model and effort fixed through follow-ups, corrections and final checks. Improve evidence, approach and verification; report concrete limitations if blocked. Do not recreate or relabel the same assignment to change settings.
+Normally keep model and effort fixed through follow-ups, corrections and final checks. Improve evidence, approach and verification first; missing inputs, permissions, tool or service failures and one failure alone do not establish insufficient capability. When inputs, permissions, tools and approach have been sufficiently checked and concrete evidence shows inadequate reasoning or judgment, consider a higher supported effort or stronger eligible model if worthwhile. Honor explicit pins and provider, backend and authorization boundaries; if an eligible escalation is unavailable, report the blocker.
 
-A genuinely separate assignment gets its own selection. Reuse an agent when its unchanged configuration fits and retained context helps; even a more capable configuration can fit, and retained context may outweigh a hypothetically cheaper fresh route. Follow-ups cannot change settings under this contract. If a separate assignment needs different settings and delegation is worthwhile, start a new agent.
+If the runtime cannot change an existing agent configuration, start a new attempt only when escalation is justified and delegation is permitted. Identify it as another attempt at the same assignment, preserve the prior attempts, failures and acceptance criteria, and count all attempts toward task cost. On a model or backend switch, consider known runtime cache and context compatibility; hand off verified facts, binding constraints, unresolved questions, failed approaches and accessible raw evidence. Do not assume the new model can read prior internal reasoning.
+
+A genuinely separate assignment gets its own selection. Reuse an agent when its unchanged configuration fits and retained context helps; even a more capable configuration can fit, and retained context may outweigh a hypothetically cheaper fresh route. Follow-ups retain settings unless the runtime explicitly supports a justified escalation above. If a separate assignment needs different settings and delegation is worthwhile, start a new agent.
 
 ## Routing-only mode and maintenance
 
