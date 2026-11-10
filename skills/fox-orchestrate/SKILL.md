@@ -66,7 +66,7 @@ Use independent review when worthwhile. When authorized, the coordinator or assi
 
 Tie material reviews/checks to an identifiable artifact version or state (commit, diff, revision or equivalent). When artifacts or relevant inputs change, reassess validity, reuse unaffected evidence and recheck affected scope before acceptance; an earlier pass does not establish that changed work passes.
 
-When stalled, supply evidence, repair the environment, correct the approach or seek useful advice. Normally preserve model and effort; consider evidence-based escalation under [model routing](references/model-routing.md#5-continue-or-escalate). Report missing conditions or capabilities, attempts and results, reusable partial deliverables, material limits and coordinator decisions needed. Do not repeat failed approaches under unchanged conditions. Continue feasible independent work even without delegation.
+When stalled, supply evidence, repair the environment, correct the approach or seek useful advice. For confirmed model-service unavailability, consider automatic authorized [service failover](references/model-routing.md#service-failover). Normally preserve model and effort; consider evidence-based escalation under [model routing](references/model-routing.md#5-continue-or-escalate). Report missing conditions or capabilities, attempts and results, reusable partial deliverables, material limits and coordinator decisions needed. Do not repeat failed approaches under unchanged conditions. Continue feasible independent work even without delegation.
 
 Stop at acceptance. Reopen only for changed inputs, new evidence, a different approach to an unresolved problem or a verification gap; these judgments add no reporting or approval step.
 
