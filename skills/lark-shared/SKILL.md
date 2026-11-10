@@ -22,11 +22,6 @@ metadata:
 4. **`--format json`（默认）下，判断成功用 `ok == true`（或进程退出码 0），不要用 `code == 0`**：成功信封没有顶层 `code` / `msg` 字段，`code` 只出现在错误信封的 `error` 内。按 OpenAPI 老格式 `{"code": 0, "msg": "ok"}`判断会把所有成功调用误判为失败——封装写入类命令时尤其危险。JSON 输出契约 → [`lark-shared-output-contract.md`](references/lark-shared-output-contract.md)。
 
 
-## 认证恢复与复查
-
-- 用户表示 CLI 已可用或要求直接重试时，先执行原目标的最小只读调用核验当前状态，不要仅凭上一轮错误重复要求配置或授权；若有尚未完成且仍有效的 device-flow，按身份与权限参考完成续接，而不是直接另开授权流程。
-- 将“应用绑定”“用户登录”“所需 scope 获批并授予”分开判断；登录成功提示不能证明业务 API 已可用。遇到部分授权、空授权或管理员待审核时，按 [`身份与权限`](references/lark-shared-identity-and-permissions.md) 的结果分支处理。
-
 ## 安全规则
 
 1. **禁止输出密钥**（appSecret、accessToken等）到终端明文。
