@@ -218,6 +218,12 @@ lark-cli im +messages-search --query "" --chat-id oc_xxx --sender ou_me --start 
 - If the user does not specify a time range, default to the current week (Monday to today) for weekly reports, or ask for clarification.
 - When summarizing, group messages by topic/thread rather than by chronological order for better readability.
 
+## Native search fallback when enrichment blocks access
+
+If `+messages-search --no-reactions` still fails preflight on `im:message.reactions:read`, distinguish shortcut enrichment from actual message-search authorization. Do not repeatedly request reaction permission for a search-only task. First inspect `lark-cli whoami` and `auth status --json --verify`; compare the bound app ID/name with any user screenshot without silently switching profiles.
+
+After verifying the current official message-search specification, a read-only fallback is `lark-cli api POST /open-apis/im/v1/messages/search --as user --params '{"page_size":30,"user_id_type":"open_id"}' --data '{"query":"GEO","filter":{"from_ids":["<open_id>"]}}'`. Sender/chat/time filters belong inside `filter`; time_range uses ISO8601. Follow `data.has_more`/`page_token` and persist each page. The response includes `items[].id`, `meta_data`, and `display_info`. Display snippets can be truncated and are not full message bodies; do not quote omitted text or imply full thread inspection. Full content retrieval has separate group/P2P get-as-user scopes. A successful search does not establish permission to retrieve full content. The older `/search/v2/message` endpoint may reject requests; prefer the documented IM v1 endpoint.
+
 ## Common Errors and Troubleshooting
 
 | Symptom | Root Cause | Solution |
