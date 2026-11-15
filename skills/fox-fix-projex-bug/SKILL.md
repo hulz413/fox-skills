@@ -7,9 +7,9 @@ description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key suc
 
 ## Scope
 
-Use Projex OpenAPI independently of the `pr` skill. Keep the current repository and branch by default, and create one local commit per bug. Do not automatically create or switch branches, push, open an MR, deploy, or operate shared environments. The status `开发完成` means the fix has been validated and either committed locally or already contained in the remote default branch; pushing is not required.
+Use Projex OpenAPI independently of the `pr` skill. Keep the current repository and branch by default, and create one local commit per bug. Do not automatically create or switch branches, push, open an MR, deploy, or operate shared environments. The status `开发完成` means the fix has passed focused checks and the local end-to-end acceptance described below, and is committed locally (or already contained in the remote default branch); pushing is not required. The status `已修复` means the fix is contained in the remote default branch (`origin/master`); never push or merge to reach it.
 
-A user request to fix a specific bug with this skill authorizes the chat rename, both status updates, the local fix and commit, and the final repair comment, or the conclusion comment when no fix is made. Do not ask for each action again. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
+A user request to fix a specific bug with this skill authorizes the chat rename, the `已选择` and `开发完成` status updates (the latter only after local e2e passes), the local fix and commit, and the final repair comment, or the conclusion comment when no fix is made. Do not ask for each action again. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
 
 ## Identify and take the issue
 
@@ -50,13 +50,19 @@ Follow the target repository's `AGENTS.md` and other applicable guidance. Make t
 
 Run tests or repeatable checks appropriate to the actual risk, directly verifying the reported behavior. A successful build alone does not prove the fix. Add focused regression coverage where a material risk lacks coverage. Review the final diff and fix introduced issues. If necessary validation fails or cannot run, explain the cause and what is needed to continue; do not automatically commit or mark completion.
 
+## Local end-to-end acceptance
+
+Unit tests do not replace this step. After the fix is committed, run the reported scenario end to end in the local environment (the repository's local-development setup, restarted so it runs the fixed code), following the bug's reproduction steps and checking the expected result through the real UI or API path. Use local data only; do not use shared test or production environments. Prefer the data and account named in the report when a local equivalent exists, and state any substitution. Record the steps, the observed result, and any gap.
+
+Acceptance passes only when the observed behavior matches the expected result in the report. If the environment cannot be started, lacks needed data or credentials, or the result differs, do not post the repair comment or mark `开发完成`; report the blocker or failure and keep the status `已选择`. Never move a status forward on the strength of unit tests alone.
+
 Inspect `git diff --cached` before committing, including any previously staged content. Stage only explicit files or hunks for this bug; do not use `git add -A` to include other work. Create one local commit using an English Conventional Commit such as `fix: <concise imperative subject>`, with `Bug: <issue-key>` in its body. Use the actual change type and reason rather than inventing either to fit a format.
 
 If `.git` writes need additional execution permissions, finish read-only review first and use the environment's formal permission mechanism. Report a rejection as a blocker. After committing, read the full commit hash and check the commit diff and working tree. Investigate Git hook or commit failures while preserving the fix; do not bypass checks.
 
 ## Comment and mark completion
 
-Only after required validation passes and the local commit succeeds, or an existing default-branch fix has been verified, automatically post one repair comment. Recheck the bug identity and existing comments first. A known gap against the reported expected behavior, including one a delegate left unresolved, blocks completion: fix it or raise it as a material question. When resuming, reuse an existing repair comment that already describes this repair rather than posting another.
+Only after required validation and local e2e acceptance pass and the local commit succeeds, or an existing default-branch fix has been verified and accepted locally, automatically post one repair comment. Recheck the bug identity and existing comments first. A known gap against the reported expected behavior, including one a delegate left unresolved, blocks completion: fix it or raise it as a material question. When resuming, reuse an existing repair comment that already describes this repair rather than posting another.
 
 Write the comment in Chinese using actual validation results. Pass its body through a UTF-8 file with real newlines, following this template:
 
@@ -65,10 +71,10 @@ Write the comment in Chinese using actual validation results. Pass its body thro
 
 修复内容：<specific changes and resulting behavior>
 
-验证结果：<checks actually run, results, and relevant validation limitations>
+验证结果：<unit checks and the local e2e steps actually run, results, and relevant validation limitations>
 ```
 
-After the comment succeeds, set the status to `开发完成` and read back to confirm. Skip a redundant update and never move a later status backward. If the comment succeeds but the status update fails, report only the pending status update. If the commit succeeds but the comment fails, preserve the commit and report the pending comment and status update; do not roll back, redo, or recommit the fix.
+After the comment succeeds, set the status to `开发完成` and read back to confirm. Do not set `已修复` in the same run unless the commit is already contained in `origin/master`. Skip a redundant update and never move a later status backward. If the comment succeeds but the status update fails, report only the pending status update. If the commit succeeds but the comment fails, preserve the commit and report the pending comment and status update; do not roll back, redo, or recommit the fix.
 
 If a network failure leaves a write outcome uncertain, first check its effect through read-only calls. Do not blindly resend comments or repeat transitions. Report uncertainty if the outcome cannot be established. Without a completed repair, do not post this completion comment; the only other automatic comment is the conclusion comment below.
 
@@ -81,6 +87,10 @@ When the decision table ends without a fix, post one conclusion comment so the r
 
 后续：<who needs to do what next, such as closing the issue, supplying a reproduction, or waiting for a branch to merge>
 ```
+
+## Mark fixed after merge
+
+Set `已修复` only when the repair commit is contained in the remote default branch. When the user asks to sync status, or a resumed task finds the bug at `开发完成`, fetch and verify with `git merge-base --is-ancestor <commit> origin/master` (for rebased or squashed merges, match the change content rather than the hash), map the exact name `已修复` to one status ID, update, and read back. If not yet merged, leave `开发完成` and say so. Merging itself is the user's step.
 
 A conclusion comment does not change the status. Keep the current status unless the user asks for a specific one, such as `暂不修复`; then map that exact name to one status ID and read back to confirm, as for other transitions. If an earlier step moved the issue to `已选择` and no work remains, tell the user rather than silently reverting it.
 
