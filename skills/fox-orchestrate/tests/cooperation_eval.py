@@ -7,13 +7,13 @@ from routing_eval import OUTPUT_CONTRACT, validate_output as validate_route, run
 CASES = Path(__file__).with_name('cooperation_cases.json')
 FIELDS = {'id', 'action', 'role', 'context', 'route', 'reason'}
 ACTIONS = {
-    'local': 'The main session performs or delivers the task itself, including reuse of existing verification. Use coordinate_decision instead for dispatch preflight or resolving assignment boundaries before execution. No subagent follow-up.',
+    'local': 'The main session performs or delivers the task itself, including reuse of existing verification and diagnosing or reporting a blocker without resolving it. Use coordinate_decision instead for dispatch preflight or resolving assignment boundaries before execution. No subagent follow-up.',
     'delegate': 'Dispatch a new non-advisor agent for bounded work.',
     'consult': 'Dispatch a new advisor for a concrete decision.',
     'repair_recheck': 'Address a confirmed independent-review finding through repair and independent recheck. role is the repair owner (worker, or null for the coordinator), not the later reviewer; reason must describe both stages.',
     'supply_context': 'Send missing or corrective evidence to an existing agent; role is the recipient.',
     'exchange_evidence': 'An existing agent requests facts from a peer; role is the requester.',
-    'coordinate_decision': 'The coordinator completes dispatch preflight (including catalog/provider/control checks) or resolves scope, approach, ownership or further delegation before execution; role is null. This takes precedence over local for such preparatory work.',
+    'coordinate_decision': 'The coordinator completes dispatch preflight (including catalog/provider/control checks) or resolves scope, approach, ownership, further delegation or resolves a blocker so that execution can resume; role is null. This takes precedence over local for such preparatory work.',
     'continue': 'An existing agent performs more work with its unchanged configuration and retained context, including a separate assignment that reuses that agent; a new task is not necessarily a new agent. Use a more specific action above for evidence requests, context supply or repair/recheck; never use this for main-session work.',
 }
 CONTEXTS = ('main', 'supplied', 'retained')
