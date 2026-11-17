@@ -26,7 +26,7 @@ flowchart TD
 
 - [SKILL.md](SKILL.md): role definitions and essential coordination guidance.
 - [Model routing](references/model-routing.md): task-based selection using current runtime information, selected once before each assignment.
-- [agents/openai.yaml](agents/openai.yaml): the skill's interface metadata.
+- [agents/openai.yaml](agents/openai.yaml): the skill's interface metadata. `allow_implicit_invocation: false` (Codex) and `disable-model-invocation: true` in SKILL.md (Claude Code) make the skill manual-only: it runs only when the user invokes `$fox-orchestrate` or `/fox-orchestrate`.
 
 ## Runtime behavior
 

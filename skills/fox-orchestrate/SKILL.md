@@ -1,6 +1,7 @@
 ---
 name: fox-orchestrate
-description: Coordinate subagents when the user requests delegation or expected gains in quality, time, or cost justify the coordination overhead. Keep other work local.
+description: Coordinate subagents when the user explicitly invokes this skill ($fox-orchestrate or /fox-orchestrate). Manual invocation only; never trigger automatically. Delegate only when expected gains in quality, time, or cost justify the coordination overhead; keep other work local.
+disable-model-invocation: true
 ---
 
 # Fox Orchestrate
