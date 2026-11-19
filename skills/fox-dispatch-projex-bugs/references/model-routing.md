@@ -11,7 +11,7 @@ Treat a provider as usable only if the host reports it enabled and able to run c
 ## 2. Pick the provider
 
 1. An explicit user choice of provider, model, version, or effort wins, scoped to what they named. If it cannot be honored, report it as a blocker instead of substituting.
-2. Otherwise use OpenAI (GPT).
+2. Otherwise use the provider the coordinator itself runs on (for example Claude when the dispatch task runs on a Claude model, OpenAI when it runs on GPT). Establish it from the host's report of the current task's provider or model, not from guessing; if the host does not report it, say so and ask.
 3. Within the provider, consider only the latest available version of each model family; superseded versions are not candidates unless pinned.
 
 ## 3. Pick capability from the bug evidence

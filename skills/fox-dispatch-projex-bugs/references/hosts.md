@@ -4,6 +4,7 @@ SKILL.md names actions, not tools. Use the current host's own tool for each acti
 
 | Action | Codex | Claude Code | T3 Code |
 |---|---|---|---|
+| Identify the coordinator's own provider | OpenAI; Codex runs GPT models | Anthropic; the session runs a Claude model | `orchestrator_capabilities`: `inheritedProviderInstanceId` and `inheritedModel` |
 | List providers, models, efforts | The repository or skill's model listing script if available, otherwise the dispatch tool's documented enum | The `Agent` tool's `model` and `effort` options; other providers are not dispatchable | `orchestrator_capabilities` |
 | Start a worker with model and effort, fresh context | `spawn_agent` with model and reasoning effort, fresh context | `Agent` with `model` and `effort`, a non-fork subagent type | `delegate_task` with `target.providerInstanceId`, `target.model`, `target.options` (effort), a `title`, and default shared isolation: the coordinator creates the worktree itself |
 | Wait for workers | Completion notifications or bounded waits, no polling loops | Background agents notify on completion | Completion wakes the coordinator; follow each task's `next`; read results with `task_status` |

@@ -21,7 +21,7 @@ The user can override any of these in the request; their values win.
 | Project | The fix skill's default project |
 | Bug filter | Assigned to the token's user (`projex.py me`), status exactly `待确认` |
 | Concurrency | 5 worker tasks at once |
-| Model provider | OpenAI (GPT); the user may name another provider or model |
+| Model provider | The provider the coordinator itself runs on; the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
 | Base branch | `origin/master`, independent of the main checkout; the user may name another branch for a run, for example when related fixes are still unmerged on a feature branch |
 | Acceptance workspace | `<root>/bugfix/` on branch `bugfix/projex-daniel`, created from the base branch |
