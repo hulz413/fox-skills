@@ -1,0 +1,6 @@
+interface:
+  display_name: "Fox Dispatch Projex Bugs"
+  short_description: "Coordinate parallel fixes for your pending Projex bugs"
+  default_prompt: "Use $fox-dispatch-projex-bugs to sync merged fixes, list my 待确认 Projex bugs by severity, and dispatch fox-fix-projex-bug workers."
+policy:
+  allow_implicit_invocation: false
