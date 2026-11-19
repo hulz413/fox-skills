@@ -23,7 +23,7 @@ The user can override any of these in the request; their values win.
 | Concurrency | 5 worker tasks at once |
 | Model provider | OpenAI (GPT); the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
-| Base branch | The main checkout's current branch, so workers see fixes that are not yet in master |
+| Base branch | `origin/master`, independent of the main checkout; the user may name another branch for a run, for example when related fixes are still unmerged on a feature branch |
 | Acceptance workspace | `<root>/bugfix/` on branch `bugfix/projex-daniel`, created from the base branch |
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
@@ -84,4 +84,4 @@ Report once all tasks have finished or are waiting on the user:
 - Merge sync results and skipped bugs.
 - Counts of blocked tasks by cause (for example missing local data, acceptance environment unavailable, waiting on product), so recurring causes are visible.
 - Decisions the coordinator made on workers' behalf.
-- What the user needs to do next, such as bringing `bugfix/projex-daniel` into the base branch and on to master. `已修复` still requires the fix to reach `origin/master`.
+- What the user needs to do next, such as pushing `bugfix/projex-daniel` and opening an MR to master. `已修复` requires the fix to reach `origin/master`.
