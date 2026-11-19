@@ -17,6 +17,9 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 DEFAULT_ORGANIZATION_ID = "659b8196e29648ed55c8f571"
 DEFAULT_PROJECT_ID = "ab491d6f94800aaeb9ef68e915"
 API_ORIGIN = "https://openapi-rdc.aliyuncs.com"
+PAGINATION_HEADERS = {
+    "x-total", "x-total-count", "x-total-pages", "x-page", "x-per-page", "x-next-page", "x-prev-page", "link",
+}
 logger = logging.getLogger(__name__)
 
 
@@ -59,18 +62,46 @@ def make_parser() -> argparse.ArgumentParser:
     search.add_argument("--project-id", default=DEFAULT_PROJECT_ID)
     search.add_argument("--page", type=int, default=1)
     search.add_argument("--per-page", type=int, default=200)
+    search.add_argument("--status-id", action="append", default=[], help="Exact status ID; repeat for several")
+    search.add_argument("--assigned-to", help="Exact assignee user ID")
+    search.add_argument("--sort", choices=("asc", "desc"), default="desc", help="Order by creation time")
+    subparsers.add_parser("me", help="Read the user that owns the token")
     return parser
 
 
+def list_condition(field: str, class_name: str, values: list[str]) -> dict[str, object]:
+    if not values or any(not value.strip() for value in values):
+        raise ProjexError(f"{field} filter values must be nonempty.")
+    return {
+        "fieldIdentifier": field, "operator": "CONTAINS", "value": values,
+        "toValue": None, "className": class_name, "format": "list",
+    }
+
+
+def search_conditions(args: argparse.Namespace) -> str | None:
+    conditions = []
+    if args.status_id:
+        conditions.append(list_condition("status", "status", args.status_id))
+    if args.assigned_to is not None:
+        conditions.append(list_condition("assignedTo", "user", [args.assigned_to]))
+    return json.dumps({"conditionGroups": [conditions]}) if conditions else None
+
+
 def make_request(args: argparse.Namespace) -> ApiRequest:
+    if args.command == "me":
+        return ApiRequest("GET", "/oapi/v1/platform/user")
     prefix = f"/oapi/v1/projex/organizations/{identifier(args.organization_id)}"
     if args.command == "search":
         if args.page < 1 or not 1 <= args.per_page <= 200 or args.page * args.per_page > 10000:
             raise ProjexError("Search requires page >= 1, 1 <= per-page <= 200, and page * per-page <= 10000.")
-        return ApiRequest("POST", f"{prefix}/workitems:search", {
+        body: dict[str, object] = {
             "category": "Bug", "spaceId": args.project_id, "spaceType": "Project",
-            "page": args.page, "perPage": args.per_page, "orderBy": "gmtCreate", "sort": "desc",
-        })
+            "page": args.page, "perPage": args.per_page, "orderBy": "gmtCreate", "sort": args.sort,
+        }
+        conditions = search_conditions(args)
+        if conditions is not None:
+            body["conditions"] = conditions
+        return ApiRequest("POST", f"{prefix}/workitems:search", body)
     if args.command == "project":
         return ApiRequest("GET", f"{prefix}/projects/{identifier(args.id)}")
     path = f"{prefix}/workitems/{identifier(args.id)}"
@@ -109,7 +140,7 @@ def send_request(api_request: ApiRequest, token: str) -> dict[str, object]:
             response_body = decode_response(response.read())
             pagination = {
                 key: value for key, value in response.headers.items()
-                if key.lower().startswith("x-pagination-") or key.lower() in {"x-total-count", "x-total-pages", "link"}
+                if key.lower().startswith("x-pagination-") or key.lower() in PAGINATION_HEADERS
             }
             if isinstance(response_body, dict) and (
                 response_body.get("success") is False or response_body.get("status") is False

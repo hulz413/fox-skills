@@ -33,6 +33,32 @@ class ProjexContractTests(unittest.TestCase):
             with self.subTest(options=options), self.assertRaises(projex.ProjexError):
                 projex.make_request(projex.make_parser().parse_args(["search", *options]))
 
+    def test_search_filters_by_exact_status_and_assignee_ids(self) -> None:
+        args = projex.make_parser().parse_args([
+            "search", "--status-id", "28", "--status-id", "30", "--assigned-to", "user-1", "--sort", "asc",
+        ])
+        body = projex.make_request(args).body
+        assert body is not None
+        self.assertEqual(body["sort"], "asc")
+        groups = json.loads(str(body["conditions"]))["conditionGroups"]
+        self.assertEqual(len(groups), 1)
+        self.assertEqual([(c["fieldIdentifier"], c["value"]) for c in groups[0]], [
+            ("status", ["28", "30"]), ("assignedTo", ["user-1"]),
+        ])
+        with self.assertRaises(projex.ProjexError):
+            projex.make_request(projex.make_parser().parse_args(["search", "--assigned-to", " "]))
+
+    def test_me_reads_the_token_owner_without_an_organization_path(self) -> None:
+        request = projex.make_request(projex.make_parser().parse_args(["me"]))
+        self.assertEqual((request.method, request.path, request.body), ("GET", "/oapi/v1/platform/user", None))
+
+    def test_search_pagination_keeps_total_and_next_page_headers(self) -> None:
+        opener = MagicMock()
+        opener.open.return_value = api_response([], {"X-Total": "246", "X-Next-Page": "2", "X-Server-Id": "s"})
+        with patch.object(projex, "build_opener", return_value=opener):
+            result = projex.send_request(projex.ApiRequest("POST", "/workitems:search", {}), "test-token")
+        self.assertEqual(result["pagination"], {"X-Total": "246", "X-Next-Page": "2"})
+
     def test_status_write_only_changes_status_and_accepts_an_empty_success_body(self) -> None:
         args = projex.make_parser().parse_args(["status", "bug-1", "--status-id", "selected-1"])
         opener = MagicMock()
