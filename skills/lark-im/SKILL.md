@@ -35,6 +35,10 @@ Chat (oc_xxx)
 
 ## Important Notes
 
+### 合并转发与话题上下文
+
+收到合并转发占位符，或用户引用的消息正文未随上下文出现时，先主动读取原消息，再判断是否需要用户补充：有话题 ID 时运行 `lark-cli im +threads-messages-list --thread <thread_id> --as bot --no-reactions`，从返回的 `merge_forward` 内容中提取项目、链接和其他任务信息；有消息 ID 时使用 `+messages-mget`。接入上下文可能只提供占位符，并不代表原消息没有内容。读取后继续执行用户的原始任务，不要只解释原因就停下；只有读取失败或内容确实不足时才说明具体卡点。
+
 ### AppLink and Share Links
 
 Prefer CLI-returned links: use `chat_app_link` to open joined conversations, `message_app_link` to open messages, and `share_link` to invite others to groups. If manually building a joined-conversation AppLink, use `https://<applink_host>/client/chat/open?openChatId=<oc_xxx>`, never `chatId=<oc_xxx>` or `lark://...chat_id=<oc_xxx>`.
