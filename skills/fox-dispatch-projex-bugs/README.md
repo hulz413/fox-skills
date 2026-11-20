@@ -22,3 +22,4 @@ The coordinator never fixes bugs itself. Invoke it manually with `$fox-dispatch-
 - [SKILL.md](SKILL.md): the coordination procedure.
 - [references/model-routing.md](references/model-routing.md): per-task model and effort selection.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
+- [scripts/finish_bug.py](scripts/finish_bug.py): checks that a fix landed on the acceptance branch, then posts the worker's comment and sets `开发完成`; `--dry-run` writes nothing.

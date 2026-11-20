@@ -27,7 +27,7 @@ The user can override any of these in the request; their values win.
 | Acceptance workspace | `<root>/bugfix/` on branch `bugfix/projex-daniel`, created from the base branch |
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
-| Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock` |
+| Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock`, taken and released only with `../fox-fix-projex-bug/scripts/accept-lock.sh` |
 | Acceptance login | macOS Keychain generic password, service `fox-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
 
 ## 1. Prepare
@@ -36,7 +36,7 @@ The user can override any of these in the request; their values win.
 2. Run `projex.py me` and record `body.id`. A 403 means the token lacks the organization user read permission: report it and stop, do not guess the user.
 3. Refresh the model inventory for every enabled provider (see [model routing](references/model-routing.md)). Do this on every run; never reuse a list from an earlier run.
 4. Ensure the acceptance workspace exists. If missing, create it with `git worktree add <root>/bugfix -b bugfix/projex-daniel <base>`, copy (never symlink) the main checkout's untracked `.env` files into it, and install dependencies as the repository documents. If it exists, bring it up to `<base>` only when that is safe: it is clean and no acceptance lock is held. Then fast-forward with `git merge --ff-only <base>` when possible; when `git cherry <base> HEAD` shows only `-` (every acceptance commit is already in the base), `git reset --hard <base>`. Otherwise leave it and report which acceptance commits are not yet in the base, so the user can bring them over.
-5. Check whether the acceptance workspace's start scripts support `LOCAL_SLOT`. If not, workers can fix and unit-test but cannot pass acceptance; say so in the plan so nobody expects `开发完成` this run.
+5. Smoke-test acceptance before dispatching, so environment problems surface once instead of once per worker. Take the acceptance lock with `../fox-fix-projex-bug/scripts/accept-lock.sh` (owner `coordinator`), start the slot from a login shell exactly as workers will (`LOCAL_SLOT=<slot> scripts/restart.sh`, no `--with-console`), confirm the frontend answers, log in once with the acceptance login below (through `playwright-cli` or the app's login API), then stop the slot and release the lock. If the start scripts lack `LOCAL_SLOT` support or any step fails, fix it or record it in the plan before dispatching, so nobody expects `开发完成` while the environment is broken.
 
 ## 2. Sync merged fixes
 
@@ -64,7 +64,7 @@ Show the plan as a table, then dispatch immediately without waiting for confirma
 For each task, in plan order and up to the concurrency limit:
 
 1. Set each bug in the group to `已选择`, mapping the exact name to its ID through the workflow, and read back. Skip a bug already there; do not move a later status back.
-2. Create its fix workspace: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex-daniel`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
+2. Create its fix workspace while holding the acceptance lock, so the base never includes another worker's temporary cherry-picks: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex-daniel`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
 3. Start a worker task titled with the issue keys (for example `FISN-1322 FISN-1325`) using the chosen model and effort, with fresh context. The brief must contain: the instruction to run the fix-projex-bug skill at its absolute path in dispatched mode; the keys and their Projex links; the fix workspace, acceptance workspace, acceptance branch, slot, and lock path; flags from triage; that questions go to the coordinator; whether one model escalation is allowed; that the worker makes no Projex writes and returns comment drafts instead; and the expected final report. Pass pointers, not copies of the bug text.
 4. When a worker finishes, ends blocked, or ends waiting on the user, its slot frees and the next task starts. A worker waiting on the user does not hold a slot.
 
@@ -72,7 +72,7 @@ For each task, in plan order and up to the concurrency limit:
 
 Answer directly, citing the evidence used, when the question is about: the implementation approach, a modest scope adjustment, coordination between bugs or tasks (merging tasks, ordering acceptance), local test data, or a model escalation. Base answers on the bug text, repository docs and conventions, and other bugs in the batch. Record each decision for the final report.
 
-Forward to the user, grouped and with the worker task links: disputed or undocumented expected product behavior, anything beyond the authorization above, approval to apply a migration during acceptance, and cherry-pick conflicts in the acceptance workspace the coordinator cannot settle by reordering or merging tasks. Do not guess product decisions.
+Forward to the user, grouped and with the worker task links: disputed or undocumented expected product behavior, anything beyond the authorization above, approval to apply a migration during acceptance, and cherry-pick conflicts in the acceptance workspace the coordinator cannot settle by reordering or merging tasks. Do not guess product decisions. When a forwarded question involves the PRD or another product document, include the relevant excerpt and its section number, so the user can decide without looking it up.
 
 For an escalation, start a new attempt at one stronger configuration with the prior evidence handed off; allow at most one per task.
 
@@ -80,11 +80,9 @@ For an escalation, start a new attempt at one stronger configuration with the pr
 
 When a worker reports that acceptance passed and its commits landed on the acceptance branch:
 
-1. Confirm with `git cherry bugfix/projex-daniel bugfix/<key>` that nothing remains unlanded. If something does, ask the worker instead of writing to Projex.
-2. For each bug, recheck its identity and existing comments, reuse a comment that already describes this repair, and otherwise post the worker's repair comment draft through a UTF-8 file with the fix skill's `comment` command. Then set `开发完成` and read back both. Do not edit the draft's substance; return it to the worker if it contradicts its own report.
-3. For a bug already fixed in `origin/master`, the worker reports no landed commit; check that the fix commit is an ancestor of `origin/master`, then post and set the status the same way.
-4. For a no-fix conclusion, post the worker's conclusion comment once any product question it depends on is settled, and leave the status unchanged.
-5. Remove the worktree (`git worktree remove`) and delete the branch.
+1. Write each bug's draft to a UTF-8 file. Do not edit its substance; return it to the worker if it contradicts its own report.
+2. Run [`scripts/finish_bug.py`](scripts/finish_bug.py) per bug from the target repository through a login shell: `--fix-branch bugfix/<key>` for a repair, `--mode already-fixed --fix-commit <sha>` for a fix already in `origin/master`, and `--mode conclusion` for a no-fix conclusion once any product question it depends on is settled. The script checks the landing first (patch equivalence, or the same subject and changed lines when a cherry-pick was merged automatically), skips a comment that already exists, posts the draft, sets `开发完成` unless the mode is conclusion, and reads both back. Never write to Projex for a bug whose landing check fails; ask the worker instead.
+3. Remove the worktree (`git worktree remove`) and delete the branch.
 
 If a write fails or its outcome is uncertain, check its effect with read-only calls before retrying, and report what is still pending. Keep the worktree and branch of any blocked or unfinished task and list them.
 

@@ -28,4 +28,5 @@ It never pushes, merges, deploys, or uses shared environments.
 - [references/projex.md](references/projex.md): Projex API usage and the bundled client.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
+- [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.
 - [tests/test_projex.py](tests/test_projex.py): offline contract tests; run `python3 -m unittest tests.test_projex` from this folder.
