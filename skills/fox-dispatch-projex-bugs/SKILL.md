@@ -24,7 +24,7 @@ The user can override any of these in the request; their values win.
 | Model provider | The provider the coordinator itself runs on; the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
 | Base branch | `origin/master`, independent of the main checkout; the user may name another branch for a run, for example when related fixes are still unmerged on a feature branch |
-| Acceptance workspace | `<root>/bugfix/` on branch `bugfix/projex-daniel`, created from the base branch |
+| Acceptance workspace | `<root>/bugfix/` on branch `bugfix/projex`, created from the base branch |
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
 | Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock`, taken and released only with `../fox-fix-projex-bug/scripts/accept-lock.sh` |
@@ -35,7 +35,7 @@ The user can override any of these in the request; their values win.
 1. Confirm the repository is the main checkout of the intended project and record its path. Run `git fetch origin master`.
 2. Run `projex.py me` and record `body.id`. A 403 means the token lacks the organization user read permission: report it and stop, do not guess the user.
 3. Refresh the model inventory for every enabled provider (see [model routing](references/model-routing.md)). Do this on every run; never reuse a list from an earlier run.
-4. Ensure the acceptance workspace exists. If missing, create it with `git worktree add <root>/bugfix -b bugfix/projex-daniel <base>`, copy (never symlink) the main checkout's untracked `.env` files into it, and install dependencies as the repository documents. If it exists, bring it up to `<base>` only when that is safe: it is clean and no acceptance lock is held. Then fast-forward with `git merge --ff-only <base>` when possible; when `git cherry <base> HEAD` shows only `-` (every acceptance commit is already in the base), `git reset --hard <base>`. Otherwise leave it and report which acceptance commits are not yet in the base, so the user can bring them over.
+4. Ensure the acceptance workspace exists. If missing, create it with `git worktree add <root>/bugfix -b bugfix/projex <base>`, copy (never symlink) the main checkout's untracked `.env` files into it, and install dependencies as the repository documents. If it exists, bring it up to `<base>` only when that is safe: it is clean and no acceptance lock is held. Then fast-forward with `git merge --ff-only <base>` when possible; when every acceptance commit is already in the base, `git reset --hard <base>`. Count them as in the base when `git cherry <base> HEAD` shows only `-`, or when merging HEAD into the base changes nothing (`git merge-tree --write-tree <base> HEAD` prints the same tree as `git rev-parse <base>^{tree}`), which covers squash merges. Otherwise leave it and report which acceptance commits are not yet in the base, so the user can bring them over.
 5. Smoke-test acceptance before dispatching, so environment problems surface once instead of once per worker. Take the acceptance lock with `../fox-fix-projex-bug/scripts/accept-lock.sh` (owner `coordinator`), start the slot from a login shell exactly as workers will (`LOCAL_SLOT=<slot> scripts/restart.sh`, no `--with-console`), confirm the frontend answers, log in once with the acceptance login below (through `playwright-cli` or the app's login API), then stop the slot and release the lock. If the start scripts lack `LOCAL_SLOT` support or any step fails, fix it or record it in the plan before dispatching, so nobody expects `开发完成` while the environment is broken.
 
 ## 2. Sync merged fixes
@@ -54,7 +54,7 @@ Read each bug's title, description, and comment text. Do not open attachments or
 
 - **Group**: bugs that share context, a root cause, or a fix approach go into one task. Prefer grouping when it saves rediscovery or lets one acceptance cover several bugs.
 - **Skip**: not this repository's code, a data or configuration problem rather than a code defect, or behavior that exists only on another unmerged branch. Record the reason; do not dispatch.
-- **Flags**: a likely database migration (needs the user's approval before acceptance), or frontend dependency changes.
+- **Flags**: a likely database migration (needs the user's approval before acceptance), frontend dependency changes, or additions to a shared numbered registry such as error codes, which parallel workers can claim twice; tell those workers to recheck the number before landing.
 - **Complexity**: the evidence for the capability tier and effort in [model routing](references/model-routing.md).
 
 ## 5. Show the plan and dispatch
@@ -64,13 +64,13 @@ Show the plan as a table, then dispatch immediately without waiting for confirma
 For each task, in plan order and up to the concurrency limit:
 
 1. Set each bug in the group to `已选择`, mapping the exact name to its ID through the workflow, and read back. Skip a bug already there; do not move a later status back.
-2. Create its fix workspace while holding the acceptance lock, so the base never includes another worker's temporary cherry-picks: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex-daniel`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
-3. Start a worker task titled with the issue keys (for example `FISN-1322 FISN-1325`) using the chosen model and effort, with fresh context. The brief must contain: the instruction to run the fix-projex-bug skill at its absolute path in dispatched mode; the keys and their Projex links; the fix workspace, acceptance workspace, acceptance branch, slot, and lock path; flags from triage; that questions go to the coordinator; whether one model escalation is allowed; that the worker makes no Projex writes and returns comment drafts instead; and the expected final report. Pass pointers, not copies of the bug text.
+2. Create its fix workspace while holding the acceptance lock, so the base never includes another worker's temporary cherry-picks: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
+3. Start a worker task titled with the issue keys (for example `FISN-1322 FISN-1325`) using the chosen model and effort, with fresh context. The brief must contain: the instruction to run the fix-projex-bug skill at its absolute path in dispatched mode; the keys and their Projex links; the fix workspace, acceptance workspace, acceptance branch, slot, and lock path; flags from triage; that the coordinator is this dispatching task and questions reach it by ending the turn as the fix skill's host table describes; whether one model escalation is allowed; that the worker makes no Projex writes and returns comment drafts instead; and the expected final report. Pass pointers, not copies of the bug text.
 4. When a worker finishes, ends blocked, or ends waiting on the user, its slot frees and the next task starts. A worker waiting on the user does not hold a slot.
 
 ## 6. Answer workers
 
-Answer directly, citing the evidence used, when the question is about: the implementation approach, a modest scope adjustment, coordination between bugs or tasks (merging tasks, ordering acceptance), local test data, or a model escalation. Base answers on the bug text, repository docs and conventions, and other bugs in the batch. Record each decision for the final report.
+Answer directly, citing the evidence used, when the question is about: the implementation approach, a modest scope adjustment, coordination between bugs or tasks (merging tasks, ordering acceptance), local test data, or a model escalation. When a cherry-pick conflicts because the acceptance branch moved after the fix workspace was created, move the fix branch yourself: keep its commits on a backup branch, reset the fix branch to the acceptance `HEAD` when its worktree is clean, and have the worker re-apply and resolve the commits in the fix workspace. Base answers on the bug text, repository docs and conventions, and other bugs in the batch. Record each decision for the final report.
 
 Forward to the user, grouped and with the worker task links: disputed or undocumented expected product behavior, anything beyond the authorization above, approval to apply a migration during acceptance, and cherry-pick conflicts in the acceptance workspace the coordinator cannot settle by reordering or merging tasks. Do not guess product decisions. When a forwarded question involves the PRD or another product document, include the relevant excerpt and its section number, so the user can decide without looking it up.
 
@@ -93,4 +93,4 @@ Report once all tasks have finished or are waiting on the user:
 - Counts of blocked tasks by cause (for example missing local data, acceptance environment unavailable, waiting on product), so recurring causes are visible.
 - Decisions the coordinator made on workers' behalf.
 - Test data that workers could not remove, with where it lives. Before reporting, remove what you can yourself, scoped by the bug key, the run's time window and the project, and list only what is still left.
-- What the user needs to do next, such as pushing `bugfix/projex-daniel` and opening an MR to master. `已修复` requires the fix to reach `origin/master`.
+- What the user needs to do next, such as pushing `bugfix/projex` and opening an MR to master. `已修复` requires the fix to reach `origin/master`.
