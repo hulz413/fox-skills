@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Coordinator finish step for one dispatched Projex bug.
+"""Coordinator finish step for one dispatched issue.
 
 Checks the landing first and writes to Projex only when it passes:
 
@@ -9,6 +9,8 @@ Checks the landing first and writes to Projex only when it passes:
                  change the patch id); then post the comment and set 开发完成.
   already-fixed  --fix-commit must be an ancestor of origin/master; then post and set 开发完成.
   conclusion     post the comment only; the status is not changed.
+  landing        check a repair's landing only, for issues from other sources; no Projex
+                 arguments, no writes.
 
 Run it from the target repository through a login shell so ALIYUN_YUNXIAO_TOKEN is set,
 with Python 3.10+. --dry-run checks and prints the planned writes without writing.
@@ -68,7 +70,7 @@ def status_id(workitem_id: str, name: str) -> str:
 
 
 def check_landing(args: argparse.Namespace) -> None:
-    if args.mode == "repair":
+    if args.mode in ("repair", "landing"):
         missing = unlanded_commits(args.fix_branch, args.acceptance_branch)
         if missing:
             raise SystemExit("not landed on " + args.acceptance_branch + ":\n  " + "\n  ".join(missing))
@@ -79,16 +81,22 @@ def check_landing(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("workitem_id")
-    parser.add_argument("comment_file", type=Path)
-    parser.add_argument("--mode", choices=("repair", "already-fixed", "conclusion"), default="repair")
-    parser.add_argument("--fix-branch", help="required for repair")
+    parser.add_argument("workitem_id", nargs="?", help="required except for landing")
+    parser.add_argument("comment_file", type=Path, nargs="?", help="required except for landing")
+    parser.add_argument("--mode", choices=("repair", "already-fixed", "conclusion", "landing"), default="repair")
+    parser.add_argument("--fix-branch", help="required for repair and landing")
     parser.add_argument("--fix-commit", help="required for already-fixed")
     parser.add_argument("--acceptance-branch", default="bugfix/projex")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
-    if args.mode == "repair" and not args.fix_branch:
-        parser.error("--fix-branch is required for repair")
+    if args.mode in ("repair", "landing") and not args.fix_branch:
+        parser.error(f"--fix-branch is required for {args.mode}")
+    if args.mode == "landing":
+        check_landing(args)
+        print(f"{args.fix_branch}: landed on {args.acceptance_branch}")
+        return
+    if not args.workitem_id or not args.comment_file:
+        parser.error("workitem_id and comment_file are required")
     if args.mode == "already-fixed" and not args.fix_commit:
         parser.error("--fix-commit is required for already-fixed")
 

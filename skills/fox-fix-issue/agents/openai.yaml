@@ -1,3 +1,5 @@
 interface:
   display_name: "Fox Fix Issue"
-  short_description: "Investigate and fix Projex bugs with local commits"
+  short_description: "Investigate and fix issues from Projex, QA cases, or feedback with local commits"
+policy:
+  allow_implicit_invocation: false

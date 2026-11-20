@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared acceptance lock for dispatched fox-fix-issue workers and their coordinator.
+# Shared acceptance lock for dispatched fox-fix-issue workers, case runners, and their coordinator.
 #
 #   accept-lock.sh acquire <lock-dir> <owner> [max-wait-seconds]   (default 2700 = 45 min)
 #   accept-lock.sh release <lock-dir> <owner>

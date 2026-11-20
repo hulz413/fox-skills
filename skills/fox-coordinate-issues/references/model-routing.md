@@ -1,6 +1,6 @@
-# Model routing for bug tasks
+# Model routing for issue tasks
 
-Choose a model and effort for each worker task before its first dispatch. This file is self-contained; it adapts the routing approach of `fox-orchestrate` to bug fixing without depending on that skill.
+Choose a model and effort for each worker task before its first dispatch. This file is self-contained; it adapts the routing approach of `fox-orchestrate` to issue fixing without depending on that skill.
 
 ## 1. Refresh the inventory every run
 
@@ -14,26 +14,26 @@ Treat a provider as usable only if the host reports it enabled and able to run c
 2. Otherwise use the provider the coordinator itself runs on (for example Claude when the dispatch task runs on a Claude model, OpenAI when it runs on GPT). Establish it from the host's report of the current task's provider or model, not from guessing; if the host does not report it, say so and ask.
 3. Within the provider, consider only the latest available version of each model family; superseded versions are not candidates unless pinned.
 
-## 3. Pick capability from the bug evidence
+## 3. Pick capability from the issue evidence
 
 Judge from the triage evidence: impact, uncertainty, and how much context the worker must rebuild. File counts, text length, and severity alone do not decide it.
 
-| Bug evidence | Capability tier |
+| Issue evidence | Capability tier |
 |---|---|
 | Clear symptom and expected result, likely one module, established fix pattern, direct check available (copy, style, a wrong field, a missed condition) | efficient |
 | Needs causal investigation, several modules or a service boundary, or reconstructing context from code and data | workhorse |
-| Root cause unclear across services, concurrency or data consistency, conflicting reports, or a group whose fix must reconcile several bugs | frontier |
+| Root cause unclear across services, concurrency or data consistency, conflicting reports, or a group whose fix must reconcile several issues | frontier |
 
 Map tiers to the host's model descriptions and recommendations. Prefer the host's recommended model for a tier, then its default. Disclose ambiguity instead of guessing which model is stronger or cheaper.
 
 ## 4. Pick effort independently
 
-| Effort | Bug evidence |
+| Effort | Issue evidence |
 |---|---|
 | low | A settled fix with complete boundaries and a narrow check |
 | medium | Ordinary investigation, local implementation, and reliable checks |
 | high | Hard debugging, interacting conditions, or conflicting evidence where deeper analysis should improve correctness |
-| xhigh | Demanding cross-service or cross-bug consistency where analysis beyond a normal deep pass materially helps |
+| xhigh | Demanding cross-service or cross-issue consistency where analysis beyond a normal deep pass materially helps |
 | max | Only the hardest analysis, with depth explicitly worth the latency and usage |
 
 Capability and effort are separate choices: a frontier task does not imply high effort, nor an efficient one low. Use only effort values the chosen model supports; if one is unsupported, take that model's nearest supported lower value and say so.

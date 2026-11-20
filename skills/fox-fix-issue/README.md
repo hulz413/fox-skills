@@ -1,31 +1,29 @@
 # Fox Fix Issue
 
-Fixes Projex (Alibaba Cloud DevOps) bugs end to end from a bug URL or issue key such as `FISN-1134`, one bug or a group of related bugs per task:
+Fixes one issue or a group of related issues end to end, wherever they come from: a Projex (Alibaba Cloud DevOps) bug URL or key such as `FISN-1134`, a QA test case, or feedback passed on from a chat, a document, or a screenshot.
 
-1. Confirms the bug, shows its link, renames the task to the issue keys, and moves the bug to `已选择`.
-2. Reads the description, comments, and attachments, and restates the problem in plain Chinese.
-3. Investigates and either fixes it, asks material questions, or posts a conclusion comment when no change is needed.
-4. Validates with focused tests and local end-to-end acceptance in the host's built-in browser, then creates one local commit per bug with a `Bug: <key>` trailer.
-5. Posts a repair comment and sets `开发完成`; sets `已修复` only once every repair commit for the bug is in `origin/master`.
+1. Identifies the issue and its key, shows its link, and renames the task to the keys.
+2. Reads the whole report and restates the problem in plain Chinese.
+3. Investigates and either fixes it, asks material questions, or concludes that no fix is needed.
+4. Validates with focused tests and local end-to-end acceptance in the host's built-in browser, then creates one local commit per issue.
+5. Writes back by source. Projex: `已选择`, a repair comment and `开发完成`, a conclusion comment, and `已修复` only once every repair commit (found by its `Bug: <key>` trailer) is in `origin/master`. Other sources: nothing is written without the user's confirmation; the report carries a ready-to-paste conclusion.
 
-When dispatched by [`fox-coordinate-issues`](../fox-coordinate-issues/SKILL.md), it makes no Projex writes: it returns comment drafts and the coordinator posts them and sets every status.
-
-It never pushes, merges, deploys, or uses shared environments.
+It never pushes, merges, deploys, or uses shared environments. Invoke it manually with `$fox-fix-issue` (Codex) or `/fox-fix-issue` (Claude Code); `allow_implicit_invocation: false` and `disable-model-invocation: true` keep it manual-only.
 
 ## Modes
 
-- **Standalone**: invoke it on a bug; it works in the current repository and branch.
-- **Dispatched**: [`fox-coordinate-issues`](../fox-coordinate-issues/README.md) starts it as a worker with a fix worktree, a shared acceptance worktree, a local slot, and an acceptance lock; questions go to the coordinator.
+- **Standalone**: invoke it on an issue; it works in the current repository and branch.
+- **Dispatched**: [`fox-coordinate-issues`](../fox-coordinate-issues/README.md) starts it as a worker with a fix worktree, a shared acceptance worktree, a local slot, and an acceptance lock; questions go to the coordinator, and the worker returns write-back drafts instead of writing. The coordinator can also start a case runner that only runs QA cases.
 
 ## Requirements
 
-- `ALIYUN_YUNXIAO_TOKEN` with Projex work item, comment, and workflow permissions (organization user read permission too, for `projex.py me`).
-- Python 3.10+ for `scripts/projex.py` (standard library only).
+- For Projex: `ALIYUN_YUNXIAO_TOKEN` with Projex work item, comment, and workflow permissions (organization user read permission too, for `projex.py me`), and Python 3.10+ for `scripts/projex.py` (standard library only).
 
 ## Files
 
-- [SKILL.md](SKILL.md): the procedure.
-- [references/projex.md](references/projex.md): Projex API usage and the bundled client.
+- [SKILL.md](SKILL.md): the procedure shared by every source.
+- [sources/projex.md](sources/projex.md): Projex identification, comments, statuses, the merged rule, and the API guide.
+- [sources/general.md](sources/general.md): every other source, QA test cases and the case runner included.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
 - [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.

@@ -1,4 +1,65 @@
-# Projex API guide
+# Projex bugs
+
+The Projex-specific parts of [SKILL.md](../SKILL.md): identifying and taking a bug, its commit trailer, and the comments and status changes written back. The [API guide](#api-guide) below covers credentials and the bundled client.
+
+Status meanings: `开发完成` means the fix has passed focused checks and local end-to-end acceptance and is committed locally on the target branch (or is already contained in `origin/master`); pushing is not required. `已修复` means the fix is contained in the remote default branch (`origin/master`); never push or merge to reach it.
+
+Writes that run without asking again once the user has asked to fix the bug (in standalone mode; in dispatched mode the coordinator makes them): `已选择`, the repair comment and `开发完成` after acceptance passes, and the conclusion comment once the conclusion is settled.
+
+## Identify and take
+
+1. Check credentials as the API guide describes.
+2. For a URL, use its project ID and `openWorkitemIdentifier`; the work item ID is in the URL fragment. A list-only URL also needs an issue key. For a key alone, search the default project page by page and match `serialNumber` exactly. Do not choose by similar titles or guess across organizations or projects.
+3. Read the work item details. Check `id`, `serialNumber`, `space.id`, `categoryId`, title, and current status to confirm this is the intended bug. Stop writes if the key, project, or work item type conflicts. Do not guess when there are zero or multiple exact matches, or the search is incomplete. Do not rename the Projex bug itself.
+4. The issue key is the `serialNumber`, such as `FISN-1134`. The link is `https://devops.aliyun.com/projex/project/<space.id>/bug#openWorkitemIdentifier=<id>`, or the URL the user supplied.
+5. On a resumed task, preserve completed, closed, archived, and subsequent testing states; do not move them back to `已选择`.
+6. To take the bug (standalone mode only), read the workflow and map the exact name `已选择` to one unique status ID. Update it and read back to confirm; skip the write if it already has that status. Do not change the assignee, priority, or other fields. Do not bypass project rules if a transition is rejected. Keep `已选择` while waiting on a question or after a failed acceptance.
+
+## Read
+
+Read the description and all comments, and inspect relevant screenshots and attachments with the commands in [images and attachments](#images-and-attachments).
+
+## Commit trailer
+
+Add `Bug: <issue-key>` to the commit body, one line per key for a group commit. The merged rule below finds repair commits by this trailer.
+
+## Repair comment and 开发完成
+
+Recheck the bug identity and existing comments first. When resuming, reuse an existing repair comment that already describes this repair rather than posting another. Write the comment in Chinese using actual validation results, passing its body through a UTF-8 file with real newlines:
+
+```text
+原因：<confirmed root cause>
+
+修复内容：<specific changes and resulting behavior>
+
+验证结果：<unit checks and the local e2e steps actually run, results, and relevant validation limitations>
+```
+
+After the comment succeeds, set the status to `开发完成` and read back to confirm. Do not set `已修复` in the same run unless the commit is already contained in `origin/master`. Skip a redundant update and never move a later status backward. If the comment succeeds but the status update fails, report only the pending status update. Without a completed repair, do not post this comment; the only other automatic comment is the conclusion comment.
+
+## Conclusion comment
+
+Recheck the bug identity and existing comments first, and reuse an existing comment that already states this conclusion. Write it in Chinese through a UTF-8 file; omit the follow-up line when nobody needs to act:
+
+```text
+结论：<无需修改 / 重复 / 暂无法复现 / 已在未合并分支修复>
+
+原因：<evidence-backed reasoning, including what was checked and any confirmed product decision>
+
+后续：<who needs to do what next, such as closing the issue, supplying a reproduction, or waiting for a branch to merge>
+```
+
+A conclusion comment does not change the status. Keep the current status unless the user asks for a specific one, such as `暂不修复`; then map that exact name to one status ID and read back to confirm, as for other transitions. If an earlier step moved the issue to `已选择` and no work remains, tell the user rather than silently reverting it.
+
+## Mark fixed after merge
+
+Set `已修复` only when the repair is contained in the remote default branch. When the user asks to sync status, or a resumed task finds the bug at `开发完成`, run `git fetch origin master` and apply this merged rule. List every repair commit for the bug on the working branches (the current branch, or the base and acceptance branches in dispatched mode) with `git log -F --grep 'Bug: <issue-key>'`. A bug often has an earlier fix already in master and a later follow-up that is not, so one match in `origin/master` is not enough: the bug is merged only when each of those commits is in `origin/master`, either as an ancestor, as a patch-equivalent commit (`git cherry origin/master <branch>` marks it `-`), or with its change already present, which covers squash merges: `git merge-tree --write-tree --merge-base <commit>^ origin/master <commit>` prints the same tree as `git rev-parse origin/master^{tree}`. Cherry-picks, rebases, and squash merges change hashes, so never require the same hash. If a commit is only content-matched, say so. Map the exact name `已修复` to one status ID, update, and read back. If not yet merged, leave `开发完成` and say so. Merging itself is the user's step.
+
+## Report
+
+Include the outcomes of the `已选择`, comment, and status writes, or in dispatched mode the comment drafts in their place.
+
+# API guide
 
 ## Configuration and credentials
 
