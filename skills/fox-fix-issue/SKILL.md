@@ -1,6 +1,6 @@
 ---
 name: fox-fix-issue
-description: Fix one issue or a group of related issues from any source, such as an Alibaba Cloud DevOps Projex bug (URL or key like FISN-1134), a failed QA test case, or feedback the user passes on. Restate the report, investigate, and fix well-understood issues with focused validation, local end-to-end acceptance in a browser, and one local commit per issue; or conclude that no fix is needed, or pause for material questions. Projex bugs get their comments and statuses written; other sources get a ready-to-paste conclusion and no writes without the user's confirmation. Also runs as a worker dispatched by fox-coordinate-issues. Manual invocation only ($fox-fix-issue or /fox-fix-issue); never trigger automatically.
+description: Fix one issue or a group of related issues from any source, such as an Alibaba Cloud DevOps Projex bug (URL or key like FISN-1134), a failed QA test case, or feedback the user passes on. Restate the report, investigate, and fix well-understood issues with focused validation, local end-to-end acceptance in a browser, and one local commit per issue; or conclude that no fix is needed, or pause for material questions. Projex bugs get their comments and statuses written; other sources are written back only within the user's explicitly authorized target and scope; otherwise provide a ready-to-paste conclusion. Also runs as a worker dispatched by fox-coordinate-issues. Manual invocation only ($fox-fix-issue or /fox-fix-issue); never trigger automatically.
 disable-model-invocation: true
 ---
 
