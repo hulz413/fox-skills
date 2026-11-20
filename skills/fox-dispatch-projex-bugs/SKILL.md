@@ -28,7 +28,7 @@ The user can override any of these in the request; their values win.
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
 | Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock` |
-| Acceptance login | macOS Keychain generic password, service `fox-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
+| Acceptance login | macOS Keychain generic password, service `upperly-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
 
 ## 1. Prepare
 
@@ -94,5 +94,5 @@ Report once all tasks have finished or are waiting on the user:
 - Merge sync results and skipped bugs.
 - Counts of blocked tasks by cause (for example missing local data, acceptance environment unavailable, waiting on product), so recurring causes are visible.
 - Decisions the coordinator made on workers' behalf.
-- Test data that workers could not remove, with where it lives.
+- Test data that workers could not remove, with where it lives. Before reporting, remove what you can yourself, scoped by the bug key, the run's time window and the project, and list only what is still left.
 - What the user needs to do next, such as pushing `bugfix/projex-daniel` and opening an MR to master. `已修复` requires the fix to reach `origin/master`.
