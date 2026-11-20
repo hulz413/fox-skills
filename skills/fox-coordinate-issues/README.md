@@ -5,7 +5,7 @@ Coordinates a batch of issues: Projex (Alibaba Cloud DevOps) bugs assigned to yo
 1. For Projex, marks `开发完成` bugs whose fix is already in `origin/master` as `已修复`.
 2. Builds the list: your `待确认` Projex bugs sorted by severity (P0 first) and then age, the issues you named, and for QA cases the failures a case runner finds. Case failures that are not code defects (wrong case, environment or data, disputed expectation) are reported, not fixed.
 3. Triages them from the reports, groups related issues into one task, and picks a model and effort per task (the coordinator's own provider by default).
-4. Shows the plan and dispatches up to 5 workers in parallel without waiting. Each worker runs [`fox-fix-issue`](../fox-fix-issue/SKILL.md) in its own worktree, then lands and accepts its fix one at a time in a shared acceptance worktree (`bugfix/projex`, created from `origin/master` by default) on a separate local slot.
+4. Shows the plan and dispatches up to 5 workers in parallel without waiting. Each worker runs [`fox-fix-issue`](../fox-fix-issue/SKILL.md) in its own worktree, then lands and accepts its fix one at a time in a shared acceptance worktree (`bugfix/verification`, created from `origin/master` by default) on a separate local slot.
 5. Answers workers' implementation questions and forwards product questions to you.
 6. Owns every external write. Projex: sets dispatched bugs to `已选择`, and after a worker's fix lands posts the worker's drafted comment and sets `开发完成`. Other sources: writes nothing unless you confirm a draft in the task. Then it cleans up finished worktrees and reports, with a ready-to-paste conclusion per non-Projex issue.
 

@@ -86,7 +86,7 @@ def main() -> None:
     parser.add_argument("--mode", choices=("repair", "already-fixed", "conclusion", "landing"), default="repair")
     parser.add_argument("--fix-branch", help="required for repair and landing")
     parser.add_argument("--fix-commit", help="required for already-fixed")
-    parser.add_argument("--acceptance-branch", default="bugfix/projex")
+    parser.add_argument("--acceptance-branch", default="bugfix/verification")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.mode in ("repair", "landing") and not args.fix_branch:
