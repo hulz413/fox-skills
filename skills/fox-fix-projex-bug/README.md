@@ -8,6 +8,8 @@ Fixes Projex (Alibaba Cloud DevOps) bugs end to end from a bug URL or issue key 
 4. Validates with focused tests and local end-to-end acceptance in the host's built-in browser, then creates one local commit per bug with a `Bug: <key>` trailer.
 5. Posts a repair comment and sets `开发完成`; sets `已修复` only once every repair commit for the bug is in `origin/master`.
 
+When dispatched by [`fox-dispatch-projex-bugs`](../fox-dispatch-projex-bugs/SKILL.md), it makes no Projex writes: it returns comment drafts and the coordinator posts them and sets every status.
+
 It never pushes, merges, deploys, or uses shared environments.
 
 ## Modes

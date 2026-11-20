@@ -6,9 +6,9 @@ disable-model-invocation: true
 
 # Dispatch Projex bugs
 
-The coordinator plans, dispatches, decides, and reports. It never handles a bug itself: no code investigation beyond reading the bug text, no code edits, commits, acceptance runs, or bug comments. Its only bug status write is `开发完成` → `已修复` during the merge sync. Workers run [fox-fix-projex-bug](../fox-fix-projex-bug/SKILL.md) in dispatched mode and own each bug end to end.
+The coordinator plans, dispatches, decides, and reports. It never handles a bug itself: no code investigation beyond reading the bug text, no code edits, commits, or acceptance runs. It owns every Projex write for dispatched bugs: status changes, and the repair or conclusion comments that workers draft. Workers never write to Projex, which keeps every write in one place that can check it against git and against the user's decisions. Workers run [fox-fix-projex-bug](../fox-fix-projex-bug/SKILL.md) in dispatched mode and own each bug end to end.
 
-Invoking this skill authorizes, for this run: the merge sync status writes, creating and cleaning the worktrees and branches described below, dispatching workers with the settings chosen here, and answering their in-scope questions. It does not authorize pushing, merging, opening MRs, or touching the user's main checkout, main branch, or running main instance.
+Invoking this skill authorizes, for this run: setting dispatched bugs to `已选择`, posting the comments workers draft and setting `开发完成` as described in [Finish](#7-finish), the merge sync `已修复` writes, creating and cleaning the worktrees and branches described below, dispatching workers with the settings chosen here, and answering their in-scope questions. It does not authorize pushing, merging, opening MRs, or touching the user's main checkout, main branch, or running main instance.
 
 Host-specific tools are listed in [host capabilities](references/hosts.md); the steps name actions. Use the Projex client from the fix skill: `"$PY" <fix-skill-dir>/scripts/projex.py`, following its [API guide](../fox-fix-projex-bug/references/projex.md) for credentials and the Python 3.10+ interpreter.
 
@@ -28,6 +28,7 @@ The user can override any of these in the request; their values win.
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
 | Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock` |
+| Acceptance login | macOS Keychain generic password, service `fox-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
 
 ## 1. Prepare
 
@@ -39,7 +40,7 @@ The user can override any of these in the request; their values win.
 
 ## 2. Sync merged fixes
 
-List bugs assigned to the user with status exactly `开发完成` (map the name to its ID through a bug's workflow). Decide each with the fix skill's [merged rule](../fox-fix-projex-bug/SKILL.md#mark-fixed-after-merge): every repair commit for the bug, on the base and acceptance branches, must already be in `origin/master`. A bug often has an earlier fix in master and a later follow-up that is not, so one match in master is not enough. When merged, set `已修复` through the fix skill's status procedure and read back. Otherwise leave the status and list the bug with its unmerged commits.
+List bugs assigned to the user with status exactly `开发完成` (map the name to its ID through a bug's workflow). Decide each with the fix skill's [merged rule](../fox-fix-projex-bug/SKILL.md#mark-fixed-after-merge): every repair commit for the bug, on the base and acceptance branches, must already be in `origin/master`. A bug often has an earlier fix in master and a later follow-up that is not, so one match in master is not enough. When merged, set `已修复` through the fix skill's status procedure and read back, without asking. Otherwise leave the status and list the bug with its unmerged commits. The workflow may refuse to move `已修复` back, so apply the rule strictly.
 
 ## 3. Build the list
 
@@ -62,9 +63,10 @@ Show the plan as a table, then dispatch immediately without waiting for confirma
 
 For each task, in plan order and up to the concurrency limit:
 
-1. Create its fix workspace: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex-daniel`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
-2. Start a worker task titled with the issue keys (for example `FISN-1322 FISN-1325`) using the chosen model and effort, with fresh context. The brief must contain: the instruction to run the fix-projex-bug skill at its absolute path in dispatched mode; the keys and their Projex links; the fix workspace, acceptance workspace, acceptance branch, slot, and lock path; flags from triage; that questions go to the coordinator; whether one model escalation is allowed; and the expected final report. Pass pointers, not copies of the bug text.
-3. When a worker finishes, ends blocked, or ends waiting on the user, its slot frees and the next task starts. A worker waiting on the user does not hold a slot.
+1. Set each bug in the group to `已选择`, mapping the exact name to its ID through the workflow, and read back. Skip a bug already there; do not move a later status back.
+2. Create its fix workspace: `git worktree add <root>/<key> -b bugfix/<key> bugfix/projex-daniel`, where `<key>` is the lowercase first key of the group. Symlink `frontend/node_modules` to the acceptance workspace's copy when that exists.
+3. Start a worker task titled with the issue keys (for example `FISN-1322 FISN-1325`) using the chosen model and effort, with fresh context. The brief must contain: the instruction to run the fix-projex-bug skill at its absolute path in dispatched mode; the keys and their Projex links; the fix workspace, acceptance workspace, acceptance branch, slot, and lock path; flags from triage; that questions go to the coordinator; whether one model escalation is allowed; that the worker makes no Projex writes and returns comment drafts instead; and the expected final report. Pass pointers, not copies of the bug text.
+4. When a worker finishes, ends blocked, or ends waiting on the user, its slot frees and the next task starts. A worker waiting on the user does not hold a slot.
 
 ## 6. Answer workers
 
@@ -76,7 +78,15 @@ For an escalation, start a new attempt at one stronger configuration with the pr
 
 ## 7. Finish
 
-When a worker reports its commits landed on the acceptance branch, confirm with `git cherry bugfix/projex-daniel bugfix/<key>` that nothing remains unlanded, then remove its worktree (`git worktree remove`) and delete its branch. Keep the worktree and branch of any blocked or unfinished task and list them.
+When a worker reports that acceptance passed and its commits landed on the acceptance branch:
+
+1. Confirm with `git cherry bugfix/projex-daniel bugfix/<key>` that nothing remains unlanded. If something does, ask the worker instead of writing to Projex.
+2. For each bug, recheck its identity and existing comments, reuse a comment that already describes this repair, and otherwise post the worker's repair comment draft through a UTF-8 file with the fix skill's `comment` command. Then set `开发完成` and read back both. Do not edit the draft's substance; return it to the worker if it contradicts its own report.
+3. For a bug already fixed in `origin/master`, the worker reports no landed commit; check that the fix commit is an ancestor of `origin/master`, then post and set the status the same way.
+4. For a no-fix conclusion, post the worker's conclusion comment once any product question it depends on is settled, and leave the status unchanged.
+5. Remove the worktree (`git worktree remove`) and delete the branch.
+
+If a write fails or its outcome is uncertain, check its effect with read-only calls before retrying, and report what is still pending. Keep the worktree and branch of any blocked or unfinished task and list them.
 
 Report once all tasks have finished or are waiting on the user:
 
@@ -84,4 +94,5 @@ Report once all tasks have finished or are waiting on the user:
 - Merge sync results and skipped bugs.
 - Counts of blocked tasks by cause (for example missing local data, acceptance environment unavailable, waiting on product), so recurring causes are visible.
 - Decisions the coordinator made on workers' behalf.
+- Test data that workers could not remove, with where it lives.
 - What the user needs to do next, such as pushing `bugfix/projex-daniel` and opening an MR to master. `已修复` requires the fix to reach `origin/master`.
