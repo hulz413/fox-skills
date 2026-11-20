@@ -3,15 +3,17 @@
 #
 #   accept-lock.sh acquire <lock-dir> <owner> [max-wait-seconds]   (default 2700 = 45 min)
 #   accept-lock.sh release <lock-dir> <owner>
+#   accept-lock.sh held    <lock-dir> <owner>
 #   accept-lock.sh status  <lock-dir>
 #
 # acquire exits 0 only once the lock is held; on timeout it exits 3 and the caller
-# must stop without touching the acceptance workspace. release refuses (exit 4) a
-# lock held by another owner. The owner file holds the owner on line 1 and the
-# acquisition time on line 2.
+# must stop without touching the acceptance workspace. held exits 0 only when
+# <owner> holds the lock (5 otherwise); chain it before every command that touches
+# the acceptance workspace. release refuses (exit 4) a lock held by another owner.
+# The owner file holds the owner on line 1 and the acquisition time on line 2.
 set -euo pipefail
 
-usage() { sed -n '2,11p' "$0" >&2; exit 2; }
+usage() { sed -n '2,13p' "$0" >&2; exit 2; }
 
 cmd=${1:-}
 lock=${2:-}
@@ -50,6 +52,15 @@ case "$cmd" in
     rm -f "$lock/owner"
     rmdir "$lock"
     echo "released"
+    ;;
+  held)
+    owner=${3:-}
+    [ -n "$owner" ] || usage
+    current=$(head -n 1 "$lock/owner" 2>/dev/null || true)
+    if [ "$current" != "$owner" ]; then
+      echo "not held by '$owner'; current owner: '${current:-none}'" >&2
+      exit 5
+    fi
     ;;
   status)
     if [ -d "$lock" ]; then
