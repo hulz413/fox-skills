@@ -3,11 +3,14 @@
 
 Checks the landing first and writes to Projex only when it passes:
 
-  repair         every commit on <fix-branch> must be on <acceptance-branch>, either
-                 patch-equivalent (git cherry "-") or as a commit with the same subject
-                 and the same changed lines (cherry-picks that git merged automatically
-                 change the patch id); then post the comment and set 开发完成.
-  already-fixed  --fix-commit must be an ancestor of origin/master; then post and set 开发完成.
+  repair         <fix-branch> must have at least one commit beyond <acceptance-branch>,
+                 and every one must be on <acceptance-branch>, either patch-equivalent
+                 (git cherry "-") or as a commit with the same subject and the same
+                 changed lines (cherry-picks that git merged automatically change the
+                 patch id); then post the comment and set 开发完成.
+  already-fixed  --fix-commit must be an ancestor of origin/master; then post, set 开发完成,
+                 and set 已修复, because the fix is already merged and carries no Bug:
+                 trailer for a later merge sync to find.
   conclusion     post the comment only; the status is not changed.
   landing        check a repair's landing only, for issues from other sources; no Projex
                  arguments, no writes.
@@ -26,11 +29,19 @@ from pathlib import Path
 
 PROJEX = Path(__file__).resolve().parents[2] / "fox-fix-issue" / "scripts" / "projex.py"
 DONE = "开发完成"
-LATER_THAN_DONE = {"已修复", "已关闭", "暂不修复", "无法重现"}
+FIXED = "已修复"
+LATER_THAN_DONE = {FIXED, "已关闭", "暂不修复", "无法重现"}
+
+
+def run(*command: str) -> str:
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f"{' '.join(command)} failed with exit {result.returncode}:\n{result.stderr.strip()}")
+    return result.stdout
 
 
 def git(*args: str) -> str:
-    return subprocess.run(["git", *args], check=True, capture_output=True, text=True).stdout
+    return run("git", *args)
 
 
 def changed_lines(commit: str) -> list[str]:
@@ -43,7 +54,13 @@ def subject(commit: str) -> str:
 
 
 def unlanded_commits(fix_branch: str, acceptance_branch: str) -> list[str]:
-    pending = [line.split()[1] for line in git("cherry", acceptance_branch, fix_branch).splitlines() if line.startswith("+ ")]
+    commits = git("cherry", acceptance_branch, fix_branch).splitlines()
+    if not commits:
+        raise SystemExit(
+            f"{fix_branch} has no commit beyond {acceptance_branch}, so there is no repair to check; "
+            "use --mode conclusion or --mode already-fixed when the issue has no repair commit"
+        )
+    pending = [line.split()[1] for line in commits if line.startswith("+ ")]
     if not pending:
         return []
     by_subject: dict[str, list[str]] = {}
@@ -58,8 +75,7 @@ def unlanded_commits(fix_branch: str, acceptance_branch: str) -> list[str]:
 
 
 def projex(*args: str) -> object:
-    out = subprocess.run([sys.executable, str(PROJEX), *args], check=True, capture_output=True, text=True).stdout
-    return json.loads(out)["body"]
+    return json.loads(run(sys.executable, str(PROJEX), *args))["body"]
 
 
 def status_id(workitem_id: str, name: str) -> str:
@@ -109,8 +125,10 @@ def main() -> None:
     key, current = item["serialNumber"], item["status"]["name"]
     existing = [c.get("content", "").strip() for c in projex("comments", args.workitem_id)]
     post = body not in existing
-    set_done = args.mode != "conclusion" and current != DONE and current not in LATER_THAN_DONE
-    print(f"{key}: landing ok; status {current}; post comment: {post}; set {DONE}: {set_done}")
+    earlier = current not in LATER_THAN_DONE
+    set_done = args.mode != "conclusion" and current != DONE and earlier
+    set_fixed = args.mode == "already-fixed" and earlier
+    print(f"{key}: landing ok; status {current}; post comment: {post}; set {DONE}: {set_done}; set {FIXED}: {set_fixed}")
     if args.dry_run:
         return
 
@@ -118,6 +136,8 @@ def main() -> None:
         projex("comment", args.workitem_id, "--body-file", str(args.comment_file))
     if set_done:
         projex("status", args.workitem_id, "--status-id", status_id(args.workitem_id, DONE))
+    if set_fixed:
+        projex("status", args.workitem_id, "--status-id", status_id(args.workitem_id, FIXED))
     after = projex("get", args.workitem_id)["status"]["name"]
     count = len(projex("comments", args.workitem_id))
     print(f"{key}: status {after}; comments {count}")

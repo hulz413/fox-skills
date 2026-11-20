@@ -5,7 +5,7 @@ Fixes one issue or a group of related issues end to end, wherever they come from
 1. Identifies the issue and its key, shows its link, and renames the task to the keys.
 2. Reads the whole report and restates the problem in plain Chinese.
 3. Investigates and either fixes it, asks material questions, or concludes that no fix is needed.
-4. Validates with focused tests and local end-to-end acceptance in the host's built-in browser, then creates one local commit per issue.
+4. Validates with focused tests, creates one local commit per issue, then runs local end-to-end acceptance in the host's built-in browser.
 5. Writes back by source. Projex: `已选择`, a repair comment and `开发完成`, a conclusion comment, and `已修复` only once every repair commit (found by its `Bug: <key>` trailer) is in `origin/master`. Other sources: nothing is written without the user's confirmation; the report carries a ready-to-paste conclusion.
 
 It never pushes, merges, deploys, or uses shared environments. Invoke it manually with `$fox-fix-issue` (Codex) or `/fox-fix-issue` (Claude Code); `allow_implicit_invocation: false` and `disable-model-invocation: true` keep it manual-only.
@@ -27,4 +27,4 @@ It never pushes, merges, deploys, or uses shared environments. Invoke it manuall
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
 - [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.
-- [tests/test_projex.py](tests/test_projex.py): offline contract tests; run `python3 -m unittest tests.test_projex` from this folder.
+- [tests/](tests/): offline tests of the Projex client and the acceptance lock; run `python3 -m unittest tests.test_projex tests.test_accept_lock` from this folder.
