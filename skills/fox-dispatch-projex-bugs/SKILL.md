@@ -28,7 +28,7 @@ The user can override any of these in the request; their values win.
 | Fix workspaces | `<root>/<lowercase-key>/`, for example `fisn-1322/`, on branch `bugfix/<lowercase-key>` |
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
 | Acceptance lock | `<git-common-dir>/fox-bugfix-accept.lock` |
-| Acceptance login | macOS Keychain generic password, service `upperly-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
+| Acceptance login | macOS Keychain generic password, service `fox-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
 
 ## 1. Prepare
 
