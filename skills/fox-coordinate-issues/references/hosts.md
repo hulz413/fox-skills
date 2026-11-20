@@ -1,6 +1,6 @@
 # Host capabilities
 
-SKILL.md names actions, not tools. Use the current host's own tool for each action; the session's actual tool list takes precedence over this table. If an action has no supported tool, report the limitation in the plan and continue what does not depend on it. Worker-side actions (task rename, browser, asking the coordinator) are in the [fix skill's host table](../../fox-fix-projex-bug/references/hosts.md).
+SKILL.md names actions, not tools. Use the current host's own tool for each action; the session's actual tool list takes precedence over this table. If an action has no supported tool, report the limitation in the plan and continue what does not depend on it. Worker-side actions (task rename, browser, asking the coordinator) are in the [fix skill's host table](../../fox-fix-issue/references/hosts.md).
 
 | Action | Codex | Claude Code | T3 Code |
 |---|---|---|---|

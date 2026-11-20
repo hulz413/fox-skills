@@ -1,4 +1,4 @@
-# Fox Fix Projex Bug
+# Fox Fix Issue
 
 Fixes Projex (Alibaba Cloud DevOps) bugs end to end from a bug URL or issue key such as `FISN-1134`, one bug or a group of related bugs per task:
 
@@ -8,14 +8,14 @@ Fixes Projex (Alibaba Cloud DevOps) bugs end to end from a bug URL or issue key 
 4. Validates with focused tests and local end-to-end acceptance in the host's built-in browser, then creates one local commit per bug with a `Bug: <key>` trailer.
 5. Posts a repair comment and sets `开发完成`; sets `已修复` only once every repair commit for the bug is in `origin/master`.
 
-When dispatched by [`fox-dispatch-projex-bugs`](../fox-dispatch-projex-bugs/SKILL.md), it makes no Projex writes: it returns comment drafts and the coordinator posts them and sets every status.
+When dispatched by [`fox-coordinate-issues`](../fox-coordinate-issues/SKILL.md), it makes no Projex writes: it returns comment drafts and the coordinator posts them and sets every status.
 
 It never pushes, merges, deploys, or uses shared environments.
 
 ## Modes
 
 - **Standalone**: invoke it on a bug; it works in the current repository and branch.
-- **Dispatched**: [`fox-dispatch-projex-bugs`](../fox-dispatch-projex-bugs/README.md) starts it as a worker with a fix worktree, a shared acceptance worktree, a local slot, and an acceptance lock; questions go to the coordinator.
+- **Dispatched**: [`fox-coordinate-issues`](../fox-coordinate-issues/README.md) starts it as a worker with a fix worktree, a shared acceptance worktree, a local slot, and an acceptance lock; questions go to the coordinator.
 
 ## Requirements
 

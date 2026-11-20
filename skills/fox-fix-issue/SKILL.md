@@ -1,6 +1,6 @@
 ---
-name: fox-fix-projex-bug
-description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key such as FISN-1134, alone or as a group of related bugs. Read details and comments, investigate, and fix well-understood issues with focused validation, local end-to-end acceptance in a browser, and one local commit per bug. Post a repair comment and mark development complete, post a conclusion comment when no fix is needed, or pause for material questions. Also runs as a worker dispatched by fox-dispatch-projex-bugs. Use when asked to fix a Yunxiao bug; viewing, discussing, or creating this skill does not authorize taking or fixing an issue.
+name: fox-fix-issue
+description: Handle Alibaba Cloud DevOps Projex bugs from a URL or issue key such as FISN-1134, alone or as a group of related bugs. Read details and comments, investigate, and fix well-understood issues with focused validation, local end-to-end acceptance in a browser, and one local commit per bug. Post a repair comment and mark development complete, post a conclusion comment when no fix is needed, or pause for material questions. Also runs as a worker dispatched by fox-coordinate-issues. Use when asked to fix a Yunxiao bug; viewing, discussing, or creating this skill does not authorize taking or fixing an issue.
 ---
 
 # Fix Projex bugs
@@ -12,7 +12,7 @@ Use Projex OpenAPI independently of the `pr` skill. One task may handle one bug 
 The skill runs in one of two modes:
 
 - **Standalone** (default): work in the current repository and branch. Do not create or switch branches.
-- **Dispatched**: the assignment comes from `fox-dispatch-projex-bugs` and names a fix workspace, an acceptance workspace, a local slot, and an acceptance lock. Follow [dispatched mode](#dispatched-mode) for where to edit, accept, and commit, and send questions to the coordinator instead of the user.
+- **Dispatched**: the assignment comes from `fox-coordinate-issues` and names a fix workspace, an acceptance workspace, a local slot, and an acceptance lock. Follow [dispatched mode](#dispatched-mode) for where to edit, accept, and commit, and send questions to the coordinator instead of the user.
 
 A user request to fix a specific bug with this skill, or a dispatch assignment, authorizes the task rename, the `已选择` and `开发完成` status updates (the latter only after local e2e passes), the local fix and commit, and the final repair comment, or the conclusion comment when no fix is made. Do not ask for each action again. In dispatched mode the worker makes no Projex writes at all: the coordinator sets every status and posts the comments the worker drafts. Honor narrower requests for investigation, discussion, or skill creation. Execution permissions still apply; report any operation that cannot safely proceed.
 

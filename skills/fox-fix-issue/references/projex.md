@@ -20,7 +20,7 @@ Core permissions under Projex (`项目协作`) are work items (`工作项`): rea
 Use the bundled `scripts/projex.py`, which requires only the Python 3.10+ standard library. On macOS a login shell's `python3` can resolve to `/usr/bin/python3` (3.9), which fails at import; set `PY` to a 3.10+ interpreter such as `/opt/homebrew/bin/python3` and confirm it with `"$PY" --version`. Replace `SKILL_DIR` below with this skill's actual absolute path, then run commands from the target code repository:
 
 ```bash
-SKILL_DIR='/Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-projex-bug'
+SKILL_DIR='/Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-issue'
 PY='/opt/homebrew/bin/python3'
 "$PY" "$SKILL_DIR/scripts/projex.py" --help
 ```
@@ -28,7 +28,7 @@ PY='/opt/homebrew/bin/python3'
 If the credential was not inherited, use an explicit login shell. Apply the same method to subsequent commands; loading a variable in one child process does not make later tool calls inherit it:
 
 ```bash
-/bin/zsh -lc '/opt/homebrew/bin/python3 /Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-projex-bug/scripts/projex.py project ab491d6f94800aaeb9ef68e915'
+/bin/zsh -lc '/opt/homebrew/bin/python3 /Users/hulz/Developer/side-projects/fox-skills/skills/fox-fix-issue/scripts/projex.py project ab491d6f94800aaeb9ef68e915'
 ```
 
 Successful commands emit a JSON object with the original response in `body` and pagination headers in `pagination`. Redirect large responses to the task's temporary directory and parse them locally to avoid tool truncation. Errors go to stderr with a nonzero exit code. The script does not retry or load shell configuration automatically.

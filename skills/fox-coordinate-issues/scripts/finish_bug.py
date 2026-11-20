@@ -22,7 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-PROJEX = Path(__file__).resolve().parents[2] / "fox-fix-projex-bug" / "scripts" / "projex.py"
+PROJEX = Path(__file__).resolve().parents[2] / "fox-fix-issue" / "scripts" / "projex.py"
 DONE = "开发完成"
 LATER_THAN_DONE = {"已修复", "已关闭", "暂不修复", "无法重现"}
 
