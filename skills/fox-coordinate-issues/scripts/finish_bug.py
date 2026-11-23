@@ -7,7 +7,9 @@ Checks the landing first and writes to Projex only when it passes:
                  and every one must be on <acceptance-branch>, either patch-equivalent
                  (git cherry "-") or as a commit with the same subject and the same
                  changed lines (cherry-picks that git merged automatically change the
-                 patch id); then post the comment and set 开发完成.
+                 patch id), and a commit landed on <acceptance-branch> since <fix-branch> was
+                 created must carry the bug's `Bug: <key>` trailer, which the merge sync reads
+                 from that branch; then post the comment and set 开发完成.
   already-fixed  --fix-commit's change must be in origin/master by in_master.py's checks
                  (ancestor, patch-equivalent, or content already present, so squash merges
                  count) and no revert may have undone it; then post, set 开发完成,
@@ -18,7 +20,8 @@ Checks the landing first and writes to Projex only when it passes:
                  arguments, no writes.
 
 Run it from the target repository through a login shell so ALIYUN_YUNXIAO_TOKEN is set,
-with Python 3.10+. --dry-run checks and prints the planned writes without writing.
+with Python 3.10+. --dry-run checks and prints the planned writes without writing. After writing,
+it reads the comment and status back and exits nonzero when either is not what it wrote.
 """
 
 from __future__ import annotations
@@ -51,8 +54,17 @@ def git(*args: str) -> str:
 
 
 def changed_lines(commit: str) -> list[str]:
-    lines = git("show", "--format=", commit).splitlines()
-    return [line for line in lines if line[:1] in "+-" and line[:3] not in ("+++", "---")]
+    """Each file's `diff --git` line and its added and removed lines, without the `---`/`+++` headers."""
+    kept, in_hunk = [], False
+    for line in git("show", "--format=", commit).splitlines():
+        if line.startswith("diff --git "):
+            kept.append(line)
+            in_hunk = False
+        elif line.startswith("@@"):
+            in_hunk = True
+        elif in_hunk and line[:1] in "+-":
+            kept.append(line)
+    return kept
 
 
 def subject(commit: str) -> str:
@@ -80,6 +92,14 @@ def unlanded_commits(fix_branch: str, acceptance_branch: str) -> list[str]:
     return missing
 
 
+def check_trailer(fix_branch: str, acceptance_branch: str, key: str) -> None:
+    if not git("log", "--format=%H", "--grep", f"^Bug: {key}$", f"{fix_branch}..{acceptance_branch}").split():
+        raise SystemExit(
+            f"no commit landed on {acceptance_branch} since {fix_branch} was created carries 'Bug: {key}', so the "
+            f"merge sync could never mark it {FIXED}; adding it means rewriting {acceptance_branch}, so ask the user"
+        )
+
+
 def projex(*args: str) -> object:
     return json.loads(run(sys.executable, str(PROJEX), *args))["body"]
 
@@ -89,6 +109,10 @@ def status_id(workitem_id: str, name: str) -> str:
     if len(matches) != 1:
         raise SystemExit(f"expected one status named {name}, found {len(matches)}")
     return matches[0]
+
+
+def comment_bodies(workitem_id: str) -> list[str]:
+    return [(c.get("content") or "").strip() for c in projex("comments", workitem_id)]
 
 
 def check_landing(args: argparse.Namespace) -> None:
@@ -133,7 +157,9 @@ def main() -> None:
 
     item = projex("get", args.workitem_id)
     key, current = item["serialNumber"], item["status"]["name"]
-    existing = [c.get("content", "").strip() for c in projex("comments", args.workitem_id)]
+    if args.mode == "repair":
+        check_trailer(args.fix_branch, args.acceptance_branch, key)
+    existing = comment_bodies(args.workitem_id)
     post = body not in existing
     earlier = current not in LATER_THAN_DONE
     set_done = args.mode != "conclusion" and current != DONE and earlier
@@ -148,9 +174,12 @@ def main() -> None:
         projex("status", args.workitem_id, "--status-id", status_id(args.workitem_id, DONE))
     if set_fixed:
         projex("status", args.workitem_id, "--status-id", status_id(args.workitem_id, FIXED))
+    expected = FIXED if set_fixed else DONE if set_done else current
     after = projex("get", args.workitem_id)["status"]["name"]
-    count = len(projex("comments", args.workitem_id))
-    print(f"{key}: status {after}; comments {count}")
+    commented = body in comment_bodies(args.workitem_id)
+    print(f"{key}: status {after}; comment present: {commented}")
+    if after != expected or not commented:
+        raise SystemExit(f"{key}: read-back mismatch, expected status {expected} and the comment present")
 
 
 if __name__ == "__main__":

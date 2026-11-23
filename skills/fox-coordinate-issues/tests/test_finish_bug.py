@@ -31,14 +31,14 @@ class LandingTests(unittest.TestCase):
         identity = ["-c", "user.name=test", "-c", "user.email=test@example.invalid"]
         subprocess.run(["git", *identity, *args], check=True, capture_output=True)
 
-    def commit(self, name: str, subject: str) -> None:
-        (self.repo / name).write_text(subject, encoding="utf-8")
+    def commit(self, name: str, subject: str, content: str = "", body: str = "") -> None:
+        (self.repo / name).write_text(content or subject, encoding="utf-8")
         self.git("add", name)
-        self.git("commit", "-q", "-m", subject)
+        self.git("commit", "-q", "-m", subject + (f"\n\n{body}" if body else ""))
 
-    def fix_commit(self) -> None:
+    def fix_commit(self, content: str = "", body: str = "") -> None:
         self.git("checkout", "-q", FIX)
-        self.commit("fix.txt", "fix: repair")
+        self.commit("fix.txt", "fix: repair", content, body)
         self.git("checkout", "-q", ACCEPTANCE)
 
     def test_fix_branch_without_commits_is_not_a_landed_repair(self) -> None:
@@ -52,36 +52,57 @@ class LandingTests(unittest.TestCase):
         self.git("cherry-pick", FIX)
         self.assertEqual(finish_bug.unlanded_commits(FIX, ACCEPTANCE), [])
 
+    def test_a_same_subject_commit_differing_in_a_line_like_a_header_is_not_landed(self) -> None:
+        self.fix_commit("x\n++i;\n")
+        self.commit("fix.txt", "fix: repair", "x\n++j;\n")
+        self.assertEqual(len(finish_bug.unlanded_commits(FIX, ACCEPTANCE)), 1)
+
+    def test_the_trailer_check_reads_the_landed_commits_on_the_acceptance_branch(self) -> None:
+        self.fix_commit(body="Bug: FISN-12")
+        with self.assertRaisesRegex(SystemExit, "Bug: FISN-12'"):
+            finish_bug.check_trailer(FIX, ACCEPTANCE, "FISN-12")
+        self.commit("other.txt", "fix: another worker")
+        self.git("cherry-pick", FIX)
+        with self.assertRaisesRegex(SystemExit, "Bug: FISN-1'"):
+            finish_bug.check_trailer(FIX, ACCEPTANCE, "FISN-1")
+        finish_bug.check_trailer(FIX, ACCEPTANCE, "FISN-12")
+
     def test_a_failed_command_reports_its_own_error(self) -> None:
         with self.assertRaisesRegex(SystemExit, "bugfix/missing"):
             finish_bug.unlanded_commits("bugfix/missing", ACCEPTANCE)
 
 
 class StatusTests(unittest.TestCase):
-    def finish(self, mode: str, current: str) -> list[str]:
+    def finish(self, mode: str, current: str, apply_status: bool = True) -> list[str]:
         """Run main against a fake Projex and return the status names it set, in order."""
         statuses = [{"id": name, "name": name} for name in (finish_bug.DONE, finish_bug.FIXED)]
+        state = {"status": current, "comments": []}
         writes: list[str] = []
 
         def projex(command: str, *args: str) -> object:
             if command == "get":
-                return {"serialNumber": "FISN-1", "status": {"name": current}}
+                return {"serialNumber": "FISN-1", "status": {"name": state["status"]}}
             if command == "comments":
-                return []
+                return [{"content": body} for body in state["comments"]]
             if command == "workflow":
                 return {"statuses": statuses}
+            if command == "comment":
+                state["comments"].append(Path(args[-1]).read_text(encoding="utf-8"))
             if command == "status":
                 writes.append(args[-1])
+                if apply_status:
+                    state["status"] = args[-1]
             return None
 
         with tempfile.TemporaryDirectory() as directory:
             comment = Path(directory) / "comment.md"
             comment.write_text("结论", encoding="utf-8")
-            argv = ["finish_bug.py", "bug-1", str(comment), "--mode", mode, "--fix-commit", "abc"]
+            argv = ["finish_bug.py", "bug-1", str(comment), "--mode", mode, "--fix-commit", "abc", "--fix-branch", FIX]
             with (
                 patch.object(sys, "argv", argv),
                 patch.object(finish_bug, "projex", projex),
                 patch.object(finish_bug, "check_landing"),
+                patch.object(finish_bug, "check_trailer"),
                 redirect_stdout(io.StringIO()),
             ):
                 finish_bug.main()
@@ -95,6 +116,10 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(self.finish("already-fixed", "已关闭"), [])
         self.assertEqual(self.finish("already-fixed", finish_bug.FIXED), [])
         self.assertEqual(self.finish("conclusion", "已选择"), [])
+
+    def test_a_status_the_workflow_ignored_fails_the_read_back(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "read-back mismatch"):
+            self.finish("repair", "已选择", apply_status=False)
 
 
 if __name__ == "__main__":

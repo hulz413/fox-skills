@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -106,8 +106,10 @@ class InMasterTests(unittest.TestCase):
         self.assertIn("later edits hide", output)
 
     def test_git_failure_is_an_error_not_an_undetermined_result(self) -> None:
-        with self.assertRaisesRegex(SystemExit, "failed with exit"):
+        with self.assertRaises(SystemExit) as raised, redirect_stderr(io.StringIO()) as err:
             in_master.merged_in_master(self.first, "no-such-ref")
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("failed with exit", err.getvalue())
 
 
 if __name__ == "__main__":

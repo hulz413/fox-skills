@@ -29,12 +29,14 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 
 
 def git(*args: str, ok: tuple[int, ...] = (0,)) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(["git", *args], capture_output=True, text=True)
     if result.returncode not in ok:
-        raise SystemExit(f"git {' '.join(args)} failed with exit {result.returncode}:\n{result.stderr.strip()}")
+        print(f"git {' '.join(args)} failed with exit {result.returncode}:\n{result.stderr.strip()}", file=sys.stderr)
+        raise SystemExit(2)
     return result
 
 
