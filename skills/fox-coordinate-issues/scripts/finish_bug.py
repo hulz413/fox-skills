@@ -8,7 +8,9 @@ Checks the landing first and writes to Projex only when it passes:
                  (git cherry "-") or as a commit with the same subject and the same
                  changed lines (cherry-picks that git merged automatically change the
                  patch id); then post the comment and set 开发完成.
-  already-fixed  --fix-commit must be an ancestor of origin/master; then post, set 开发完成,
+  already-fixed  --fix-commit's change must be in origin/master by in_master.py's checks
+                 (ancestor, patch-equivalent, or content already present, so squash merges
+                 count) and no revert may have undone it; then post, set 开发完成,
                  and set 已修复, because the fix is already merged and carries no Bug:
                  trailer for a later merge sync to find.
   conclusion     post the comment only; the status is not changed.
@@ -27,7 +29,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-PROJEX = Path(__file__).resolve().parents[2] / "fox-fix-issue" / "scripts" / "projex.py"
+FIX_SCRIPTS = Path(__file__).resolve().parents[2] / "fox-fix-issue" / "scripts"
+PROJEX = FIX_SCRIPTS / "projex.py"
+sys.path.insert(0, str(FIX_SCRIPTS))
+
+from in_master import merged_in_master, possible_reverts  # noqa: E402
 DONE = "开发完成"
 FIXED = "已修复"
 LATER_THAN_DONE = {FIXED, "已关闭", "暂不修复", "无法重现"}
@@ -91,8 +97,12 @@ def check_landing(args: argparse.Namespace) -> None:
         if missing:
             raise SystemExit("not landed on " + args.acceptance_branch + ":\n  " + "\n  ".join(missing))
     elif args.mode == "already-fixed":
-        if subprocess.run(["git", "merge-base", "--is-ancestor", args.fix_commit, "origin/master"]).returncode != 0:
-            raise SystemExit(f"{args.fix_commit} is not an ancestor of origin/master")
+        if merged_in_master(args.fix_commit) is None or possible_reverts(args.fix_commit):
+            raise SystemExit(
+                f"{args.fix_commit} is not shown to be in origin/master, or a revert may have undone it; "
+                "this does not prove it is missing. Run in_master.py for the details and read master's code "
+                "before concluding either way"
+            )
 
 
 def main() -> None:

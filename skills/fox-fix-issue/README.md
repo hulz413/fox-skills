@@ -26,5 +26,6 @@ It never pushes, merges, deploys, or uses shared environments. Invoke it manuall
 - [sources/general.md](sources/general.md): every other source, QA test cases and the case runner included.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
+- [scripts/in_master.py](scripts/in_master.py): decides whether a fix commit's change is in `origin/master`, squash merges included.
 - [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.
-- [tests/](tests/): offline tests of the Projex client and the acceptance lock; run `python3 -m unittest tests.test_projex tests.test_accept_lock` from this folder.
+- [tests/](tests/): offline tests of the Projex client, the acceptance lock, and the merged check; run `python3 -m unittest tests.test_projex tests.test_accept_lock tests.test_in_master` from this folder.
