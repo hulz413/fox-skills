@@ -22,7 +22,7 @@ The user can override any of these in the request; their values win.
 |---|---|
 | Source | What the user names: Projex bugs, QA test cases, or issues they describe or link. With nothing named, Projex with the filter below |
 | Projex project | The fix skill's default project |
-| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认`. The user states any other condition in words, such as "再次打开" statuses (several allowed). A stated condition replaces only its own part: naming statuses keeps the assignee default. Never try to read a Projex saved view or the filter behind a view link: the API does not expose it. If the user gives only a view link, ask once for its conditions in words. Only status and assignee filter on the server; say so if the user asks for more |
+| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认` or `再次打开`. The user states any other condition in words, such as only `待确认`, or several other statuses. A stated condition replaces only its own part: naming statuses keeps the assignee default. Never try to read a Projex saved view or the filter behind a view link: the API does not expose it. If the user gives only a view link, ask once for its conditions in words. Only status and assignee filter on the server; say so if the user asks for more |
 | Concurrency | 5 worker tasks at once |
 | Model provider | The provider the coordinator itself runs on; the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
