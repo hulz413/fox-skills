@@ -1,15 +1,15 @@
 # Acceptance environment
 
-Procedures for the shared acceptance workspace that [SKILL.md](../SKILL.md) points to. `accept-lock.sh` is `../fox-fix-issue/scripts/accept-lock.sh`.
+Procedures for the shared acceptance workspace that [SKILL.md](../SKILL.md) points to. `accept-lock.sh` is [`../../fox-fix-issue/scripts/accept-lock.sh`](../../fox-fix-issue/scripts/accept-lock.sh).
 
 ## Update to the base
 
 Prepare step 5, when the acceptance workspace exists, is clean, and no acceptance lock is held:
 
-1. Fast-forward with `git merge --ff-only <base>` when possible.
-2. Otherwise, when every acceptance commit is already in the base, `git reset --hard <base>`. Count them as in the base when `git cherry <base> HEAD` shows only `-`, or when merging HEAD into the base changes nothing (`git merge-tree --write-tree <base> HEAD` prints the same tree as `git rev-parse <base>^{tree}`), which covers squash merges.
-3. Before such a reset, record the old `HEAD`. After it, in each clean worktree of a fix branch kept from an earlier run, run `git rebase --onto bugfix/verification <old HEAD>`, or the branch keeps the old acceptance commits and its landing check fails. Abort a conflicting rebase and handle it as in [move a fix branch](#move-a-fix-branch); list a dirty worktree.
-4. Otherwise leave it and report which acceptance commits are not yet in the base, so the user can bring them over.
+1. Fast-forward with `git merge --ff-only <base>` when possible, and stop here.
+2. Otherwise check whether every acceptance commit is already in the base: `git cherry <base> HEAD` shows only `-`, or merging HEAD into the base changes nothing (`git merge-tree --write-tree <base> HEAD` prints the same tree as `git rev-parse <base>^{tree}`), which covers squash merges. If not, leave the workspace, report which acceptance commits are not yet in the base so the user can bring them over, and stop here.
+3. Record the old `HEAD`, then `git reset --hard <base>`.
+4. In each clean worktree of a fix branch kept from an earlier run, run `git rebase --onto bugfix/verification <old HEAD>`, or the branch keeps the old acceptance commits and its landing check fails. Abort a conflicting rebase and handle it as in [move a fix branch](#move-a-fix-branch); list a dirty worktree.
 
 ## Smoke test
 

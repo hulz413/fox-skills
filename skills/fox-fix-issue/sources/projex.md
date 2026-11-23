@@ -55,7 +55,7 @@ A conclusion comment does not change the status. Keep the current status unless 
 
 Set `已修复` only when the repair is contained in the remote default branch. When the user asks to sync status, or a resumed task finds the bug at `开发完成`, run `git fetch origin master` and apply this merged rule:
 
-- List every repair commit for the bug on the working branches (the current branch, or the base and acceptance branches in dispatched mode) with `git log --grep '^Bug: <issue-key>$'`; the anchors keep `FISN-113` from matching `FISN-1134`.
+- List every repair commit for the bug on the working branches (the current branch, or the base and acceptance branches in the coordinator's merge sync) with `git log --grep '^Bug: <issue-key>$'`; the anchors keep `FISN-113` from matching `FISN-1134`.
 - The bug is merged only when [`scripts/in_master.py`](../scripts/in_master.py) reports each of those commits merged. A bug often has an earlier fix already in master and a later follow-up that is not, so one match is not enough. Say so when a commit is only content-matched.
 - On `undetermined`, the commit is neither merged nor unmerged: add `--key <issue-key>`, check the commits it lists, and leave the status as is when still unsure.
 - If no commit carries the trailer, leave the status and report the bug as undecided. The one exception is a fix that was already in `origin/master` when the bug was handled: its verified fix commit is the repair commit, so set `已修复` in that same run, right after `开发完成`.
@@ -149,5 +149,7 @@ Identify relevant material in the description, comments, and attachment list. Us
 "$PY" "$SKILL_DIR/scripts/projex.py" attachments '<workitem-id>'
 "$PY" "$SKILL_DIR/scripts/projex.py" file '<workitem-id>' --file-id '<file-id>'
 ```
+
+Prefer APIs and background reads. If browser interaction is necessary, use the unique Chrome profile named `brandpal.ai` in a BrandPal workspace and never silently use another; desktop input and clipboard access need permission under the workspace rules.
 
 If an interface changes, consult the official documentation listed in the [README](../README.md#official-references) rather than guessing write operations from internal web endpoints.
