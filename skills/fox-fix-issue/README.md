@@ -28,4 +28,5 @@ It never pushes, merges, deploys, or uses shared environments. Invoke it manuall
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
 - [scripts/in_master.py](scripts/in_master.py): decides whether a fix commit's change is in `origin/master`, squash merges included.
 - [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.
-- [tests/](tests/): offline tests of the Projex client, the acceptance lock, and the merged check; run `python3 -m unittest tests.test_projex tests.test_accept_lock tests.test_in_master` from this folder.
+- [scripts/run-vitest.sh](scripts/run-vitest.sh): `vitest run` with workers capped at 50% of the cores (`RUN_VITEST_MAX_WORKERS` overrides), so parallel worktrees do not exhaust memory. The percentage was checked on vitest 3.2.7 and 4.1. A project's own `poolOptions` or `VITEST_MAX_FORKS` / `VITEST_MAX_THREADS` take precedence over the cap. It fails instead of downloading vitest when none is installed.
+- [tests/](tests/): offline tests of the Projex client, the acceptance lock, the merged check, and the vitest wrapper; run `python3 -m unittest tests.test_projex tests.test_accept_lock tests.test_in_master tests.test_run_vitest` from this folder.
