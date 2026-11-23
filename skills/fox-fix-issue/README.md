@@ -24,9 +24,26 @@ It never pushes, merges, deploys, or uses shared environments. Invoke it manuall
 - [SKILL.md](SKILL.md): the procedure shared by every source.
 - [sources/projex.md](sources/projex.md): Projex identification, comments, statuses, the merged rule, and the API guide.
 - [sources/general.md](sources/general.md): every other source, QA test cases and the case runner included.
+- [references/dispatched-mode.md](references/dispatched-mode.md): where a dispatched worker edits, tests, lands, and accepts, and how it uses the acceptance lock.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
 - [scripts/projex.py](scripts/projex.py): narrow Projex OpenAPI client.
 - [scripts/in_master.py](scripts/in_master.py): decides whether a fix commit's change is in `origin/master`, squash merges included.
 - [scripts/accept-lock.sh](scripts/accept-lock.sh): bounded acquire and owner-checked release of the shared acceptance lock in dispatched mode.
 - [scripts/run-vitest.sh](scripts/run-vitest.sh): `vitest run` with workers capped at 50% of the cores (`RUN_VITEST_MAX_WORKERS` overrides), so parallel worktrees do not exhaust memory. The percentage was checked on vitest 3.2.7 and 4.1. A project's own `poolOptions` or `VITEST_MAX_FORKS` / `VITEST_MAX_THREADS` take precedence over the cap. It fails instead of downloading vitest when none is installed.
 - [tests/](tests/): offline tests of the Projex client, the acceptance lock, the merged check, and the vitest wrapper; run `python3 -m unittest tests.test_projex tests.test_accept_lock tests.test_in_master tests.test_run_vitest` from this folder.
+
+## Official references
+
+Projex OpenAPI documentation used by `scripts/projex.py` and `sources/projex.md`, checked on 2026-10-30.
+
+- [ListWorkitemAttachments: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/listworkitemattachments)
+- [GetWorkitemFile: request parameters and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitemfile)
+- [Service endpoint: endpoint domain](https://help.aliyun.com/zh/yunxiao/developer-reference/service-access-point-domain)
+- [Personal access tokens: creation and permissions](https://help.aliyun.com/zh/yunxiao/user-guide/personal-access-token)
+- [GetProject: request syntax and authorization](https://help.aliyun.com/zh/yunxiao/developer-reference/getproject)
+- [GetWorkitem: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitem)
+- [SearchWorkitems: request parameters and pagination window](https://help.aliyun.com/zh/yunxiao/developer-reference/searchworkitems)
+- [ListWorkitemComments: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/listworkitemcomments)
+- [GetWorkitemWorkflowInfo: response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitemworkflowinfo-get-work-item-workflow-information)
+- [UpdateWorkitem: request syntax and status update format](https://help.aliyun.com/zh/yunxiao/developer-reference/updateworkitem)
+- [CreateWorkitemComment: request parameters and formatType](https://help.aliyun.com/zh/yunxiao/developer-reference/createworkitemcomment)

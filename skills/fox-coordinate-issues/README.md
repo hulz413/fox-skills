@@ -22,5 +22,8 @@ The coordinator never fixes issues or runs cases itself. Invoke it manually with
 - [SKILL.md](SKILL.md): the coordination procedure.
 - [references/model-routing.md](references/model-routing.md): per-task model and effort selection.
 - [references/hosts.md](references/hosts.md): Codex, Claude Code, and T3 Code tool mapping.
+- [references/acceptance-env.md](references/acceptance-env.md): smoke test, moving a fix branch after a conflict, and lock recovery.
+- [references/qa-cases.md](references/qa-cases.md): running QA cases and sorting their failures.
+- [references/worker-brief.md](references/worker-brief.md): what each worker brief must contain.
 - [scripts/finish_bug.py](scripts/finish_bug.py): checks that a fix landed on the acceptance branch, then for Projex posts the worker's comment and sets `开发完成`; `--mode landing` only checks, and `--dry-run` writes nothing.
 - [tests/test_finish_bug.py](tests/test_finish_bug.py): offline checks of the landing gate and status decisions; run `python3 -m unittest tests.test_finish_bug` from this folder.

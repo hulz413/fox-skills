@@ -1,0 +1,31 @@
+# Dispatched mode
+
+Read this before starting a task that `fox-coordinate-issues` dispatched. It replaces the standalone rules in [SKILL.md](../SKILL.md) for where to edit, test, accept, and commit; everything else in SKILL.md still applies.
+
+The coordinator's assignment supplies: the issue keys and where each report lives; the **fix workspace**, a temporary worktree on its own branch created from the acceptance branch; the **acceptance workspace**, a long-lived worktree on the acceptance branch (for example `bugfix/verification`, created from the coordinator's base branch); the **local slot** number; the **acceptance lock** path; and the vitest worker cap. Do not create, move, or delete worktrees or branches yourself; the coordinator owns them.
+
+Send every question to the coordinator, never directly to the user, as the [host table](hosts.md) describes; it answers what it can and forwards the rest. If the assignment allows one model escalation and evidence shows the task needs deeper reasoning than the assigned configuration provides, say so in the same message rather than continuing on a weak path.
+
+1. **Fix workspace.** Investigate, edit, run unit tests and linters, and commit there.
+   - Install only what the touched services need (for example `uv sync` in that service). Copy needed untracked `.env` files from the acceptance workspace; never symlink them, because start scripts may write to them. `frontend/node_modules` is a symlink to the acceptance workspace's copy for read-only use; if the fix must change frontend dependencies, ask the coordinator.
+   - Compare test results here before acquiring the lock, not under it. Record the commit the fix branch starts from (the acceptance-branch commit it was created on). Run the default test suites of every package the fix touches at that commit (check it out detached, then return to the fix branch), then again at the fix branch's head. Any failure only on the fix branch is yours to fix before landing.
+   - Default suites are those that run without extra configuration. Tests that run only when a real-database variable is set explicitly (for example `*_TEST_DATABASE_URL`) can touch shared local data and belong to step 3.
+   - Run vitest through `scripts/run-vitest.sh` with `RUN_VITEST_MAX_WORKERS` set to the assignment's cap; this step is the heaviest parallel load.
+   - Give each test a timeout (pytest-timeout, or `faulthandler_timeout` plus an outer time limit) so a hung test fails instead of stalling.
+2. **Acquire the lock** with [`scripts/accept-lock.sh`](../scripts/accept-lock.sh) `acquire <lock> "<issue keys>"`, in the background if the host limits foreground commands, and wait for it to exit.
+   - Exit 0 means you hold the lock. Any other exit, including the 45-minute timeout, means you do not: touch nothing in the acceptance workspace and report to the coordinator, which checks the lock's owner and tells you whether to acquire again.
+   - While holding it, prefix every command that touches the acceptance workspace or its slot with `accept-lock.sh held <lock> "<issue keys>" &&`, for example `accept-lock.sh held <lock> "<issue keys>" && LOCAL_SLOT=<slot> scripts/restart.sh`, so a lost or never-acquired lock stops the command instead of disturbing another worker.
+   - Release only with `accept-lock.sh release <lock> "<issue keys>"`; it refuses a lock you do not own.
+   - Never hold the lock while waiting on anyone: before asking the coordinator a question, reset the acceptance workspace to the recorded `HEAD`, stop the slot, and release the lock.
+3. **Land in the acceptance workspace.**
+   - Confirm `git status --short` is clean there and record `HEAD`. Confirm each fix commit carries the trailer the source guide requires; amend it in the fix workspace before cherry-picking, because the landed commit cannot be changed afterwards.
+   - Under the lock, run only the tests step 1 could not cover: the explicitly enabled real-database tests that cover the change, and, when `HEAD` is no longer step 1's starting commit, the same default suites again. When `HEAD` is still that commit and no real-database test applies, step 1's comparison stands and nothing needs re-running here.
+   - Run them before cherry-picking and note the failures as the baseline, cherry-pick the fix commits, then run them again with the same per-test timeout. Any failure not in the baseline is an acceptance failure (step 5), even in a test you did not expect to be affected.
+   - On a conflict, run `git cherry-pick --abort`, release the lock, and report the conflict to the coordinator; do not resolve it by editing the acceptance workspace.
+4. **Accept** in the acceptance workspace.
+   - Run the frontend checks the change needs.
+   - Start the slot environment with `LOCAL_SLOT=<slot> scripts/restart.sh` from a login shell, without `--with-console` (issue acceptance does not need Console). If the start scripts do not support `LOCAL_SLOT`, the acceptance environment is unavailable: report that blocker. Never use `--force`, `--all`, or `--reset-db`, and never touch the user's main instance.
+   - Accept in the built-in browser at `http://slot<N>.localhost:<frontend-port>` as described in [local end-to-end acceptance](../SKILL.md#local-end-to-end-acceptance).
+   - The slot start only checks, it does not start, the shared local middleware (for example PostgreSQL, Redis, Temporal). If one of them is not running, report it to the coordinator and wait: do not start it yourself or improvise another way of starting it (a different tool or configuration can silently replace the user's persistent local data), and never stop or kill an instance you did not start. Only the coordinator starts it, with the repository's own script or documented command, which the start script's error message normally prints.
+5. **On failure**, reset the acceptance workspace to the recorded `HEAD` (only your cherry-picked commits are above it while you hold the lock), release the lock, return to the fix workspace, and continue.
+6. **On success**, stop the slot environment, release the lock, and report to the coordinator the landed commit hashes and each issue's write-back draft, written in full following the source guide's template. For an issue already fixed in `origin/master`, report the fix commit instead of landed hashes.

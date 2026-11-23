@@ -53,7 +53,14 @@ A conclusion comment does not change the status. Keep the current status unless 
 
 ## Mark fixed after merge
 
-Set `已修复` only when the repair is contained in the remote default branch. When the user asks to sync status, or a resumed task finds the bug at `开发完成`, run `git fetch origin master` and apply this merged rule. List every repair commit for the bug on the working branches (the current branch, or the base and acceptance branches in dispatched mode) with `git log --grep '^Bug: <issue-key>$'`; the anchors keep `FISN-113` from matching `FISN-1134`. A bug often has an earlier fix already in master and a later follow-up that is not, so one match in `origin/master` is not enough: the bug is merged only when each of those commits is in `origin/master`, as [`scripts/in_master.py <commit>`](../scripts/in_master.py) decides: an ancestor, a patch-equivalent commit, or content already present, which covers squash merges. Cherry-picks, rebases, and squash merges change hashes, so never require the same hash, and never treat a missing hash as unmerged. If a commit is only content-matched, say so. When it reports `undetermined` (a later edit of the same lines defeats the content check, the change is no longer in master because it was reverted or reworked, or later edits hide whether a revert undid it), the commit is neither merged nor unmerged: add `--key <issue-key>` to list master commits with the same trailer, check them, and leave the status as is when still unsure. If no commit carries the trailer, the rule cannot decide: leave the status and report the bug as undecided, never as merged. The one case without a trailer is a fix that was already in `origin/master` when the bug was handled; its verified fix commit is the repair commit, so set `已修复` in that same run, right after `开发完成`. Map the exact name `已修复` to one status ID, update, and read back. If not yet merged, leave `开发完成` and say so. Merging itself is the user's step.
+Set `已修复` only when the repair is contained in the remote default branch. When the user asks to sync status, or a resumed task finds the bug at `开发完成`, run `git fetch origin master` and apply this merged rule:
+
+- List every repair commit for the bug on the working branches (the current branch, or the base and acceptance branches in dispatched mode) with `git log --grep '^Bug: <issue-key>$'`; the anchors keep `FISN-113` from matching `FISN-1134`.
+- The bug is merged only when [`scripts/in_master.py`](../scripts/in_master.py) reports each of those commits merged. A bug often has an earlier fix already in master and a later follow-up that is not, so one match is not enough. Say so when a commit is only content-matched.
+- On `undetermined`, the commit is neither merged nor unmerged: add `--key <issue-key>`, check the commits it lists, and leave the status as is when still unsure.
+- If no commit carries the trailer, leave the status and report the bug as undecided. The one exception is a fix that was already in `origin/master` when the bug was handled: its verified fix commit is the repair commit, so set `已修复` in that same run, right after `开发完成`.
+
+Map the exact name `已修复` to one status ID, update, and read back. If not yet merged, leave `开发完成` and say so. Merging itself is the user's step.
 
 ## Report
 
@@ -74,7 +81,7 @@ The default organization is initial configuration, not proof of project ownershi
 
 This environment has the token exported in `~/.zprofile`. Ordinary command tools may not inherit a login shell. If the variable is missing, run the script through `/bin/zsh -lc` while preserving the caller's working directory. Check only whether the value is nonempty. Never print the value, request headers, or shell tracing, and do not place credentials in arguments, this skill, temporary comment files, or commits.
 
-Core permissions under Projex (`项目协作`) are work items (`工作项`): read/write; work item comments (`工作项评论`): read/write; work item workflows (`工作项工作流`): read-only; projects (`项目`): read-only. Add attachment or field read permissions only as required by the actual endpoint. Successful Codeup access does not establish Projex permissions. Do not depend on the `pr` skill or its scripts.
+Core permissions under Projex (`项目协作`) are work items (`工作项`): read/write; work item comments (`工作项评论`): read/write; work item workflows (`工作项工作流`): read-only; projects (`项目`): read-only. Add attachment or field read permissions only as required by the actual endpoint. Successful Codeup access does not establish Projex permissions.
 
 ## Script
 
@@ -132,7 +139,7 @@ Read the completion comment from a local UTF-8 file. The script sends it as `MAR
 "$PY" "$SKILL_DIR/scripts/projex.py" comments '<workitem-id>'
 ```
 
-A successful write command does not replace read-back verification. Follow the main workflow after HTTP errors, permission errors, or timeouts; do not resend automatically. Retain status and comment IDs in the task context for recovery.
+A successful write command does not replace read-back verification. Retain status and comment IDs in the task context for recovery.
 
 ## Images and attachments
 
@@ -143,21 +150,4 @@ Identify relevant material in the description, comments, and attachment list. Us
 "$PY" "$SKILL_DIR/scripts/projex.py" file '<workitem-id>' --file-id '<file-id>'
 ```
 
-- [ListWorkitemAttachments: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/listworkitemattachments)
-- [GetWorkitemFile: request parameters and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitemfile)
-
-Prefer APIs and background reads. If browser interaction is necessary, follow the workspace's browser and account rules. In a BrandPal workspace, verify the unique Chrome profile named `brandpal.ai`; desktop input and clipboard access require permission under the workspace rules. Do not silently use another profile.
-
-## Official references
-
-Checked on 2026-10-30. If an interface changes, consult the relevant official documentation section rather than guessing write operations from internal web endpoints.
-
-- [Service endpoint: endpoint domain](https://help.aliyun.com/zh/yunxiao/developer-reference/service-access-point-domain)
-- [Personal access tokens: creation and permissions](https://help.aliyun.com/zh/yunxiao/user-guide/personal-access-token)
-- [GetProject: request syntax and authorization](https://help.aliyun.com/zh/yunxiao/developer-reference/getproject)
-- [GetWorkitem: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitem)
-- [SearchWorkitems: request parameters and pagination window](https://help.aliyun.com/zh/yunxiao/developer-reference/searchworkitems)
-- [ListWorkitemComments: request syntax and response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/listworkitemcomments)
-- [GetWorkitemWorkflowInfo: response fields](https://help.aliyun.com/zh/yunxiao/developer-reference/getworkitemworkflowinfo-get-work-item-workflow-information)
-- [UpdateWorkitem: request syntax and status update format](https://help.aliyun.com/zh/yunxiao/developer-reference/updateworkitem)
-- [CreateWorkitemComment: request parameters and formatType](https://help.aliyun.com/zh/yunxiao/developer-reference/createworkitemcomment)
+If an interface changes, consult the official documentation listed in the [README](../README.md#official-references) rather than guessing write operations from internal web endpoints.
