@@ -22,7 +22,7 @@ The user can override any of these in the request; their values win.
 |---|---|
 | Source | What the user names: Projex bugs, QA test cases, or issues they describe or link. With nothing named, Projex with the filter below |
 | Projex project | The fix skill's default project |
-| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认` |
+| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认`. The user states any other condition in words, such as "再次打开" statuses (several allowed). A stated condition replaces only its own part: naming statuses keeps the assignee default. Never try to read a Projex saved view or the filter behind a view link: the API does not expose it. If the user gives only a view link, ask once for its conditions in words. Only status and assignee filter on the server; say so if the user asks for more |
 | Concurrency | 5 worker tasks at once |
 | Model provider | The provider the coordinator itself runs on; the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
@@ -48,7 +48,7 @@ Only when the run involves Projex; run it from Prepare step 4, before the accept
 
 ## 3. Build the list
 
-**Projex.** Search with `--status-id <待确认 id> --assigned-to <user id>` page by page until `X-Total` items are read. Skip bugs already being handled: status no longer `待确认`, or an existing task titled with the key. List `已选择` bugs with no visible task in the report; never take them over. Sort by the `严重程度` custom field, P0 first through P3. Map legacy values `1-致命`=P0, `2-严重`=P1, `3-一般`=P2, `4-轻微`=P3; missing values go last. Ties go by creation time, oldest first.
+**Projex.** Search with `--status-id <id of each requested status> --assigned-to <user id>` page by page until `X-Total` items are read, and state the resolved filter (status names, assignee) in the plan. Skip bugs already being handled: status no longer one of the requested statuses, or an existing task titled with the key. List `已选择` bugs with no visible task in the report; never take them over. Sort by the `严重程度` custom field, P0 first through P3. Map legacy values `1-致命`=P0, `2-严重`=P1, `3-一般`=P2, `4-轻微`=P3; missing values go last. Ties go by creation time, oldest first.
 
 **Issues the user describes or links.** Read each from where it lives, without changing it (see the [general source guide](../fox-fix-issue/sources/general.md)). Keep the user's order unless they ask for another.
 
