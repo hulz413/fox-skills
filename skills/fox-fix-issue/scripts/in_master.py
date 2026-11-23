@@ -8,9 +8,12 @@ hash. The change counts as merged when any of these holds, tried in order:
   patch-equivalent   master has a commit with the same patch (git cherry)
   content-present    merging the commit onto master changes nothing, which covers squash merges
 
-Even then it is reported as undetermined when a revert may have undone it: a master commit after
-the fix branched off, titled `Revert "..."` or saying `This reverts commit`, that touches the
-fix's files. Revert hints are deliberately broad; a human decides.
+A change found by hash (ancestor, patch-equivalent) may since have been reverted or reworked, so
+its current effect is probed with two merges that touch no files: merging the commit onto master
+changes nothing when its change is still there, and merging its reverse changes nothing when the
+change is gone. Only when later edits of the same lines make both merges conflict is the effect
+unknown; then a master commit after the fix branched off, titled `Revert "..."` or saying
+`This reverts commit`, that touches the fix's files turns the result into undetermined.
 
 Exit 0 and "merged: <method>" when merged. Exit 1 and "undetermined" otherwise, which is not
 proof that the change is missing (a later edit of the same lines makes the content check fail),
@@ -35,6 +38,12 @@ def git(*args: str, ok: tuple[int, ...] = (0,)) -> subprocess.CompletedProcess[s
     return result
 
 
+def merge_tree(base: str, ours: str, theirs: str) -> str | None:
+    """The tree of a clean three-way merge, or None when it conflicts."""
+    merge = git("merge-tree", "--write-tree", "--merge-base", base, ours, theirs, ok=(0, 1))
+    return merge.stdout.split("\n", 1)[0] if merge.returncode == 0 else None
+
+
 def merged_in_master(commit: str, master: str = "origin/master") -> str | None:
     """Return the method that shows the change is in master, or None when undetermined."""
     if git("merge-base", "--is-ancestor", commit, master, ok=(0, 1)).returncode == 0:
@@ -43,10 +52,21 @@ def merged_in_master(commit: str, master: str = "origin/master") -> str | None:
         return None
     if git("cherry", master, commit, f"{commit}^").stdout.startswith("- "):
         return "patch-equivalent"
-    merge = git("merge-tree", "--write-tree", "--merge-base", f"{commit}^", master, commit, ok=(0, 1))
-    if merge.returncode == 0 and merge.stdout.split("\n", 1)[0] == git("rev-parse", f"{master}^{{tree}}").stdout.strip():
+    if merge_tree(f"{commit}^", master, commit) == git("rev-parse", f"{master}^{{tree}}").stdout.strip():
         return "content-present"
     return None
+
+
+def effect_in_master(commit: str, master: str = "origin/master") -> str:
+    """Whether the change is currently in master: present, absent, or unknown."""
+    if git("rev-parse", "--verify", "-q", f"{commit}^", ok=(0, 1)).returncode != 0:
+        return "unknown"
+    tree = git("rev-parse", f"{master}^{{tree}}").stdout.strip()
+    if merge_tree(f"{commit}^", master, commit) == tree:
+        return "present"
+    if merge_tree(commit, master, f"{commit}^") == tree:
+        return "absent"
+    return "unknown"
 
 
 def possible_reverts(commit: str, master: str = "origin/master") -> list[str]:
@@ -61,6 +81,22 @@ def possible_reverts(commit: str, master: str = "origin/master") -> list[str]:
     return log.stdout.splitlines()
 
 
+def assess(commit: str, master: str = "origin/master") -> tuple[bool, list[str]]:
+    """Return (merged, lines describing the result); not merged means undetermined."""
+    method = merged_in_master(commit, master)
+    if method is None:
+        return False, [f"undetermined: {commit} is not shown to be in {master}; this does not prove it is missing"]
+    if method == "content-present":
+        return True, [f"merged: {method}"]
+    effect = effect_in_master(commit, master)
+    if effect == "absent":
+        return False, [f"undetermined: {commit} is in {master} ({method}) but its change is no longer there: reverted or reworked"]
+    reverts = possible_reverts(commit, master) if effect == "unknown" else []
+    if reverts:
+        return False, [f"undetermined: {commit} is in {master} ({method}), later edits hide whether a revert undid it:", *(f"  {line}" for line in reverts)]
+    return True, [f"merged: {method}"]
+
+
 def trailer_hints(key: str, master: str = "origin/master") -> list[str]:
     return git("log", master, "--grep", f"^Bug: {key}$", "--format=%h %s").stdout.splitlines()
 
@@ -71,16 +107,10 @@ def main() -> int:
     parser.add_argument("--key", help="issue key whose Bug trailer locates candidate commits in master")
     parser.add_argument("--master", default="origin/master")
     args = parser.parse_args()
-    method = merged_in_master(args.commit, args.master)
-    reverts = possible_reverts(args.commit, args.master) if method else []
-    if method and not reverts:
-        print(f"merged: {method}")
+    merged, lines = assess(args.commit, args.master)
+    print("\n".join(lines))
+    if merged:
         return 0
-    if reverts:
-        print(f"undetermined: {args.commit} is in {args.master} ({method}), but a revert may have undone it:")
-        print("\n".join(f"  {line}" for line in reverts))
-    else:
-        print(f"undetermined: {args.commit} is not shown to be in {args.master}; this does not prove it is missing")
     if args.key:
         hints = trailer_hints(args.key, args.master)
         print("\n".join(f"  {args.master} has Bug: {args.key}: {line}" for line in hints) or f"  no {args.master} commit has Bug: {args.key}")

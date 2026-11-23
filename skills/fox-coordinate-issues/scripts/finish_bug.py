@@ -33,7 +33,7 @@ FIX_SCRIPTS = Path(__file__).resolve().parents[2] / "fox-fix-issue" / "scripts"
 PROJEX = FIX_SCRIPTS / "projex.py"
 sys.path.insert(0, str(FIX_SCRIPTS))
 
-from in_master import merged_in_master, possible_reverts  # noqa: E402
+from in_master import assess  # noqa: E402
 DONE = "开发完成"
 FIXED = "已修复"
 LATER_THAN_DONE = {FIXED, "已关闭", "暂不修复", "无法重现"}
@@ -97,7 +97,7 @@ def check_landing(args: argparse.Namespace) -> None:
         if missing:
             raise SystemExit("not landed on " + args.acceptance_branch + ":\n  " + "\n  ".join(missing))
     elif args.mode == "already-fixed":
-        if merged_in_master(args.fix_commit) is None or possible_reverts(args.fix_commit):
+        if not assess(args.fix_commit)[0]:
             raise SystemExit(
                 f"{args.fix_commit} is not shown to be in origin/master, or a revert may have undone it; "
                 "this does not prove it is missing. Run in_master.py for the details and read master's code "

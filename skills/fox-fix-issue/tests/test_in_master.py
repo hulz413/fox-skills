@@ -65,15 +65,45 @@ class InMasterTests(unittest.TestCase):
         self.assertIsNone(in_master.merged_in_master(self.first, "master"))
         self.assertTrue(any("feat: squashed" in line for line in in_master.trailer_hints("FISN-1", "master")))
 
-    def test_a_revert_after_the_merge_makes_a_merged_change_undetermined(self) -> None:
+    def merge_feature(self) -> None:
         self.git("merge", "-q", "--no-ff", "-m", "merge feature", "feature")
-        self.assertEqual(in_master.possible_reverts(self.first, "master"), [])
+
+    def append_and_revert(self) -> None:
+        self.commit("a.txt", "one\nTWO\nthree\nfour\n", "chore: unrelated append")
+        self.git("revert", "--no-edit", "HEAD")
+
+    def cli(self, commit: str) -> tuple[int, str]:
+        argv = ["in_master.py", commit, "--master", "master"]
+        with patch.object(sys, "argv", argv), redirect_stdout(io.StringIO()) as out:
+            return in_master.main(), out.getvalue()
+
+    def test_reverting_the_merge_makes_the_change_absent_and_undetermined(self) -> None:
+        self.merge_feature()
+        self.assertEqual(in_master.effect_in_master(self.first, "master"), "present")
         self.git("revert", "-m", "1", "--no-edit", "HEAD")
         self.assertEqual(in_master.merged_in_master(self.first, "master"), "ancestor")
+        self.assertEqual(in_master.effect_in_master(self.first, "master"), "absent")
+        code, output = self.cli(self.first)
+        self.assertEqual(code, 1)
+        self.assertIn("no longer there", output)
+
+    def test_an_unrelated_revert_on_the_same_file_does_not_block_a_merged_change(self) -> None:
+        self.merge_feature()
+        self.append_and_revert()
         self.assertEqual(len(in_master.possible_reverts(self.first, "master")), 1)
-        with patch.object(sys, "argv", ["in_master.py", self.first, "--master", "master"]), redirect_stdout(io.StringIO()) as out:
-            self.assertEqual(in_master.main(), 1)
-        self.assertIn("revert may have undone it", out.getvalue())
+        self.assertEqual(self.cli(self.first)[0], 0)
+
+    def test_later_edits_hide_the_effect_so_only_a_revert_hint_blocks(self) -> None:
+        self.merge_feature()
+        self.commit("a.txt", "one\nTWO changed again\nthree\n", "fix: someone else edits it")
+        self.assertEqual(in_master.effect_in_master(self.first, "master"), "unknown")
+        self.assertEqual(self.cli(self.first)[0], 0)
+        self.commit("a.txt", "one\nTWO changed again\nthree\nfour\n", "chore: unrelated append")
+        self.git("revert", "--no-edit", "HEAD")
+        self.assertEqual(in_master.effect_in_master(self.first, "master"), "unknown")
+        code, output = self.cli(self.first)
+        self.assertEqual(code, 1)
+        self.assertIn("later edits hide", output)
 
     def test_git_failure_is_an_error_not_an_undetermined_result(self) -> None:
         with self.assertRaisesRegex(SystemExit, "failed with exit"):
