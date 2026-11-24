@@ -16,13 +16,13 @@ Treat a provider as usable only if the host reports it enabled and able to run c
 
 ## 3. Pick capability from the issue evidence
 
-Judge from the triage evidence: impact, uncertainty, and how much context the worker must rebuild. File counts, text length, and severity alone do not decide it.
+Base the initial tier on the hardest unresolved judgment that affects the fix. When reports share a reproduction or acceptance flow and each expected behavior can be checked independently, group them for efficiency and assess the hardest issue in the group. Use severity to order tasks.
 
 | Issue evidence | Capability tier |
 |---|---|
 | Clear symptom and expected result, likely one module, established fix pattern, direct check available (copy, style, a wrong field, a missed condition) | efficient |
-| Needs causal investigation, several modules or a service boundary, or reconstructing context from code and data | workhorse |
-| Root cause unclear across services, concurrency or data consistency, conflicting reports, or a group whose fix must reconcile several issues | frontier |
+| Needs causal investigation or context reconstruction across modules, services, or data using established methods. Concrete reproduction steps and independently checkable outcomes usually fit this tier when investigation is needed. | workhorse |
+| Triage evidence shows that choosing a correct fix requires resolving conflicting business rules, jointly validating interacting cross-service constraints, or making a comparably difficult judgment beyond routine investigation. | frontier |
 
 Map tiers to the host's model descriptions and recommendations. Prefer the host's recommended model for a tier, then its default. Disclose ambiguity instead of guessing which model is stronger or cheaper.
 
@@ -40,7 +40,7 @@ Capability and effort are separate choices: a frontier task does not imply high 
 
 ## 5. Apply and report
 
-Set model and effort through the dispatch tool's own parameters, not prompt text. Give each worker fresh context with the brief. In the plan table, give one short reason for capability and one for effort. Report effective settings only from what the host returns.
+Set model and effort through the dispatch tool's own parameters, not prompt text. Give each worker fresh context with the brief. In the plan table, give one short reason for capability and one for effort. For frontier capability or effort of high or above, identify the concrete judgment that warrants that setting. Report effective settings only from what the host returns.
 
 ## 6. Escalate at most once
 

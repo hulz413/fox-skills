@@ -22,7 +22,7 @@ The user can override any of these in the request; their values win.
 |---|---|
 | Source | What the user names: Projex bugs, QA test cases, or issues they describe or link. With nothing named, Projex with the filter below |
 | Projex project | The fix skill's default project |
-| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认` or `再次打开`. The user states any other condition in words, such as only `待确认`, or several other statuses. A stated condition replaces only its own part: naming statuses keeps the assignee default. Never try to read a Projex saved view or the filter behind a view link: the API does not expose it. If the user gives only a view link, ask once for its conditions in words. Only status and assignee filter on the server; say so if the user asks for more |
+| Projex filter | Assigned to the token's user (`projex.py me`), status exactly `待确认` or `再次打开`. The user states any other condition in words, such as only `待确认`, or several other statuses. A stated condition replaces only its own part: naming statuses keeps the assignee default. Never try to read a Projex saved view or the filter behind a view link: the API does not expose it. Only status and assignee filter on the server; say so if the user asks for more |
 | Concurrency | 5 worker tasks at once |
 | Model provider | The provider the coordinator itself runs on; the user may name another provider or model |
 | Worktree root | `~/Developer/worktrees/<repo-dir-name>/` |
@@ -32,6 +32,8 @@ The user can override any of these in the request; their values win.
 | Local slot | `LOCAL_SLOT=1` for the acceptance workspace |
 | Acceptance lock | `<git-common-dir>/fox-verification.lock`, taken and released only with `../fox-fix-issue/scripts/accept-lock.sh`, with owner `coordinator` for the coordinator's own holds; its `acquire` can wait 45 minutes, so run it in the background when the host limits foreground commands |
 | Acceptance login | macOS Keychain generic password, service `fox-local-login`, account = the email that owns the local test data. If it is missing, ask the user once through a secret card and store it with `security add-generic-password -U`; never keep it in a file. |
+
+When the user supplies only a Projex saved-view link without filter conditions, use the link to identify the project. Before Prepare, show the host's selection card with **Use defaults** (recommended, show the assignee and both statuses from the table) and **Customize filters**. Accept explicit filter conditions in the card's free-text response when supported. If the user selects Customize filters without supplying conditions, ask for the desired assignee and/or statuses. If the host has no selection-card tool, offer the same choices in text. Wait for an explicit answer before starting Prepare. A filter choice does not override an explicit request to hold dispatch.
 
 ## 1. Prepare
 
